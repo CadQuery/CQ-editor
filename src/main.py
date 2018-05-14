@@ -76,14 +76,17 @@ class MainWindow(QMainWindow):
     
     def prepare_toolbar(self):
         
-        self.toolbar = QToolBar(self)
+        self.toolbar = QToolBar('Main toolbar',self)
         
         self.toolbar.addAction('New')
         self.toolbar.addAction('Open')
         self.toolbar.addAction('Save')
         self.toolbar.addAction('Save as')
+        
         self.toolbar.addSeparator()
         self.toolbar.addActions(self.editor.actions())
+        
+        self.toolbar.addSeparator()
         self.toolbar.addActions(self.viewer.actions())
         
         self.addToolBar(self.toolbar)

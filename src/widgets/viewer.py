@@ -3,7 +3,7 @@
 from PyQt5.QtWidgets import (QWidget, QPushButton, QDialog, QTreeWidget,
                              QTreeWidgetItem, QVBoxLayout,
                              QHBoxLayout, QFrame, QLabel,
-                             QApplication, QToolBar)
+                             QApplication, QToolBar, QAction)
 
 from PyQt5.QtCore import QSize, pyqtSlot
 import OCC.Display.backend
@@ -30,10 +30,10 @@ class OCCViewer(QWidget):
         super(OCCViewer,self).__init__(parent)
         
         self.canvas = qtViewer3d(self)
-        self.toolbar = self.create_toolbar(self)
+        self.create_actions(self)
         
         self.layout = layout(self,
-                             [self.toolbar,self.canvas],
+                             [self.canvas],
                              self,
                              margin=0)
         
@@ -42,24 +42,20 @@ class OCCViewer(QWidget):
         self.canvas._display.View.SetBgGradientColors(BLACK,BLACK,True)
         self.canvas._display.Repaint()
         
-    def create_toolbar(self,parent):
-        
-        toolbar = QToolBar(parent)
-        
-        toolbar.addAction(qta.icon('fa.arrows-alt'),'Fit',self.fit)
-        toolbar.addAction(qta.icon('fa.cube'),'Iso',self.iso_view)
-        toolbar.addAction(qta.icon('fa.arrow-down'),'Top',self.top_view)
-        toolbar.addAction(qta.icon('fa.arrow-up'),'Bottom',self.bottom_view)
-        toolbar.addAction(qta.icon('fa.times-circle-o'),'Front',self.front_view)
-        toolbar.addAction(qta.icon('fa.dot-circle-o'),'Back',self.back_view)
-        toolbar.addAction(qta.icon('fa.arrow-right'),'Left',self.left_view)
-        toolbar.addAction(qta.icon('fa.arrow-left'),'Right',self.right_view)
-        toolbar.addAction(qta.icon('fa.square-o'),'Wireframe',self.wireframe_view)
-        toolbar.addAction(qta.icon('fa.square'),'Shaded',self.shaded_view)
-        
-        toolbar.setIconSize(QSize(15,15))
-        
-        return toolbar
+    def create_actions(self,parent):
+
+        self.addAction(QAction(qta.icon('fa.arrows-alt'),'Fit',parent,triggered=self.fit))
+        self.addAction(QAction(qta.icon('fa.cube'),'Iso',parent,triggered=self.iso_view))
+        self.addAction(QAction(qta.icon('fa.arrow-down'),'Top',parent,triggered=self.top_view))
+        self.addAction(QAction(qta.icon('fa.arrow-up'),'Bottom',parent,triggered=self.bottom_view))
+        self.addAction(QAction(qta.icon('fa.times-circle-o'),'Front',parent,triggered=self.front_view))
+        self.addAction(QAction(qta.icon('fa.dot-circle-o'),'Back',parent,triggered=self.back_view))
+        self.addAction(QAction(qta.icon('fa.arrow-right'),'Left',parent,triggered=self.left_view))
+        self.addAction(QAction(qta.icon('fa.arrow-left'),'Right',parent,triggered=self.right_view))
+        self.addAction(QAction(qta.icon('fa.square-o'),'Wireframe',parent,triggered=self.wireframe_view))
+        self.addAction(QAction(qta.icon('fa.square'),'Shaded',parent,triggered=self.shaded_view))
+        self.addAction(QAction(qta.icon('fa.trash'),'Clear all',parent,triggered=self.clear))
+
                 
     def clear(self):
         

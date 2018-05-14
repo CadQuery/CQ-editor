@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QAction
 
 import cadquery as cq
 import imp
+import qtawesome as qta
 
 class Editor(CodeEditor):
 
@@ -20,7 +21,7 @@ class Editor(CodeEditor):
                           show_blanks=True,
                           language='Python')
         
-        self.addAction(QAction('Render',self,triggered=self.render))
+        self.addAction(QAction(qta.icon('fa.play'),'Render',self,triggered=self.render))
 
         
     def render(self):

@@ -14,7 +14,7 @@ class Editor(CodeEditor):
     EXTENSIONS = '*.py'
 
     sigRendered = pyqtSignal(list)
-    sigTraceback = pyqtSignal(list)
+    sigTraceback = pyqtSignal(list,str)
     
     def __init__(self,parent=None):
         
@@ -73,9 +73,11 @@ class Editor(CodeEditor):
             exec(cq_script,t.__dict__,results)
             cq_objects = [(k,v.val().wrapped) for k,v in results.items() if isinstance(v,cq.Workplane)]
             self.sigRendered.emit(cq_objects)
-            self.sigTraceback.emit([])
+            self.sigTraceback.emit([],
+                                   cq_script)
         except Exception: 
-            self.sigTraceback.emit(extract_tb(sys.exc_info()[-1]))
+            self.sigTraceback.emit(extract_tb(sys.exc_info()[-1]),
+                                   cq_script)
         
 if __name__ == "__main__":
     

@@ -9,6 +9,7 @@ from .widgets.editor import Editor
 from .widgets.viewer import OCCViewer
 from .widgets.console import ConsoleWidget
 from .widgets.object_tree import ObjectTree
+from .widgets.traceback_viewer import TracebackTree
 from .utils import dock
 
 
@@ -20,7 +21,7 @@ class MainWindow(QMainWindow):
         super(MainWindow,self).__init__(parent)
         
         self.viewer = OCCViewer(self)
-        self.setCentralWidget(self.viewer)
+        self.setCentralWidget(self.viewer.canvas)
 
         self.prepare_panes()
         self.prepare_toolbar()
@@ -57,6 +58,13 @@ class MainWindow(QMainWindow):
                                  defaultArea='bottom')
         self.console_dock.show()
         
+        self.traceback_viewer = TracebackTree(self)
+        self.traceback_dock = dock(self.traceback_viewer,
+                                   'Current traceback',
+                                   self,
+                                   defaultArea='bottom')
+        self.traceback_dock.show()
+        
     def prepare_menubar(self):
         
         menu = self.menuBar()
@@ -79,8 +87,6 @@ class MainWindow(QMainWindow):
             menu_view.addAction(t.toggleViewAction())
         
         menu_help = menu.addMenu('&Help')
-
-        
     
     def prepare_toolbar(self):
         
@@ -101,6 +107,8 @@ class MainWindow(QMainWindow):
     def prepare_actions(self):
         
         self.editor.sigRendered.connect(self.object_tree.addObjects)
+        self.editor.sigTraceback.connect(self.traceback_viewer.addTraceback)
+        
         self.object_tree.sigObjectsAdded.connect(self.viewer.display_many)
         self.object_tree.itemChanged.connect(self.viewer.update_item)
         self.object_tree.sigObjectsRemoved.connect(self.viewer.remove_items)

@@ -54,7 +54,7 @@ class OCCViewer(QWidget):
         self.addAction(QAction(qta.icon('fa.arrow-left'),'Right',parent,triggered=self.right_view))
         self.addAction(QAction(qta.icon('fa.square-o'),'Wireframe',parent,triggered=self.wireframe_view))
         self.addAction(QAction(qta.icon('fa.square'),'Shaded',parent,triggered=self.shaded_view))
-        self.addAction(QAction(qta.icon('fa.trash'),'Clear all',parent,triggered=self.clear))
+        
 
                 
     def clear(self):
@@ -91,25 +91,39 @@ class OCCViewer(QWidget):
         drawer = context.DefaultDrawer().GetObject()
         drawer.SetFaceBoundaryDraw(False)
     
-    def display(self,shape,name=''):
-        
-        ais = AIS_ColoredShape(shape)
-        
+    @pyqtSlot(object)
+    def display(self,ais):
+
         context = self._get_context()
         context.Display(ais.GetHandle())
         
         self.canvas._display.Repaint()
+        self.fit()
     
     @pyqtSlot(list)    
-    def display_many(self,shapes):
-        
-        for shape in shapes:
-            ais = AIS_ColoredShape(shape.wrapped)
+    def display_many(self,ais_list):
         
         context = self._get_context()
-        context.Display(ais.GetHandle())
+        for ais in ais_list:
+            context.Display(ais.GetHandle())
         
         self.canvas._display.Repaint()
+        self.fit()
+    
+    @pyqtSlot(QTreeWidgetItem,int)
+    def update_item(self,item,col):
+        
+        ctx = self._get_context()
+        if item.checkState(0):
+            ctx.Display(item.ais.GetHandle())
+        else:
+            ctx.Erase(item.ais.GetHandle())
+            
+    @pyqtSlot(list)
+    def remove_items(self,ais_items):
+        
+        ctx = self._get_context()
+        for ais in ais_items: ctx.Erase(ais.GetHandle())
         
     def fit(self):
         

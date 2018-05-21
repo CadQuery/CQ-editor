@@ -3,7 +3,7 @@ from PyQt5.QtGui import QColor, QCursor, QIcon, QPainter, QPalette, QPen
 from PyQt5.QtWidgets import (QDesktopWidget, QFileDialog, QFontDialog,
                              QGraphicsDropShadowEffect, QLabel, QMainWindow,
                              QMenu, QMessageBox, QShortcut, QSystemTrayIcon,
-                             QToolBar, QWidget)
+                             QToolBar, QWidget, QDockWidget)
 
 from .widgets.editor import Editor
 from .widgets.viewer import OCCViewer
@@ -22,11 +22,14 @@ class MainWindow(QMainWindow):
         self.viewer = OCCViewer(self)
         self.setCentralWidget(self.viewer)
 
-        self.prepare_panes()        
-        self.prepare_menubar()
+        self.prepare_panes()
         self.prepare_toolbar()
+        self.prepare_menubar()
+        
         self.prepare_statusbar()
         self.prepare_actions()
+        
+        self.object_tree.addLines()
         
         self.console.push_vars({'viewer' : self.viewer, 'self' : self})
         self.fill_dummy()
@@ -68,7 +71,12 @@ class MainWindow(QMainWindow):
         
         
         menu_view = menu.addMenu('&View')
+        for d in self.findChildren(QDockWidget):
+            menu_view.addAction(d.toggleViewAction())
         
+        menu_view.addSeparator()
+        for t in self.findChildren(QToolBar):
+            menu_view.addAction(t.toggleViewAction())
         
         menu_help = menu.addMenu('&Help')
 
@@ -78,12 +86,6 @@ class MainWindow(QMainWindow):
         
         self.toolbar = QToolBar('Main toolbar',self)
         
-        self.toolbar.addAction('New')
-        self.toolbar.addAction('Open')
-        self.toolbar.addAction('Save')
-        self.toolbar.addAction('Save as')
-        
-        self.toolbar.addSeparator()
         self.toolbar.addActions(self.editor.actions())
         
         self.toolbar.addSeparator()
@@ -98,7 +100,10 @@ class MainWindow(QMainWindow):
         
     def prepare_actions(self):
         
-        self.editor.sigRendered.connect(self.viewer.display_many)
+        self.editor.sigRendered.connect(self.object_tree.addObjects)
+        self.object_tree.sigObjectsAdded.connect(self.viewer.display_many)
+        self.object_tree.itemChanged.connect(self.viewer.update_item)
+        self.object_tree.sigObjectsRemoved.connect(self.viewer.remove_items)
         
     def fill_dummy(self):
         

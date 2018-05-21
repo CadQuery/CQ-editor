@@ -32,9 +32,9 @@ class OCCViewer(QWidget):
         self.canvas = qtViewer3d(self)
         self.create_actions(self)
         
-        self.layout = layout(self,
-                             [self.canvas],
-                             self,
+        self.layout_ = layout(self,
+                             [self.canvas,],
+                             top_widget=self,
                              margin=0)
         
         self.canvas.InitDriver()

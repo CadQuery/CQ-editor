@@ -1,16 +1,20 @@
 from spyder.widgets.sourcecode.codeeditor import  CodeEditor
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QAction, QFileDialog
+from traceback import extract_tb
 
 import cadquery as cq
 import imp
 import qtawesome as qta
+import sys
+
 
 class Editor(CodeEditor):
     
     EXTENSIONS = '*.py'
 
     sigRendered = pyqtSignal(list)
+    sigTraceback = pyqtSignal(list)
     
     def __init__(self,parent=None):
         
@@ -69,8 +73,9 @@ class Editor(CodeEditor):
             exec(cq_script,t.__dict__,results)
             cq_objects = [(k,v.val().wrapped) for k,v in results.items() if isinstance(v,cq.Workplane)]
             self.sigRendered.emit(cq_objects)
+            self.sigTraceback.emit([])
         except Exception: 
-            pass #fixme: add logging
+            self.sigTraceback.emit(extract_tb(sys.exc_info()[-1]))
         
 if __name__ == "__main__":
     

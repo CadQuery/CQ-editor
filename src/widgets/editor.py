@@ -9,7 +9,11 @@ import qtawesome as qta
 import sys
 
 
-class Editor(CodeEditor):
+
+from ..mixins import ComponentMixin
+
+
+class Editor(CodeEditor,ComponentMixin):
     
     EXTENSIONS = '*.py'
 
@@ -29,11 +33,25 @@ class Editor(CodeEditor):
                           show_blanks=True,
                           language='Python')
         
-        self.addAction(QAction(qta.icon('fa.file'),'New',self,triggered=self.new))
-        self.addAction(QAction(qta.icon('fa.folder-open'),'Open',self,triggered=self.open))
-        self.addAction(QAction(qta.icon('fa.save'),'Save',self,triggered=self.save))
-        self.addAction(QAction(qta.icon('fa.save','fa.pencil'),'Save as',self,triggered=self.save_as))
-        self.addAction(QAction(qta.icon('fa.play'),'Render',self,triggered=self.render))
+        self._actions =  \
+                {'File' : [QAction(qta.icon('fa.file'),
+                                  'New',
+                                  self,triggered=self.new),
+                          QAction(qta.icon('fa.folder-open'),
+                                  'Open',
+                                  self,triggered=self.open),
+                          QAction(qta.icon('fa.save'),
+                                  'Save',
+                                  self,triggered=self.save),
+                          QAction(qta.icon('fa.save','fa.pencil'),
+                                  'Save as',
+                                  self,triggered=self.save_as)],
+                'Run' : [QAction(qta.icon('fa.play'),
+                                 'Render',
+                                 self,triggered=self.render)]}
+        
+        for a in self._actions.values():
+            self.addActions(a)
     
     def new(self):
         

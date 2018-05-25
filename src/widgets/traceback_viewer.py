@@ -1,7 +1,9 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAction
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
-class TracebackTree(QTreeWidget):
+from ..mixins import ComponentMixin
+
+class TracebackTree(QTreeWidget,ComponentMixin):
 
     
     def  __init__(self,parent):

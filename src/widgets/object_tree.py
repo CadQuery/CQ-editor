@@ -11,7 +11,7 @@ from OCC.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
      Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
 from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
-
+from ..mixins import ComponentMixin
 
 class TopTreeItem(QTreeWidgetItem):
     
@@ -50,7 +50,7 @@ class HelpersRootItem(TopTreeItem):
         super(HelpersRootItem,self).__init__(['Helpers'],*args,**kwargs)
 
 
-class ObjectTree(QTreeWidget):
+class ObjectTree(QTreeWidget,ComponentMixin):
     
     sigObjectsAdded = pyqtSignal(list)
     sigObjectsRemoved = pyqtSignal(list)
@@ -72,8 +72,19 @@ class ObjectTree(QTreeWidget):
         root.addChild(self.Imports)
         root.addChild(self.Helpers)
         
-        self.addAction(QAction(qta.icon('fa.trash'),'Clear all',self,triggered=self.removeObjects))
-        self.addAction(QAction(qta.icon('fa.trash'),'Clear current',self,triggered=self.removeSelected))
+        self._toolbar_actions = \
+            [QAction(qta.icon('fa.trash'),'Clear all',self,triggered=self.removeObjects),
+             QAction(qta.icon('fa.trash'),'Clear current',self,triggered=self.removeSelected)]
+        
+        self.addActions(self._toolbar_actions)
+        
+    def menuActions(self):
+        
+        return {}
+    
+    def toolbarActions(self):
+        
+        return self._toolbar_actions
     
     def addLines(self):
         

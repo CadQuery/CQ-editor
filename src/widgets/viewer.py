@@ -19,10 +19,11 @@ from OCC.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
 from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
                              
 from ..utils import layout
+from ..mixins import ComponentMixin
 
 import qtawesome as qta
 
-class OCCViewer(QWidget):
+class OCCViewer(QWidget,ComponentMixin):
 
     
     def __init__(self,parent=None):
@@ -43,19 +44,48 @@ class OCCViewer(QWidget):
         self.canvas._display.Repaint()
         
     def create_actions(self,parent):
-
-        self.addAction(QAction(qta.icon('fa.arrows-alt'),'Fit',parent,triggered=self.fit))
-        self.addAction(QAction(qta.icon('fa.cube'),'Iso',parent,triggered=self.iso_view))
-        self.addAction(QAction(qta.icon('fa.arrow-down'),'Top',parent,triggered=self.top_view))
-        self.addAction(QAction(qta.icon('fa.arrow-up'),'Bottom',parent,triggered=self.bottom_view))
-        self.addAction(QAction(qta.icon('fa.times-circle-o'),'Front',parent,triggered=self.front_view))
-        self.addAction(QAction(qta.icon('fa.dot-circle-o'),'Back',parent,triggered=self.back_view))
-        self.addAction(QAction(qta.icon('fa.arrow-right'),'Left',parent,triggered=self.left_view))
-        self.addAction(QAction(qta.icon('fa.arrow-left'),'Right',parent,triggered=self.right_view))
-        self.addAction(QAction(qta.icon('fa.square-o'),'Wireframe',parent,triggered=self.wireframe_view))
-        self.addAction(QAction(qta.icon('fa.square'),'Shaded',parent,triggered=self.shaded_view))
         
-
+        self._actions =  \
+                {'View' : [QAction(qta.icon('fa.arrows-alt'),
+                                   'Fit',
+                                   parent,
+                                   triggered=self.fit),
+                          QAction(qta.icon('fa.cube'),
+                                  'Iso',
+                                  parent,
+                                  triggered=self.iso_view),
+                          QAction(qta.icon('fa.arrow-down'),
+                                  'Top',
+                                  parent,
+                                  triggered=self.top_view),
+                          QAction(qta.icon('fa.arrow-up'),
+                                  'Bottom',
+                                  parent,
+                                  triggered=self.bottom_view),
+                          QAction(qta.icon('fa.times-circle-o'),
+                                  'Front',
+                                  parent,
+                                  triggered=self.front_view),
+                          QAction(qta.icon('fa.dot-circle-o'),
+                                  'Back',
+                                  parent,
+                                  triggered=self.back_view),
+                          QAction(qta.icon('fa.arrow-right'),
+                                  'Left',
+                                  parent,
+                                  triggered=self.left_view),
+                          QAction(qta.icon('fa.arrow-left'),
+                                  'Right',
+                                  parent,
+                                  triggered=self.right_view),
+                          QAction(qta.icon('fa.square-o'),
+                                  'Wireframe',
+                                  parent,
+                                  triggered=self.wireframe_view),
+                                  QAction(qta.icon('fa.square'),
+                                          'Shaded',
+                                          parent,
+                                          triggered=self.shaded_view)]}
                 
     def clear(self):
         

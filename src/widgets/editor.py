@@ -13,6 +13,8 @@ from ..icons import icon
 
 class Editor(CodeEditor,ComponentMixin):
     
+    name = 'Code Editor'
+    
     EXTENSIONS = '*.py'
 
     sigRendered = pyqtSignal(list)

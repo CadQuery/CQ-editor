@@ -6,6 +6,8 @@ from qtconsole.inprocess import QtInProcessKernelManager
 from ..mixins import ComponentMixin
 
 class ConsoleWidget(RichJupyterWidget,ComponentMixin):
+    
+    name = 'Console'
 
     def __init__(self, customBanner=None, namespace=dict(), *args, **kwargs):
         super(ConsoleWidget, self).__init__(*args, **kwargs)

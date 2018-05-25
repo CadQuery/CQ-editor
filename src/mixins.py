@@ -13,6 +13,7 @@ class MainMixin(object):
     
     components = {}
     docks = {}
+    preferences = None
     
     def registerComponent(self,name,component,dock=None):
         
@@ -23,7 +24,12 @@ class MainMixin(object):
 
 class ComponentMixin(object):
     
+    
+    name = 'Component'
+    preferences = None
+    
     _actions = {}
+    
     
     def menuActions(self):
         

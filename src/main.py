@@ -3,13 +3,15 @@ from PyQt5.QtGui import QColor, QCursor, QIcon, QPainter, QPalette, QPen
 from PyQt5.QtWidgets import (QDesktopWidget, QFileDialog, QFontDialog,
                              QGraphicsDropShadowEffect, QLabel, QMainWindow,
                              QMenu, QMessageBox, QShortcut, QSystemTrayIcon,
-                             QToolBar, QWidget, QDockWidget)
+                             QToolBar, QWidget, QDockWidget, QAction)
+
+import qtawesome as qta
 
 from .widgets.editor import Editor
 from .widgets.viewer import OCCViewer
 from .widgets.console import ConsoleWidget
 from .widgets.object_tree import ObjectTree
-from .widgets.traceback_viewer import TracebackTree
+from .widgets.traceback_viewer import TracebackPane
 from .utils import dock, add_actions
 from .mixins import MainMixin
 
@@ -62,7 +64,7 @@ class MainWindow(QMainWindow,MainMixin):
                                               defaultArea='bottom'))
         
         self.registerComponent('traceback_viewer',
-                               TracebackTree(self),
+                               TracebackPane(self),
                                lambda c: dock(c,
                                               'Current traceback',
                                               self,
@@ -73,29 +75,12 @@ class MainWindow(QMainWindow,MainMixin):
         
     def prepare_menubar(self):
         
-        #global menu elements
         menu = self.menuBar()
         
         menu_file = menu.addMenu('&File')
-        
-        
         menu_edit = menu.addMenu('&Edit')
-        
-        
         menu_run = menu.addMenu('&Run')
-        
-        
         menu_view = menu.addMenu('&View')
-        for d in self.findChildren(QDockWidget):
-            menu_view.addAction(d.toggleViewAction())
-        
-        menu_view.addSeparator()
-        
-        for t in self.findChildren(QToolBar):
-            menu_view.addAction(t.toggleViewAction())
-        
-        menu_view.addSeparator()
-        
         menu_help = menu.addMenu('&Help')
         
         #per componenet menu elements
@@ -108,6 +93,25 @@ class MainWindow(QMainWindow,MainMixin):
         for comp in self.components.values():
             self.prepare_menubar_componenet(menus,
                                             comp.menuActions())
+            
+        #global menu elements
+        menu_view.addSeparator()
+        for d in self.findChildren(QDockWidget):
+            menu_view.addAction(d.toggleViewAction())
+            
+        menu_view.addSeparator()
+        for t in self.findChildren(QToolBar):
+            menu_view.addAction(t.toggleViewAction())
+            
+        menu_edit.addAction( \
+            QAction(qta.icon('fa.cogs'),
+                    'Preferences',
+                    self,triggered=self.edit_preferences))
+        
+        menu_help.addAction( \
+            QAction(qta.icon('fa.info'),
+                    'About',
+                    self,triggered=self.about))
     
     def prepare_menubar_componenet(self,menus,comp_menu_dict):
         
@@ -141,11 +145,22 @@ class MainWindow(QMainWindow,MainMixin):
             connect(self.components['viewer'].update_item)
         self.components['object_tree'].sigObjectsRemoved\
             .connect(self.components['viewer'].remove_items)
+            
+        self.components['traceback_viewer'].sigHighlightLine\
+            .connect(self.components['editor'].go_to_line)
         
     def fill_dummy(self):
         
         self.components['editor']\
             .set_text('import cadquery as cq\nresult = cq.Workplane("XY" ).box(3, 3, 0.5).edges("|Z").fillet(0.125)')
+            
+    def about(self):
+        
+        pass
+    
+    def edit_preferences(self):
+        
+        pass
     
     
 if __name__ == "__main__":

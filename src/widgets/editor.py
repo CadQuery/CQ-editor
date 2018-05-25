@@ -8,9 +8,8 @@ import qtawesome as qta
 import sys
 
 
-
 from ..mixins import ComponentMixin
-
+from ..icons import icon
 
 class Editor(CodeEditor,ComponentMixin):
     
@@ -33,19 +32,19 @@ class Editor(CodeEditor,ComponentMixin):
                           language='Python')
         
         self._actions =  \
-                {'File' : [QAction(qta.icon('fa.file'),
+                {'File' : [QAction(icon('new'),
                                   'New',
                                   self,triggered=self.new),
-                          QAction(qta.icon('fa.folder-open'),
+                          QAction(icon('open'),
                                   'Open',
                                   self,triggered=self.open),
-                          QAction(qta.icon('fa.save'),
+                          QAction(icon('save'),
                                   'Save',
                                   self,triggered=self.save),
-                          QAction(qta.icon('fa.save','fa.pencil'),
+                          QAction(icon('save_as'),
                                   'Save as',
                                   self,triggered=self.save_as)],
-                'Run' : [QAction(qta.icon('fa.play'),
+                'Run' : [QAction(icon('run'),
                                  'Render',
                                  self,triggered=self.render)]}
         

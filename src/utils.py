@@ -1,4 +1,6 @@
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtGui import QDesktopServices
+from PyQt5.QtCore import QUrl
 
 DOCK_POSITIONS = {'right'   : QtCore.Qt.RightDockWidgetArea,
                   'left'    : QtCore.Qt.LeftDockWidgetArea,
@@ -75,3 +77,11 @@ def add_actions(menu,actions):
     if len(actions) > 0:
         menu.addActions(actions)
         menu.addSeparator()
+        
+def open_url(url):
+    
+     QDesktopServices.openUrl(QUrl(url))
+     
+def about_dialog(parent,title,text):
+    
+    QtWidgets.QMessageBox.about(parent,title,text)

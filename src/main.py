@@ -11,7 +11,7 @@ from .widgets.viewer import OCCViewer
 from .widgets.console import ConsoleWidget
 from .widgets.object_tree import ObjectTree
 from .widgets.traceback_viewer import TracebackPane
-from .utils import dock, add_actions
+from .utils import dock, add_actions, open_url, about_dialog
 from .mixins import MainMixin
 import qtawesome as qta
 from .icons import icon
@@ -110,6 +110,15 @@ class MainWindow(QMainWindow,MainMixin):
                     self,triggered=self.edit_preferences))
         
         menu_help.addAction( \
+            QAction(icon('help'),
+                    'Documentation',
+                    self,triggered=self.documentation))
+        
+        menu_help.addAction( \
+             QAction('CQ documentation',
+                    self,triggered=self.cq_documentation))
+        
+        menu_help.addAction( \
             QAction(icon('about'),
                     'About',
                     self,triggered=self.about))
@@ -155,13 +164,25 @@ class MainWindow(QMainWindow,MainMixin):
         self.components['editor']\
             .set_text('import cadquery as cq\nresult = cq.Workplane("XY" ).box(3, 3, 0.5).edges("|Z").fillet(0.125)')
             
-    def about(self):
-        
-        pass
-    
     def edit_preferences(self):
         
         pass
+    
+    def about(self):
+        
+        about_dialog(self,
+                     'CadQuary GUI (PyQT)',
+                     'Experimental PyQt GUI for CadQuery')
+    
+    def documentation(self):
+        
+        open_url('https://github.com/CadQuery')
+    
+    def cq_documentation(self):
+        
+        open_url('https://dcowden.github.io/cadquery')
+    
+    
     
     
 if __name__ == "__main__":

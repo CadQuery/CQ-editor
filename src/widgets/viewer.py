@@ -86,6 +86,7 @@ class OCCViewer(QWidget,ComponentMixin):
                                           'Shaded',
                                           parent,
                                           triggered=self.shaded_view)]}
+                                              
                 
     def clear(self):
         

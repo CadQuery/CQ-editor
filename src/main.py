@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import (QDesktopWidget, QFileDialog, QFontDialog,
                              QMenu, QMessageBox, QShortcut, QSystemTrayIcon,
                              QToolBar, QWidget, QDockWidget, QAction)
 
-import qtawesome as qta
 
 from .widgets.editor import Editor
 from .widgets.viewer import OCCViewer
@@ -14,6 +13,8 @@ from .widgets.object_tree import ObjectTree
 from .widgets.traceback_viewer import TracebackPane
 from .utils import dock, add_actions
 from .mixins import MainMixin
+import qtawesome as qta
+from .icons import icon
 
 
 class MainWindow(QMainWindow,MainMixin):
@@ -104,12 +105,12 @@ class MainWindow(QMainWindow,MainMixin):
             menu_view.addAction(t.toggleViewAction())
             
         menu_edit.addAction( \
-            QAction(qta.icon('fa.cogs'),
+            QAction(icon('preferences'),
                     'Preferences',
                     self,triggered=self.edit_preferences))
         
         menu_help.addAction( \
-            QAction(qta.icon('fa.info'),
+            QAction(icon('about'),
                     'About',
                     self,triggered=self.about))
     

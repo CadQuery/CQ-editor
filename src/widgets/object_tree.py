@@ -1,8 +1,6 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAction
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
-import qtawesome as qta
-
 from OCC.AIS import AIS_ColoredShape, AIS_Line
 from OCC.Quantity import Quantity_NOC_RED as RED
 from OCC.Quantity import Quantity_NOC_GREEN as GREEN
@@ -12,6 +10,7 @@ from OCC.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
 from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
+from ..icons import icon
 
 class TopTreeItem(QTreeWidgetItem):
     
@@ -73,8 +72,8 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         root.addChild(self.Helpers)
         
         self._toolbar_actions = \
-            [QAction(qta.icon('fa.trash'),'Clear all',self,triggered=self.removeObjects),
-             QAction(qta.icon('fa.trash'),'Clear current',self,triggered=self.removeSelected)]
+            [QAction(icon('delete-many'),'Clear all',self,triggered=self.removeObjects),
+             QAction(icon('delete'),'Clear current',self,triggered=self.removeSelected)]
         
         self.addActions(self._toolbar_actions)
         

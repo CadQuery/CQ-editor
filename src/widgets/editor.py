@@ -86,8 +86,10 @@ class Editor(CodeEditor,ComponentMixin):
         results = {}
         
         try:
-            t = imp.new_module('temp')        
-            exec(cq_script,t.__dict__,results)
+            t = imp.new_module('temp')
+            cq_code = compile(cq_script,'<string>','exec')
+            exec(cq_code,t.__dict__,t.__dict__)
+            results = t.__dict__
             cq_objects = [(k,v.val().wrapped) for k,v in results.items() if isinstance(v,cq.Workplane)]
             self.sigRendered.emit(cq_objects)
             self.sigTraceback.emit(None,

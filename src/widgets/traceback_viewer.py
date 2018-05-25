@@ -38,8 +38,8 @@ class TracebackPane(QWidget,ComponentMixin):
             "QLabel {color : red; }");
         
         layout(self,
-               (self.tree,
-               self.current_exception),
+               (self.current_exception,
+                self.tree),
                self)
                
         self.tree.currentItemChanged.connect(self.handleSelection)
@@ -51,7 +51,6 @@ class TracebackPane(QWidget,ComponentMixin):
         
         if exc_info:
             t,exc,tb = exc_info
-            
             
             root = self.tree.root
             code = code.splitlines()
@@ -67,18 +66,28 @@ class TracebackPane(QWidget,ComponentMixin):
                 root.addChild(QTreeWidgetItem([el.filename,
                                                str(el.lineno),
                                                line]))
-        
+            
+            exc_name = t.__name__
+            exc_msg = str(exc)
+            
             self.current_exception.\
-                setText('<b>{}</b>'.format(*format_exception_only(t,exc)))
+                setText('<b>{}</b>: {}'.format(exc_name,exc_msg))
+            
+            # handle the special case of a SyntaxError
+            if t is SyntaxError: 
+                root.addChild(QTreeWidgetItem([exc.filename,
+                                               str(exc.lineno),
+                                               exc.text.strip()]))
         else:
             self.current_exception.setText('')
 
     @pyqtSlot(QTreeWidgetItem,QTreeWidgetItem)          
     def handleSelection(self,item,*args):
         
-        f,line = item.data(0,0),int(item.data(1,0))
-        
-        if '<string>' in f:
-            self.sigHighlightLine.emit(line)
+        if item:
+            f,line = item.data(0,0),int(item.data(1,0))
+            
+            if '<string>' in f:
+                self.sigHighlightLine.emit(line)
     
         

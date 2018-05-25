@@ -69,3 +69,9 @@ def dock(widget,
                          dock)
     
     return dock
+
+def add_actions(menu,actions):
+    
+    if len(actions) > 0:
+        menu.addActions(actions)
+        menu.addSeparator()

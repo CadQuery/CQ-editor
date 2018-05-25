@@ -3,8 +3,9 @@ from PyQt5.QtWidgets import QApplication
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 
+from ..mixins import ComponentMixin
 
-class ConsoleWidget(RichJupyterWidget):
+class ConsoleWidget(RichJupyterWidget,ComponentMixin):
 
     def __init__(self, customBanner=None, namespace=dict(), *args, **kwargs):
         super(ConsoleWidget, self).__init__(*args, **kwargs)

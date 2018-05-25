@@ -9,6 +9,7 @@ from ..utils import layout
 
 class TracebackTree(QTreeWidget):
 
+    name = 'Traceback Viewer'
     
     def  __init__(self,parent):
         

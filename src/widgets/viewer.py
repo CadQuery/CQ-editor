@@ -21,10 +21,17 @@ from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 from ..utils import layout
 from ..mixins import ComponentMixin
 
+from pyqtgraph.parametertree import Parameter
 import qtawesome as qta
 
 class OCCViewer(QWidget,ComponentMixin):
 
+    name = '3D Viewer'
+    
+    preferences = Parameter.create(name='Pref',children=[
+        {'name': 'Use gradient', 'type': 'bool', 'value': False},
+        {'name': 'Color', 'type': 'color', 'value': "F0F"},
+        {'name': 'Color (aux)', 'type': 'color', 'value': "FF0"}])
     
     def __init__(self,parent=None):
         

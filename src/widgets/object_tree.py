@@ -51,6 +51,8 @@ class HelpersRootItem(TopTreeItem):
 
 class ObjectTree(QTreeWidget,ComponentMixin):
     
+    name = 'Object Tree'
+    
     sigObjectsAdded = pyqtSignal(list)
     sigObjectsRemoved = pyqtSignal(list)
     

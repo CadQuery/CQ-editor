@@ -4,25 +4,33 @@ from PyQt5.QtWidgets import QAction, QFileDialog
 
 import cadquery as cq
 import imp
-import qtawesome as qta
 import sys
 
+from pyqtgraph.parametertree import Parameter
 
 from ..mixins import ComponentMixin
 from ..icons import icon
+from spyder.utils.icon_manager import icon as spyder_icon
 
 class Editor(CodeEditor,ComponentMixin):
     
     name = 'Code Editor'
     
+    preferences = Parameter.create(name='Preferences',children=[
+        {'name': 'Font size', 'type': 'int', 'value': 12},
+        {'name': 'Color scheme', 'type': 'list',
+         'values': ['Spyder','Monokai','Zenburn'], 'value': 'Spyder'}])
+    
     EXTENSIONS = '*.py'
 
     sigRendered = pyqtSignal(list)
     sigTraceback = pyqtSignal(object,str)
+    sigLocals = pyqtSignal(dict)
     
     def __init__(self,parent=None):
         
         super(Editor,self).__init__(parent)
+        ComponentMixin.__init__(self) 
         
         self._filename = ''
         
@@ -46,12 +54,23 @@ class Editor(CodeEditor,ComponentMixin):
                           QAction(icon('save_as'),
                                   'Save as',
                                   self,triggered=self.save_as)],
-                'Run' : [QAction(icon('run'),
+                'Run' : [QAction(spyder_icon('run'),
                                  'Render',
                                  self,triggered=self.render)]}
         
         for a in self._actions.values():
             self.addActions(a)
+
+                   
+        self.updatePreferences()
+
+    def updatePreferences(self,*args):
+        
+        self.set_color_scheme(self.preferences['Color scheme'])
+        
+        font = self.font()
+        font.setPointSize(self.preferences['Font size'])
+        self.set_font(font)
     
     def new(self):
         
@@ -80,21 +99,31 @@ class Editor(CodeEditor,ComponentMixin):
              with open(self._filename,'w') as f:
                 f.write(self.get_text_with_eol())
                 self._filename = fname
-                
-    def render(self):
-               
+    
+    def get_compiled_code(self):
+        
         cq_script = self.get_text_with_eol()
-        results = {}
+                
+        try:
+            module = imp.new_module('temp')
+            cq_code = compile(cq_script,'<string>','exec')
+            return cq_code,cq_script,module
+        except Exception: 
+            self.sigTraceback.emit(sys.exc_info(),
+                                   cq_script)
+            
+    def render(self):
+            
+        cq_code,cq_script,t = self.get_compiled_code()
         
         try:
-            t = imp.new_module('temp')
-            cq_code = compile(cq_script,'<string>','exec')
             exec(cq_code,t.__dict__,t.__dict__)
             results = t.__dict__
             cq_objects = [(k,v.val().wrapped) for k,v in results.items() if isinstance(v,cq.Workplane)]
             self.sigRendered.emit(cq_objects)
             self.sigTraceback.emit(None,
                                    cq_script)
+            self.sigLocals.emit(t.__dict__)
         except Exception: 
             self.sigTraceback.emit(sys.exc_info(),
                                    cq_script)

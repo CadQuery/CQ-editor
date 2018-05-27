@@ -9,6 +9,8 @@ Created on Wed May 23 22:02:30 2018
 from functools import reduce
 from operator import add
 
+from PyQt5.QtCore import pyqtSlot
+
 class MainMixin(object):
     
     components = {}
@@ -31,6 +33,12 @@ class ComponentMixin(object):
     _actions = {}
     
     
+    def __init__(self):
+        
+        if self.preferences:
+            self.preferences.sigTreeStateChanged.\
+                connect(self.updatePreferences)
+    
     def menuActions(self):
         
         return self._actions
@@ -41,3 +49,8 @@ class ComponentMixin(object):
             return reduce(add,[a for a in self._actions.values()])
         else:
             return []
+    
+    @pyqtSlot(object,object)
+    def updatePreferences(self,*args):
+        
+        pass

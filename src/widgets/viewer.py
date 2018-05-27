@@ -13,7 +13,8 @@ from OCC.Display.qtDisplay import qtViewer3d
 from OCC.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, \
     AIS_Axis, AIS_Line
 from OCC.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular
-from OCC.Quantity import Quantity_NOC_BLACK as BLACK
+from OCC.Quantity import Quantity_NOC_BLACK as BLACK, \
+    Quantity_TOC_RGB as TOC_RGB, Quantity_Color
 from OCC.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
      Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
 from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
@@ -24,18 +25,28 @@ from ..mixins import ComponentMixin
 from pyqtgraph.parametertree import Parameter
 import qtawesome as qta
 
+
+def to_occ_color(color):
+    
+    return Quantity_Color(color.redF(),
+                          color.greenF(),
+                          color.blueF(),
+                          TOC_RGB)
+
 class OCCViewer(QWidget,ComponentMixin):
 
     name = '3D Viewer'
     
     preferences = Parameter.create(name='Pref',children=[
         {'name': 'Use gradient', 'type': 'bool', 'value': False},
-        {'name': 'Color', 'type': 'color', 'value': "F0F"},
-        {'name': 'Color (aux)', 'type': 'color', 'value': "FF0"}])
+        {'name': 'Background color', 'type': 'color', 'value': (30,30,30)},
+        {'name': 'Background color (aux)', 'type': 'color', 'value': (30,30,30)},
+        {'name': 'Default object color', 'type': 'color', 'value': "FF0"}])
     
     def __init__(self,parent=None):
         
         super(OCCViewer,self).__init__(parent)
+        ComponentMixin.__init__(self) 
         
         self.canvas = qtViewer3d(self)
         self.create_actions(self)
@@ -47,9 +58,20 @@ class OCCViewer(QWidget,ComponentMixin):
         
         self.canvas.InitDriver()
         self.show_edges()
-        self.canvas._display.View.SetBgGradientColors(BLACK,BLACK,True)
-        self.canvas._display.Repaint()
         
+        self.updatePreferences()
+   
+    def updatePreferences(self,*args):
+        
+        
+        color1 = to_occ_color(self.preferences['Background color'])
+        color2 = to_occ_color(self.preferences['Background color (aux)'])
+        
+        if not self.preferences['Use gradient']:
+            color2 = color1
+        self.canvas._display.View.SetBgGradientColors(color1,color2,True)
+        self.canvas._display.Repaint()
+     
     def create_actions(self,parent):
         
         self._actions =  \

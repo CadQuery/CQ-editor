@@ -5,13 +5,12 @@ from PyQt5.QtWidgets import (QDesktopWidget, QFileDialog, QFontDialog,
                              QMenu, QMessageBox, QShortcut, QSystemTrayIcon,
                              QToolBar, QWidget, QDockWidget, QAction)
 
-from pyqtgraph.parametertree import Parameter
-
 from .widgets.editor import Editor
 from .widgets.viewer import OCCViewer
 from .widgets.console import ConsoleWidget
 from .widgets.object_tree import ObjectTree
 from .widgets.traceback_viewer import TracebackPane
+from .widgets.debugger import Debugger, LocalsView
 from .utils import dock, add_actions, open_url, about_dialog
 from .mixins import MainMixin
 from .icons import icon
@@ -19,17 +18,6 @@ from .preferences import PreferencesWidget
 
 
 class MainWindow(QMainWindow,MainMixin):
-    
-    
-    preferences = Parameter.create(name='Pref',children=[
-        {'name': 'Integer', 'type': 'int', 'value': 10},
-        {'name': 'Float', 'type': 'float', 'value': 10.5, 'step': 0.1},
-        {'name': 'String', 'type': 'str', 'value': "hi"},
-        {'name': 'List', 'type': 'list', 'values': [1,2,3], 'value': 2},
-        {'name': 'Named List', 'type': 'list', 'values': {"one": 1, "two": "twosies", "three": [3,3,3]}, 'value': 2},
-        {'name': 'Boolean', 'type': 'bool', 'value': True, 'tip': "This is a checkbox"},
-        {'name': 'Color', 'type': 'color', 'value': "FF0", 'tip': "This is a color button"},
-        {'name': 'Gradient', 'type': 'colormap'}])
     
     def __init__(self,parent=None):
         
@@ -81,6 +69,14 @@ class MainWindow(QMainWindow,MainMixin):
                                               'Current traceback',
                                               self,
                                               defaultArea='bottom'))
+        
+        self.registerComponent('debugger',Debugger(self))
+        
+        self.registerComponent('variables_viewer',LocalsView(self),
+                               lambda c: dock(c,
+                                              'Variables',
+                                              self,
+                                              defaultArea='right'))
         
         for d in self.docks.values():
             d.show()
@@ -159,6 +155,8 @@ class MainWindow(QMainWindow,MainMixin):
             .connect(self.components['object_tree'].addObjects)
         self.components['editor'].sigTraceback\
             .connect(self.components['traceback_viewer'].addTraceback)
+        self.components['editor'].sigLocals\
+            .connect(self.components['variables_viewer'].update_frame)
         
         self.components['object_tree'].sigObjectsAdded\
             .connect(self.components['viewer'].display_many)

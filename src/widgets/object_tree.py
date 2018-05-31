@@ -55,6 +55,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
     
     sigObjectsAdded = pyqtSignal(list)
     sigObjectsRemoved = pyqtSignal(list)
+    sigCQObjectSelected = pyqtSignal(object)
     
     def  __init__(self,parent):
         
@@ -78,6 +79,8 @@ class ObjectTree(QTreeWidget,ComponentMixin):
              QAction(icon('delete'),'Clear current',self,triggered=self.removeSelected)]
         
         self.addActions(self._toolbar_actions)
+        
+        self.itemSelectionChanged.connect(self.handleSelection)
         
     def menuActions(self):
         
@@ -118,7 +121,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         root = self.CQ
         
         for name,shape in objects:
-            ais = AIS_ColoredShape(shape)
+            ais = AIS_ColoredShape(shape.val().wrapped)
             ais_list.append(ais)
             root.addChild(ObjectTreeItem([name],
                                          shape=shape,
@@ -144,4 +147,11 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         rows = [ix.row() for ix in ixs]
         
         self.removeObjects(rows)
+    
+    @pyqtSlot()    
+    def handleSelection(self):
+        
+        item = self.selectedItems()[-1]
+        if item.parent() is self.CQ:
+            self.sigCQObjectSelected.emit(item.shape)
         

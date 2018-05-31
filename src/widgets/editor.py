@@ -119,7 +119,7 @@ class Editor(CodeEditor,ComponentMixin):
         try:
             exec(cq_code,t.__dict__,t.__dict__)
             results = t.__dict__
-            cq_objects = [(k,v.val().wrapped) for k,v in results.items() if isinstance(v,cq.Workplane)]
+            cq_objects = [(k,v) for k,v in results.items() if isinstance(v,cq.Workplane)]
             self.sigRendered.emit(cq_objects)
             self.sigTraceback.emit(None,
                                    cq_script)

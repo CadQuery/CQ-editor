@@ -11,6 +11,8 @@ from .widgets.console import ConsoleWidget
 from .widgets.object_tree import ObjectTree
 from .widgets.traceback_viewer import TracebackPane
 from .widgets.debugger import Debugger, LocalsView
+from .widgets.cq_object_inspector import CQObjectInspector
+
 from .utils import dock, add_actions, open_url, about_dialog
 from .mixins import MainMixin
 from .icons import icon
@@ -75,6 +77,13 @@ class MainWindow(QMainWindow,MainMixin):
         self.registerComponent('variables_viewer',LocalsView(self),
                                lambda c: dock(c,
                                               'Variables',
+                                              self,
+                                              defaultArea='right'))
+        
+        self.registerComponent('cq_object_inspector',
+                               CQObjectInspector(self),
+                               lambda c: dock(c,
+                                              'CQ object inspector',
                                               self,
                                               defaultArea='right'))
         
@@ -164,10 +173,17 @@ class MainWindow(QMainWindow,MainMixin):
             connect(self.components['viewer'].update_item)
         self.components['object_tree'].sigObjectsRemoved\
             .connect(self.components['viewer'].remove_items)
+        self.components['object_tree'].sigCQObjectSelected\
+            .connect(self.components['cq_object_inspector'].setObject)
             
         self.components['traceback_viewer'].sigHighlightLine\
             .connect(self.components['editor'].go_to_line)
-        
+            
+        self.components['cq_object_inspector'].sigDisplayObjects\
+            .connect(self.components['viewer'].display_many)
+        self.components['cq_object_inspector'].sigRemoveObjects\
+            .connect(self.components['viewer'].remove_items)
+            
     def fill_dummy(self):
         
         self.components['editor']\

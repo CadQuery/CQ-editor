@@ -27,7 +27,12 @@ _icons_specs = {
                        {'scale_factor': 0.8}]}),
     'help' : (('fa.life-ring',),{}),
     'about': (('fa.info',),{}),
-    'preferences' : (('fa.cogs',),{})
+    'preferences' : (('fa.cogs',),{}),
+    'inspect' : (('fa.cubes','fa.search'),
+                 {'options' : \
+                  [{'scale_factor': 0.8,
+                     'offset': (0,0),
+                     'color': 'gray'},{}]})
 }
 
 def icon(name):

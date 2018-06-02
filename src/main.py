@@ -96,6 +96,7 @@ class MainWindow(QMainWindow,MainMixin):
         
         menu_file = menu.addMenu('&File')
         menu_edit = menu.addMenu('&Edit')
+        menu_tools = menu.addMenu('&Tools')
         menu_run = menu.addMenu('&Run')
         menu_view = menu.addMenu('&View')
         menu_help = menu.addMenu('&Help')
@@ -104,6 +105,7 @@ class MainWindow(QMainWindow,MainMixin):
         menus = {'File' : menu_file,
                  'Edit' : menu_edit,
                  'Run'  : menu_run,
+                 'Tools': menu_tools,
                  'View' : menu_view,
                  'Help' : menu_help}
         
@@ -183,6 +185,12 @@ class MainWindow(QMainWindow,MainMixin):
             .connect(self.components['viewer'].display_many)
         self.components['cq_object_inspector'].sigRemoveObjects\
             .connect(self.components['viewer'].remove_items)
+        self.components['cq_object_inspector'].sigShowPlane\
+            .connect(self.components['viewer'].toggle_grid)
+        self.components['cq_object_inspector'].sigShowPlane[bool,float]\
+            .connect(self.components['viewer'].toggle_grid)
+        self.components['cq_object_inspector'].sigChangePlane\
+            .connect(self.components['viewer'].set_grid_orientation)
             
         self.components['debugger'].sigLocalsChanged\
             .connect(self.components['variables_viewer'].update_frame)

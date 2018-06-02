@@ -1,3 +1,4 @@
+from logzero import logger
 import sys
 from enum import Enum, auto
 
@@ -10,6 +11,7 @@ from spyder.utils.icon_manager import icon
 
 from ..mixins import ComponentMixin
 from ..utils import layout
+from ..cq_utils import find_cq_objects
 
 DUMMY_FILE = '<string>'
 
@@ -89,9 +91,11 @@ class Debugger(QObject,ComponentMixin):
     name = 'Debugger'
     
     sigFrameChanged = pyqtSignal(object)
-    sigLineChanged = pyqtSignal(str,int)
-    sigDebuggingStarted = pyqtSignal()
-    sigDebuggingFinihsed = pyqtSignal()
+    sigLineChanged = pyqtSignal(int)
+    sigLocalsChanged = pyqtSignal(dict)
+    sigCQChanged = pyqtSignal(list,bool)
+    sigDebugging = pyqtSignal(bool)
+    sigTraceback = pyqtSignal(object,str)
     
     def __init__(self,parent):
         
@@ -101,31 +105,50 @@ class Debugger(QObject,ComponentMixin):
         self.inner_event_loop = QEventLoop(self)
         
         self._actions =  \
-                {'Run' : [QAction(icon('debug'),
-                                 'Debug',
-                                 self,triggered=lambda: None),
-                          QAction(icon('arrow-step-over'),
-                                 'Step',
-                                 self,triggered=lambda: None),
-                          QAction(icon('arrow-step-in'),
-                                 'Step in',
-                                 self,triggered=lambda: None)]}
+            {'Run' : [QAction(icon('debug'),
+                             'Debug',
+                             self,
+                             checkable=True,
+                             triggered=self.debug),
+                      QAction(icon('arrow-step-over'),
+                             'Step',
+                             self,
+                             triggered=lambda: self.debug_cmd(DbgState.STEP)),
+                      QAction(icon('arrow-step-in'),
+                             'Step in',
+                             self,
+                             triggered=lambda: None),
+                      QAction(icon('arrow-continue'),
+                              'Continue',
+                              self,
+                              triggered=lambda: self.debug_cmd(DbgState.CONT))
+                      ]}
     
-    def debug(self):
-        
-        self.state = DbgState.STEP
-        
-        # ## steps needed
-        editor = self.parent.components['editor']
-        code,module = editor.get_compiled_code()
-        self.breakpoints = editor.get_breakpoints()
-        
-        try:
-            sys.settrace()
-            exec(code,module.__dict__,module.__dict__)
-        finally:
-            sys.settrace(None)
+    @pyqtSlot(bool)
+    def debug(self,value):
+        if value:
+            self.sigDebugging.emit(True)
+            self.state = DbgState.STEP
             
+            editor = self.parent().components['editor']
+            code,self.script,module = editor.get_compiled_code()
+            self.breakpoints = [ el[0] for el in editor.get_breakpoints()]
+            
+            try:
+                sys.settrace(self.trace_callback)
+                exec(code,module.__dict__,module.__dict__)
+            except Exception:
+                self.sigTraceback.emit(sys.exc_info(),
+                                       self.script)
+            finally:
+                sys.settrace(None)
+                
+            self.sigDebugging.emit(False)
+            self._actions['Run'][0].setChecked(False)
+        else:
+            sys.settrace(None)
+            self.inner_event_loop.exit(0)
+
     
     
     def debug_cmd(self,state=DbgState.STEP):
@@ -147,23 +170,30 @@ class Debugger(QObject,ComponentMixin):
         
     def trace_local(self,frame,event,arg):
         
-        filename = frame.f_code.co_filename
-        line = frame.f_lineno
+        lineno = frame.f_lineno
+        line = self.script.splitlines()[lineno-1]
+        f_id = id(frame)
+        logger.info(f'{event}@{f_id}: {line}')
         
-        if event == DbgEevent.LINE:
+        if event in (DbgEevent.LINE,DbgEevent.RETURN):
             if (self.state in (DbgState.STEP, DbgState.STEP_IN)) \
-            or (line in self.breakpoints):
-                self.sigLineChanged(filename,line)
-                self.sigFrameChanged(frame)
+            or (lineno in self.breakpoints):
+                self.sigLineChanged.emit(lineno)
+                self.sigFrameChanged.emit(frame)
+                self.sigLocalsChanged.emit(frame.f_locals)
+                self.sigCQChanged.emit(find_cq_objects(frame.f_locals),True)
+                
                 self.inner_event_loop.exec_()
         
-        if event == DbgEevent.CALL:
-            
+        elif event in (DbgEevent.RETURN):
+            self.sigLocalsChanged.emit(frame.f_locals)
+        
+        elif event == DbgEevent.CALL:    
             func_filename = frame.f_code.co_filename
             
             if self.state == DbgState.STEP_IN and func_filename == DUMMY_FILE:
-                self.sigLineChanged(filename,line)
-                self.sigFrameChanged(frame)
+                self.sigLineChanged.emit(lineno)
+                self.sigFrameChanged.emit(frame)
                 self.state = DbgState.STEP
                 
                 

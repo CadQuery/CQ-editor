@@ -42,6 +42,8 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
     
     sigRemoveObjects = pyqtSignal(list)
     sigDisplayObjects = pyqtSignal(list,bool)
+    sigShowPlane = pyqtSignal([bool],[bool,float])
+    sigChangePlane = pyqtSignal(gp_Ax3)
     
     def  __init__(self,parent):
         
@@ -55,14 +57,14 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
         self.inspected_items = []
         
         self._toolbar_actions = \
-            [QAction(icon('inspect'),'Clear all',self,\
+            [QAction(icon('inspect'),'Inspect CQ object',self,\
                      toggled=self.inspect,checkable=True)]
         
         self.addActions(self._toolbar_actions)
         
     def menuActions(self):
         
-        return {}
+        return {'Tools' : self._toolbar_actions}
     
     def toolbarActions(self):
         
@@ -77,6 +79,7 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
         else:
             self.itemSelectionChanged.disconnect(self.handleSelection)
             self.sigRemoveObjects.emit(self.inspected_items)
+            self.sigShowPlane.emit(False)
             
     @pyqtSlot()    
     def handleSelection(self):
@@ -92,13 +95,12 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
         item = items[-1]
         if type(item) is CQStackItem:
             cq_plane = item.workplane.plane
-            plane = gp_Pln(cq_plane.origin.toPnt(),cq_plane.zDir.toDir())
-            face = BRepBuilderAPI_MakeFace(plane,-10,10,-10,10).Face()
-            ais_plane = AIS_ColoredShape(face)
-            ais_plane.SetTransparency(0.9)
-            ais_plane.SetColor(BLUE)
-            
-            inspected_items.append(ais_plane)
+            dim = item.workplane.largestDimension()
+            plane = gp_Ax3(cq_plane.origin.toPnt(),
+                           cq_plane.zDir.toDir(),
+                           cq_plane.xDir.toDir())
+            self.sigChangePlane.emit(plane)
+            self.sigShowPlane[bool,float].emit(True,dim)
             
             for child in (item.child(i) for i in range(item.childCount())):
                 obj = child.cq_item
@@ -107,6 +109,7 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
                     inspected_items.append(ais)
                 
         else:
+            self.sigShowPlane.emit(False)
             obj = item.cq_item
             if hasattr(obj,'wrapped') and type(obj) != Vector:
                 ais = AIS_ColoredShape(obj.wrapped)

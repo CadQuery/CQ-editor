@@ -243,22 +243,40 @@ class OCCViewer(QWidget,ComponentMixin):
         c = self._get_context()
         c.SetDisplayMode(AIS_WireFrame)
         
-    def show_grid(self,step=1,size=100):
+    def show_grid(self,
+                  step=1.,
+                  size=10.+1e-6,
+                  color1=(.7,.7,.7),
+                  color2=(0,0,0)):
         
         viewer = self._get_viewer()
         viewer.ActivateGrid(Aspect_GT_Rectangular,
                             Aspect_GDM_Lines)
         viewer.SetRectangularGridGraphicValues(size, size, 0)
         viewer.SetRectangularGridValues(0, 0, step, step, 0)
+        grid = viewer.Grid().GetObject()
+        grid.SetColors(Quantity_Color(*color1,TOC_RGB),
+                       Quantity_Color(*color2,TOC_RGB))
         
     def hide_grid(self):
         
         viewer = self._get_viewer()
         viewer.DeactivateGrid()
+    
+    @pyqtSlot(bool,float)
+    @pyqtSlot(bool)    
+    def toggle_grid(self,
+                    value : bool,
+                    dim : float = 10.):
         
-    def set_grid_orientation(self,center,dir1,dir2):
+        if value:
+            self.show_grid(step=dim/20,size=dim+1e-9)
+        else:
+            self.hide_grid()
+
+    @pyqtSlot(gp_Ax3)        
+    def set_grid_orientation(self,orientation : gp_Ax3):
         
-        orientation = gp_Ax3(gp_Pnt(*center), gp_Dir(*dir1), gp_Dir(*dir2))
         viewer = self._get_viewer()
         viewer.SetPrivilegedPlane(orientation)
         

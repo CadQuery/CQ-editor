@@ -113,10 +113,13 @@ class Editor(CodeEditor,ComponentMixin):
         except Exception: 
             self.sigTraceback.emit(sys.exc_info(),
                                    cq_script)
+            return None,None,None
             
     def render(self):
             
         cq_code,cq_script,t = self.get_compiled_code()
+        
+        if cq_code is None: return
         
         try:
             exec(cq_code,t.__dict__,t.__dict__)

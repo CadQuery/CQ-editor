@@ -1,4 +1,3 @@
-from logzero import logger
 import sys
 from enum import Enum, auto
 
@@ -173,7 +172,6 @@ class Debugger(QObject,ComponentMixin):
         lineno = frame.f_lineno
         line = self.script.splitlines()[lineno-1]
         f_id = id(frame)
-        logger.info(f'{event}@{f_id}: {line}')
         
         if event in (DbgEevent.LINE,DbgEevent.RETURN):
             if (self.state in (DbgState.STEP, DbgState.STEP_IN)) \

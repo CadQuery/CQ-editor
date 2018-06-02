@@ -197,7 +197,7 @@ class MainWindow(QMainWindow,MainMixin):
     def about(self):
         
         about_dialog(self,
-                     'CadQuary GUI (PyQT)',
+                     'CadQuery GUI (PyQT)',
                      'Experimental PyQt GUI for CadQuery')
     
     def documentation(self):
@@ -216,7 +216,8 @@ if __name__ == "__main__":
     import sys
     from PyQt5.QtWidgets import QApplication
     
-    app = QApplication(sys.argv)
+    app = QApplication(sys.argv,
+                       applicationName='CadQuery GUI (PyQT)')
     win = MainWindow()
     win.show()
     

@@ -9,6 +9,8 @@ import sys
 from pyqtgraph.parametertree import Parameter
 
 from ..mixins import ComponentMixin
+from ..cq_utils import find_cq_objects
+
 from ..icons import icon
 from spyder.utils.icon_manager import icon as spyder_icon
 
@@ -96,7 +98,7 @@ class Editor(CodeEditor,ComponentMixin):
         
         fname,_ = QFileDialog.getSaveFileName(self,filter=self.EXTENSIONS)
         if fname is not '':
-             with open(self._filename,'w') as f:
+             with open(fname,'w') as f:
                 f.write(self.get_text_with_eol())
                 self._filename = fname
     
@@ -118,8 +120,7 @@ class Editor(CodeEditor,ComponentMixin):
         
         try:
             exec(cq_code,t.__dict__,t.__dict__)
-            results = t.__dict__
-            cq_objects = [(k,v) for k,v in results.items() if isinstance(v,cq.Workplane)]
+            cq_objects = find_cq_objects(t.__dict__)
             self.sigRendered.emit(cq_objects)
             self.sigTraceback.emit(None,
                                    cq_script)

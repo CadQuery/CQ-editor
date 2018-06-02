@@ -39,7 +39,7 @@ class OCCViewer(QWidget,ComponentMixin):
     
     preferences = Parameter.create(name='Pref',children=[
         {'name': 'Use gradient', 'type': 'bool', 'value': False},
-        {'name': 'Background color', 'type': 'color', 'value': (30,30,30)},
+        {'name': 'Background color', 'type': 'color', 'value': (250,250,250)},
         {'name': 'Background color (aux)', 'type': 'color', 'value': (30,30,30)},
         {'name': 'Default object color', 'type': 'color', 'value': "FF0"}])
     
@@ -160,15 +160,17 @@ class OCCViewer(QWidget,ComponentMixin):
         self.canvas._display.Repaint()
         self.fit()
     
+    @pyqtSlot(list,bool)
     @pyqtSlot(list)    
-    def display_many(self,ais_list):
+    def display_many(self,ais_list,scale=True):
         
         context = self._get_context()
         for ais in ais_list:
             context.Display(ais.GetHandle())
         
         self.canvas._display.Repaint()
-        self.fit()
+        
+        if scale: self.fit()
     
     @pyqtSlot(QTreeWidgetItem,int)
     def update_item(self,item,col):

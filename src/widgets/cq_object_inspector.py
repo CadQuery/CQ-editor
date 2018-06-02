@@ -11,8 +11,12 @@ from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1, gp_Pln
 
 from OCC.BRepBuilderAPI import BRepBuilderAPI_MakeFace
 
+from cadquery import Vector
+
 from ..mixins import ComponentMixin
 from ..icons import icon
+
+
         
 class CQChildItem(QTreeWidgetItem):
     
@@ -37,8 +41,7 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
     name = 'CQ Object Inspector'
     
     sigRemoveObjects = pyqtSignal(list)
-    sigDisplayObjects = pyqtSignal(list)
-    sigRequestHideObjects = pyqtSignal(bool)
+    sigDisplayObjects = pyqtSignal(list,bool)
     
     def  __init__(self,parent):
         
@@ -49,7 +52,7 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
         self.setColumnCount(2)
         
         self.root = self.invisibleRootItem()
-        self.inspected_tems = []
+        self.inspected_items = []
         
         self._toolbar_actions = \
             [QAction(icon('inspect'),'Clear all',self,\
@@ -68,17 +71,17 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
     @pyqtSlot(bool)
     def inspect(self,value):
         
-        self.sigRequestHideObjects.emit(value)
-        
         if value:
             self.itemSelectionChanged.connect(self.handleSelection)
+            self.itemSelectionChanged.emit()
         else:
             self.itemSelectionChanged.disconnect(self.handleSelection)
+            self.sigRemoveObjects.emit(self.inspected_items)
             
     @pyqtSlot()    
     def handleSelection(self):
         
-        inspected_items = self.inspected_tems
+        inspected_items = self.inspected_items
         self.sigRemoveObjects.emit(inspected_items)
         inspected_items.clear()
         
@@ -99,17 +102,17 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
             
             for child in (item.child(i) for i in range(item.childCount())):
                 obj = child.cq_item
-                if hasattr(obj,'wrapped'):
+                if hasattr(obj,'wrapped') and type(obj) != Vector:
                     ais = AIS_ColoredShape(obj.wrapped)
                     inspected_items.append(ais)
                 
         else:
             obj = item.cq_item
-            ais = AIS_ColoredShape(obj.wrapped)
+            if hasattr(obj,'wrapped') and type(obj) != Vector:
+                ais = AIS_ColoredShape(obj.wrapped)
+                inspected_items.append(ais)
             
-            inspected_items.append(ais)
-            
-        self.sigDisplayObjects.emit(inspected_items)
+        self.sigDisplayObjects.emit(inspected_items,False)
     
     @pyqtSlot(object)
     def setObject(self,cq_obj):

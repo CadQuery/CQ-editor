@@ -12,6 +12,8 @@ from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 from ..mixins import ComponentMixin
 from ..icons import icon
 
+from cadquery import Vector
+
 class TopTreeItem(QTreeWidgetItem):
     
     def __init__(self,*args,**kwargs):
@@ -120,7 +122,11 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         #if root is None:
         root = self.CQ
         
-        for name,shape in objects:
+        #remove Vector objects
+        objects_f = \
+        (el for el in objects if type(el[1].val()) not in (Vector,))
+        
+        for name,shape in objects_f:
             ais = AIS_ColoredShape(shape.val().wrapped)
             ais_list.append(ais)
             root.addChild(ObjectTreeItem([name],

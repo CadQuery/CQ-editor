@@ -184,6 +184,18 @@ class MainWindow(QMainWindow,MainMixin):
         self.components['cq_object_inspector'].sigRemoveObjects\
             .connect(self.components['viewer'].remove_items)
             
+        self.components['debugger'].sigLocalsChanged\
+            .connect(self.components['variables_viewer'].update_frame)
+        self.components['debugger'].sigLineChanged\
+            .connect(self.components['editor'].go_to_line)
+        self.components['debugger'].sigDebugging\
+            .connect(self.components['object_tree'].stashObjects)
+        self.components['debugger'].sigCQChanged\
+            .connect(self.components['object_tree'].addObjects)
+        self.components['debugger'].sigTraceback\
+            .connect(self.components['traceback_viewer'].addTraceback)
+        
+            
     def fill_dummy(self):
         
         self.components['editor']\

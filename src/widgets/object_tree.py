@@ -54,6 +54,7 @@ class HelpersRootItem(TopTreeItem):
 class ObjectTree(QTreeWidget,ComponentMixin):
     
     name = 'Object Tree'
+    _stash = []
     
     sigObjectsAdded = pyqtSignal(list)
     sigObjectsRemoved = pyqtSignal(list)
@@ -114,8 +115,12 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         self.expandToDepth(1)
     
     
+    @pyqtSlot(list,bool)
     @pyqtSlot(list)
-    def addObjects(self,objects,root=None):
+    def addObjects(self,objects,clean=False,root=None,):
+        
+        if clean:
+            self.removeObjects()
         
         ais_list = []
         
@@ -136,7 +141,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         self.sigObjectsAdded.emit(ais_list)
     
     @pyqtSlot(list)
-    @pyqtSlot(bool)    
+    @pyqtSlot(bool)
     def removeObjects(self,objects=None):
         
         if objects:
@@ -145,6 +150,19 @@ class ObjectTree(QTreeWidget,ComponentMixin):
             removed_items_ais = [ch.ais for ch in self.CQ.takeChildren()]
             
         self.sigObjectsRemoved.emit(removed_items_ais)
+    
+    @pyqtSlot(bool)    
+    def stashObjects(self,action : bool):
+        
+        if action:
+            self._stash = self.CQ.takeChildren()
+            removed_items_ais = [ch.ais for ch in self._stash]
+            self.sigObjectsRemoved.emit(removed_items_ais)
+        else:
+            self.removeObjects()
+            self.CQ.addChildren(self._stash)
+            ais_list = [el.ais for el in self._stash]
+            self.sigObjectsAdded.emit(ais_list)
         
     @pyqtSlot(bool)    
     def removeSelected(self):

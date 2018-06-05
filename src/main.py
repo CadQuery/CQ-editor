@@ -12,14 +12,17 @@ from .widgets.object_tree import ObjectTree
 from .widgets.traceback_viewer import TracebackPane
 from .widgets.debugger import Debugger, LocalsView
 from .widgets.cq_object_inspector import CQObjectInspector
+from .widgets.log import LogViewer
 
-from .utils import dock, add_actions, open_url, about_dialog
+from .utils import dock, add_actions, open_url, about_dialog, widget_to_clipboard
 from .mixins import MainMixin
 from .icons import icon
 from .preferences import PreferencesWidget
 
 
 class MainWindow(QMainWindow,MainMixin):
+    
+    name = 'CQ GUI'
     
     def __init__(self,parent=None):
         
@@ -41,6 +44,8 @@ class MainWindow(QMainWindow,MainMixin):
             .push_vars({'viewer' : self.viewer, 'self' : self})
         
         self.fill_dummy()
+        
+        self.setup_logging()
 
     def prepare_panes(self):
         
@@ -86,6 +91,12 @@ class MainWindow(QMainWindow,MainMixin):
                                               'CQ object inspector',
                                               self,
                                               defaultArea='right'))
+        self.registerComponent('log',
+                               LogViewer(self),
+                               lambda c: dock(c,
+                                              'Log viewer',
+                                              self,
+                                              defaultArea='bottom'))
         
         for d in self.docks.values():
             d.show()
@@ -113,7 +124,7 @@ class MainWindow(QMainWindow,MainMixin):
             self.prepare_menubar_componenet(menus,
                                             comp.menuActions())
             
-        #global menu elements
+        #global menu elements        
         menu_view.addSeparator()
         for d in self.findChildren(QDockWidget):
             menu_view.addAction(d.toggleViewAction())
@@ -208,6 +219,29 @@ class MainWindow(QMainWindow,MainMixin):
         
         self.components['editor']\
             .set_text('import cadquery as cq\nresult = cq.Workplane("XY" ).box(3, 3, 0.5).edges("|Z").fillet(0.125)')
+            
+    def setup_logging(self):
+        
+        from logbook.compat import redirect_logging
+        from logbook import INFO, Logger
+        
+        redirect_logging()
+        self.components['log'].handler.level = INFO
+        self.components['log'].handler.push_application()
+        
+        self._logger = Logger(self.name)
+        
+        def handle_exception(exc_type, exc_value, exc_traceback):
+            
+            if issubclass(exc_type, KeyboardInterrupt):
+                sys.__excepthook__(exc_type, exc_value, exc_traceback)
+                return
+            
+            self._logger.error("Uncaught exception occurred", 
+                               exc_info=(exc_type, exc_value, exc_traceback))
+            
+        sys.excepthook = handle_exception
+        
             
     def edit_preferences(self):
         

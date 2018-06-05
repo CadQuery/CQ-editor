@@ -13,6 +13,8 @@ from PyQt5.QtCore import pyqtSlot
 
 class MainMixin(object):
     
+    name = 'Main'
+    
     components = {}
     docks = {}
     preferences = None

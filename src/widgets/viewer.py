@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtWidgets import (QWidget, QPushButton, QDialog, QTreeWidget,
-                             QTreeWidgetItem, QVBoxLayout,
-                             QHBoxLayout, QFrame, QLabel,
-                             QApplication, QToolBar, QAction)
+                             QTreeWidgetItem, QVBoxLayout, QFileDialog,
+                             QHBoxLayout, QFrame, QLabel, QApplication, 
+                             QToolBar, QAction)
 
 from PyQt5.QtCore import QSize, pyqtSlot
 import OCC.Display.backend
@@ -12,7 +12,7 @@ back = OCC.Display.backend.load_backend()
 from OCC.Display.qtDisplay import qtViewer3d
 from OCC.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, \
     AIS_Axis, AIS_Line
-from OCC.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular
+from OCC.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular, Aspect_GFM_VER 
 from OCC.Quantity import Quantity_NOC_BLACK as BLACK, \
     Quantity_TOC_RGB as TOC_RGB, Quantity_Color
 from OCC.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
@@ -21,6 +21,7 @@ from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
                              
 from ..utils import layout
 from ..mixins import ComponentMixin
+from ..icons import icon
 
 from pyqtgraph.parametertree import Parameter
 import qtawesome as qta
@@ -39,9 +40,11 @@ class OCCViewer(QWidget,ComponentMixin):
     
     preferences = Parameter.create(name='Pref',children=[
         {'name': 'Use gradient', 'type': 'bool', 'value': False},
-        {'name': 'Background color', 'type': 'color', 'value': (250,250,250)},
+        {'name': 'Background color', 'type': 'color', 'value': (95,95,95)},
         {'name': 'Background color (aux)', 'type': 'color', 'value': (30,30,30)},
         {'name': 'Default object color', 'type': 'color', 'value': "FF0"}])
+    
+    IMAGE_EXTENSIONS = '*.png'
     
     def __init__(self,parent=None):
         
@@ -114,7 +117,15 @@ class OCCViewer(QWidget,ComponentMixin):
                                   QAction(qta.icon('fa.square'),
                                           'Shaded',
                                           parent,
-                                          triggered=self.shaded_view)]}
+                                          triggered=self.shaded_view)],
+                 'Tools' : [QAction(icon('screenshot'),
+                                   'Screenshot',
+                                   parent,
+                                   triggered=self.save_screenshot)]}
+    
+    def toolbarActions(self):
+        
+        return self._actions['View']
                                               
                 
     def clear(self):
@@ -293,6 +304,12 @@ class OCCViewer(QWidget,ComponentMixin):
                                    gp_Dir(*direction)))
         line = AIS_Line(line_placement.GetHandle())
         self._display_ais(line)
+        
+    def save_screenshot(self):
+        
+        fname,_ = QFileDialog.getSaveFileName(self,filter=self.IMAGE_EXTENSIONS)
+        if fname is not '':
+             self._get_view().Dump(fname)
         
     def _display_ais(self,ais):
         

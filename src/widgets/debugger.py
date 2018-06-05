@@ -30,7 +30,7 @@ class DbgEevent(object):
     
 class LocalsModel(QAbstractTableModel):
     
-    HEADER = ('Name','Type')
+    HEADER = ('Name','Type', 'Value')
     
     def __init__(self,parent):
         
@@ -40,7 +40,7 @@ class LocalsModel(QAbstractTableModel):
     def update_frame(self,frame):
         
         self.frame = \
-            [(k,type(v).__name__) for k,v in frame.items() if not k.startswith('_')]
+            [(k,type(v).__name__, str(v)) for k,v in frame.items() if not k.startswith('_')]
         
     
     def rowCount(self,parent=QtCore.QModelIndex()):
@@ -52,7 +52,7 @@ class LocalsModel(QAbstractTableModel):
 
     def columnCount(self,parent=QtCore.QModelIndex()):
         
-        return 2
+        return 3
     
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole and orientation == Qt.Horizontal:
@@ -76,6 +76,12 @@ class LocalsView(QTableView,ComponentMixin):
         
         super(LocalsView,self).__init__(parent)
         ComponentMixin.__init__(self)
+        
+        header = self.horizontalHeader()
+        header.setStretchLastSection(True)
+        
+        vheader = self.verticalHeader()
+        vheader.setVisible(False)
     
     @pyqtSlot(dict)
     def update_frame(self,frame):

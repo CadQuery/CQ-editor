@@ -32,7 +32,13 @@ _icons_specs = {
                  {'options' : \
                   [{'scale_factor': 0.8,
                      'offset': (0,0),
-                     'color': 'gray'},{}]})
+                     'color': 'gray'},{}]}),
+    'screenshot' : (('fa.camera',),{}),
+    'screenshot-save' : (('fa.save','fa.camera'),
+                         {'options' : \
+                          [{'scale_factor': 0.8},
+                           {'scale_factor': 0.8,
+                            'offset': (.2,.2)}]})
 }
 
 def icon(name):

@@ -52,6 +52,7 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
         self.setRootIsDecorated(True)
         self.setContextMenuPolicy(Qt.ActionsContextMenu)
         self.setColumnCount(2)
+        self.setHeaderLabels(['Type','Value'])
         
         self.root = self.invisibleRootItem()
         self.inspected_items = []

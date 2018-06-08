@@ -38,10 +38,31 @@ class MainMixin(object):
     
     def restoreWindow(self):
         
-        if self.settings.value("geometry"):
-            self.restoreGeometry(self.settings.value("geometry"))
-        if self.settings.value("windowState"):
-            self.restoreState(self.settings.value("windowState"))
+        if self.settings.value('geometry'):
+            self.restoreGeometry(self.settings.value('geometry'))
+        if self.settings.value('windowState'):
+            self.restoreState(self.settings.value('windowState'))
+            
+    def savePreferences(self):
+        
+        settings = self.settings
+        
+        if self.preferences:
+            settings.setValue('General',self.preferences.saveState())
+        
+        for comp in (c for c in self.components.values() if c.preferences):
+                settings.setValue(comp.name,comp.preferences.saveState())
+    
+    def restorePreferences(self):
+        
+        settings = self.settings
+        
+        if self.preferences and settings.value('General'):
+            self.preferences.restoreState(settings.value('General'))
+        
+        for comp in (c for c in self.components.values() if c.preferences):
+            if settings.value(comp.name):
+                comp.preferences.restoreState(settings.value(comp.name))
         
 
 class ComponentMixin(object):

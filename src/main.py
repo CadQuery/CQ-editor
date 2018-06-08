@@ -23,10 +23,12 @@ from .preferences import PreferencesWidget
 class MainWindow(QMainWindow,MainMixin):
     
     name = 'CQ GUI'
+    org = 'CadQuery'
     
     def __init__(self,parent=None):
         
         super(MainWindow,self).__init__(parent)
+        MainMixin.__init__(self)
         
         self.viewer = OCCViewer(self)
         self.setCentralWidget(self.viewer.canvas)
@@ -46,6 +48,13 @@ class MainWindow(QMainWindow,MainMixin):
         self.fill_dummy()
         
         self.setup_logging()
+        
+        self.restoreWindow()
+        
+    def closeEvent(self,event):
+        
+        self.saveWindow()
+        super(MainWindow,self).closeEvent(event)
 
     def prepare_panes(self):
         
@@ -159,7 +168,7 @@ class MainWindow(QMainWindow,MainMixin):
     
     def prepare_toolbar(self):
         
-        self.toolbar = QToolBar('Main toolbar',self)
+        self.toolbar = QToolBar('Main toolbar',self,objectName='Main toolbar')
         
         for c in self.components.values():
             add_actions(self.toolbar,c.toolbarActions())
@@ -213,6 +222,7 @@ class MainWindow(QMainWindow,MainMixin):
             .connect(self.components['object_tree'].addObjects)
         self.components['debugger'].sigTraceback\
             .connect(self.components['traceback_viewer'].addTraceback)
+
         
             
     def fill_dummy(self):
@@ -273,7 +283,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv,
                        applicationName='CadQuery GUI (PyQT)')
     win = MainWindow()
-    win.show()
     
+    win.show()
     sys.exit(app.exec_())
     

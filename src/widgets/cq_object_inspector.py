@@ -47,7 +47,7 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
     
     def  __init__(self,parent):
         
-        super(CQObjectInspector,self).__init__(parent)   
+        super(CQObjectInspector,self).__init__(parent)
         self.setHeaderHidden(False)
         self.setRootIsDecorated(True)
         self.setContextMenuPolicy(Qt.ActionsContextMenu)

@@ -9,15 +9,20 @@ Created on Wed May 23 22:02:30 2018
 from functools import reduce
 from operator import add
 
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, QSettings
 
 class MainMixin(object):
     
     name = 'Main'
+    org = 'Unknown'
     
     components = {}
     docks = {}
     preferences = None
+    
+    def __init__(self):
+    
+        self.settings = QSettings(self.org,self.name)
     
     def registerComponent(self,name,component,dock=None):
         
@@ -25,6 +30,19 @@ class MainMixin(object):
         
         if dock:
             self.docks[name] = dock(component)
+            
+    def saveWindow(self):
+        
+        self.settings.setValue('geometry',self.saveGeometry())
+        self.settings.setValue('windowState',self.saveState())
+    
+    def restoreWindow(self):
+        
+        if self.settings.value("geometry"):
+            self.restoreGeometry(self.settings.value("geometry"))
+        if self.settings.value("windowState"):
+            self.restoreState(self.settings.value("windowState"))
+        
 
 class ComponentMixin(object):
     

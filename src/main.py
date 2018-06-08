@@ -49,11 +49,13 @@ class MainWindow(QMainWindow,MainMixin):
         
         self.setup_logging()
         
+        self.restorePreferences()
         self.restoreWindow()
         
     def closeEvent(self,event):
         
         self.saveWindow()
+        self.savePreferences()
         super(MainWindow,self).closeEvent(event)
 
     def prepare_panes(self):

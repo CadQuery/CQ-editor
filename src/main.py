@@ -1,3 +1,5 @@
+import sys
+
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QColor, QCursor, QIcon, QPainter, QPalette, QPen
 from PyQt5.QtWidgets import (QDesktopWidget, QFileDialog, QFontDialog,
@@ -14,7 +16,7 @@ from .widgets.debugger import Debugger, LocalsView
 from .widgets.cq_object_inspector import CQObjectInspector
 from .widgets.log import LogViewer
 
-from .utils import dock, add_actions, open_url, about_dialog, widget_to_clipboard
+from .utils import dock, add_actions, open_url, about_dialog
 from .mixins import MainMixin
 from .icons import icon
 from .preferences import PreferencesWidget
@@ -275,9 +277,7 @@ class MainWindow(QMainWindow,MainMixin):
         open_url('https://dcowden.github.io/cadquery')
     
     
-    
-    
-if __name__ == "__main__":
+def main():
     
     import sys
     from PyQt5.QtWidgets import QApplication
@@ -288,4 +288,8 @@ if __name__ == "__main__":
     
     win.show()
     sys.exit(app.exec_())
+
+
+if __name__ == "__main__":
     
+    main()    

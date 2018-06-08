@@ -32,6 +32,8 @@ class MainWindow(QMainWindow,MainMixin):
         super(MainWindow,self).__init__(parent)
         MainMixin.__init__(self)
         
+        self.setWindowIcon(icon('app'))
+        
         self.viewer = OCCViewer(self)
         self.setCentralWidget(self.viewer.canvas)
 

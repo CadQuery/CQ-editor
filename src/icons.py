@@ -6,7 +6,11 @@ Created on Fri May 25 14:47:10 2018
 @author: adam
 """
 
+from PyQt5.QtGui import QIcon
+
 import qtawesome as qta
+
+from . import icons_res
 
 
 _icons_specs = {
@@ -41,7 +45,14 @@ _icons_specs = {
                             'offset': (.2,.2)}]})
 }
 
+_icons = {
+    'app' : QIcon(":/images/icons/cadquery_logo_dark.svg")
+    }
+
 def icon(name):
+    
+    if name in _icons:
+        return _icons[name]
     
     args,kwargs = _icons_specs[name]
     

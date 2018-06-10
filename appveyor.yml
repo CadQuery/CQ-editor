@@ -20,5 +20,4 @@ install:
 build: false
 
 test_script:
-    - python run.py &
-    - killall python
+    - python run.py

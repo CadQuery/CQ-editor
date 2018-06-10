@@ -10,7 +10,7 @@ environment:
 install:
     - sh: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     - sh: bash miniconda.sh -b -p $HOME/miniconda
-    - sh: export PATH="$HOME/miniconda/bin:$HOME/miniconda/lib:$PATH"
+    - sh: echo ". /home/appveyor/miniconda/etc/profile.d/conda.sh" >> ~/.bashrc
     - conda config --set always_yes yes
     - conda update -q conda
     - conda env create --quiet --name cqgui -f cqgui_env.yml

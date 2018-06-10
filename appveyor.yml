@@ -5,7 +5,7 @@ image:
 
 environment:
     matrix:
-        - PYTHON_VERSION: 3.6
+        - PYTEST_QT_API: pyqt5
 
 install:
     - sh: sudo apt update
@@ -17,9 +17,10 @@ install:
     - conda update -q conda
     - conda env create --quiet --name cqgui -f cqgui_env.yml
     - sh: source activate cqgui
-    - conda list
+    - conda install -c conda-forge pytest pytest-qt pytest-xvfb
 
 build: false
 
 test_script:
-    - python run.py
+    -sh: export PYTHONPATH=`pwd`
+    - pytest

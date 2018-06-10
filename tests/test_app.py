@@ -1,4 +1,5 @@
 from src.main import MainWindow
+from src.widgets.editor import Editor
 import pytest
 
 @pytest.fixture
@@ -25,3 +26,17 @@ def test_render(main):
     obj_tree._toolbar_actions[0].triggered.emit()
     
     assert(obj_tree.CQ.childCount() == 0)
+    
+@pytest.fixture
+def editor(qtbot):
+    
+    win = Editor()
+    win.show()
+    
+    qtbot.addWidget(win)
+    
+    return qtbot, win
+
+def test_editor(editor):
+    
+    pass

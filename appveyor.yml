@@ -22,5 +22,5 @@ install:
 build: false
 
 test_script:
-    -sh: export PYTHONPATH=$(pwd)
+    - sh: export PYTHONPATH=$(pwd)
     - pytest

@@ -9,7 +9,7 @@ environment:
 
 install:
     - sh: sudo apt update
-    - sh: sudo apt install libgl1-mesa-glx
+    - sh: sudo apt install libglu1-mesa
     - sh: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     - sh: bash miniconda.sh -b -p $HOME/miniconda
     - sh: export PATH="$HOME/miniconda/bin:$HOME/miniconda/lib:$PATH"

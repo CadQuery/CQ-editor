@@ -24,4 +24,4 @@ build: false
 
 test_script:
     - sh: export PYTHONPATH=$(pwd)
-    - pytest
+    - pytest -s

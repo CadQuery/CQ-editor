@@ -115,9 +115,9 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         self.expandToDepth(1)
     
     
-    @pyqtSlot(list,bool)
-    @pyqtSlot(list)
-    def addObjects(self,objects,clean=False,root=None,):
+    @pyqtSlot(dict,bool)
+    @pyqtSlot(dict)
+    def addObjects(self,objects,clean=False,root=None,alpha=0.):
         
         if clean:
             self.removeObjects()
@@ -129,16 +129,32 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         
         #remove Vector objects
         objects_f = \
-        (el for el in objects if type(el[1].val()) not in (Vector,))
+        {k:v for k,v in objects.items() if type(v.val()) not in (Vector,)}
         
-        for name,shape in objects_f:
+        for name,shape in objects_f.items():
             ais = AIS_ColoredShape(shape.val().wrapped)
+            ais.SetTransparency(alpha)
             ais_list.append(ais)
             root.addChild(ObjectTreeItem([name],
                                          shape=shape,
                                          ais=ais))
     
         self.sigObjectsAdded.emit(ais_list)
+    
+    @pyqtSlot(object,str,float)
+    def addObject(self,object,name='',alpha=.0,):
+        
+        root = self.CQ
+        
+        ais = AIS_ColoredShape(object.val().wrapped)
+        ais.SetTransparency(alpha)
+        
+        root.addChild(ObjectTreeItem([name],
+                                     shape=object,
+                                     ais=ais))
+        
+        self.sigObjectsAdded.emit([ais])
+    
     
     @pyqtSlot(list)
     @pyqtSlot(bool)

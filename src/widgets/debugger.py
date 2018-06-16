@@ -98,7 +98,7 @@ class Debugger(QObject,ComponentMixin):
     sigFrameChanged = pyqtSignal(object)
     sigLineChanged = pyqtSignal(int)
     sigLocalsChanged = pyqtSignal(dict)
-    sigCQChanged = pyqtSignal(list,bool)
+    sigCQChanged = pyqtSignal(dict,bool)
     sigDebugging = pyqtSignal(bool)
     sigTraceback = pyqtSignal(object,str)
     

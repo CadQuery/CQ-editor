@@ -7,6 +7,8 @@ from PyQt5.QtWidgets import (QDesktopWidget, QFileDialog, QFontDialog,
                              QMenu, QMessageBox, QShortcut, QSystemTrayIcon,
                              QToolBar, QWidget, QDockWidget, QAction)
 
+import cadquery as cq
+
 from .widgets.editor import Editor
 from .widgets.viewer import OCCViewer
 from .widgets.console import ConsoleWidget
@@ -46,8 +48,8 @@ class MainWindow(QMainWindow,MainMixin):
         self.prepare_actions()
         
         self.components['object_tree'].addLines()
-        self.components['console']\
-            .push_vars({'viewer' : self.viewer, 'self' : self})
+        
+        self.prepare_console()
         
         self.fill_dummy()
         
@@ -228,7 +230,19 @@ class MainWindow(QMainWindow,MainMixin):
             .connect(self.components['object_tree'].addObjects)
         self.components['debugger'].sigTraceback\
             .connect(self.components['traceback_viewer'].addTraceback)
-
+            
+    def prepare_console(self):
+        
+        console = self.components['console']
+        obj_tree = self.components['object_tree']
+        
+        #application related items
+        console.push_vars({'self' : self})
+        
+        #CQ related items
+        console.push_vars({'show' : obj_tree.addObject,
+                           'show_object' : obj_tree.addObject,
+                           'cq' : cq})
         
             
     def fill_dummy(self):

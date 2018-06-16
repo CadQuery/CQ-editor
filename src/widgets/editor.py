@@ -6,6 +6,7 @@ import cadquery as cq
 import imp
 import sys
 
+from logbook import info
 from pyqtgraph.parametertree import Parameter
 
 from ..mixins import ComponentMixin
@@ -25,7 +26,7 @@ class Editor(CodeEditor,ComponentMixin):
     
     EXTENSIONS = '*.py'
 
-    sigRendered = pyqtSignal(list)
+    sigRendered = pyqtSignal(dict)
     sigTraceback = pyqtSignal(object,str)
     sigLocals = pyqtSignal(dict)
     
@@ -129,11 +130,19 @@ class Editor(CodeEditor,ComponentMixin):
             
         cq_code,cq_script,t = self.get_compiled_code()
         
+        cq_objects = {}
+        
+        t.__dict__['show_object'] = lambda x: cq_objects.update({str(id(x)) : x})
+        t.__dict__['debug'] = lambda x: info(str(x))
+        
         if cq_code is None: return
         
         try:
             exec(cq_code,t.__dict__,t.__dict__)
-            cq_objects = find_cq_objects(t.__dict__)
+            
+            #collect all CQ objects if no explicti show_object was called
+            if len(cq_objects) == 0:
+                cq_objects = find_cq_objects(t.__dict__)
             self.sigRendered.emit(cq_objects)
             self.sigTraceback.emit(None,
                                    cq_script)

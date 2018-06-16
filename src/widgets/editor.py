@@ -134,6 +134,7 @@ class Editor(CodeEditor,ComponentMixin):
         
         t.__dict__['show_object'] = lambda x: cq_objects.update({str(id(x)) : x})
         t.__dict__['debug'] = lambda x: info(str(x))
+        t.__dict__['cq'] = cq
         
         if cq_code is None: return
         

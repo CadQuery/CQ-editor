@@ -212,13 +212,13 @@ class OCCViewer(QWidget,ComponentMixin):
     def bottom_view(self):
         
         v = self._get_view()
-        v.SetProj(0,0,1)
+        v.SetProj(0,0,-1)
         v.SetTwist(0)
     
     def top_view(self):
         
         v = self._get_view()
-        v.SetProj(0,0,-1)
+        v.SetProj(0,0,1)
         v.SetTwist(0)
     
     def front_view(self):
@@ -236,13 +236,13 @@ class OCCViewer(QWidget,ComponentMixin):
     def left_view(self):
         
         v = self._get_view()
-        v.SetProj(1,0,0)
+        v.SetProj(-1,0,0)
         v.SetTwist(0)
     
     def right_view(self):
         
         v = self._get_view()
-        v.SetProj(-1,0,0)
+        v.SetProj(1,0,0)
         v.SetTwist(0)
         
     def shaded_view(self):

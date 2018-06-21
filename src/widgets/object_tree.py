@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAction
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QFileDialog, QAction
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
 from OCC.AIS import AIS_ColoredShape, AIS_Line
@@ -12,7 +12,7 @@ from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 from ..mixins import ComponentMixin
 from ..icons import icon
 
-from cadquery import Vector
+from cadquery import Vector, exporters
 
 class TopTreeItem(QTreeWidgetItem):
     
@@ -77,11 +77,16 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         root.addChild(self.Imports)
         root.addChild(self.Helpers)
         
+        self._export_STL_action = QAction('Export as STL',
+                                        self,
+                                        triggered=self.exportSTL)
+        
         self._toolbar_actions = \
             [QAction(icon('delete-many'),'Clear all',self,triggered=self.removeObjects),
              QAction(icon('delete'),'Clear current',self,triggered=self.removeSelected)]
         
         self.addActions(self._toolbar_actions)
+        self.addAction(self._export_STL_action)
         
         self.itemSelectionChanged.connect(self.handleSelection)
         
@@ -157,7 +162,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
     
     
     @pyqtSlot(list)
-    @pyqtSlot(bool)
+    @pyqtSlot()
     def removeObjects(self,objects=None):
         
         if objects:
@@ -180,13 +185,29 @@ class ObjectTree(QTreeWidget,ComponentMixin):
             ais_list = [el.ais for el in self._stash]
             self.sigObjectsAdded.emit(ais_list)
         
-    @pyqtSlot(bool)    
+    @pyqtSlot()    
     def removeSelected(self):
         
         ixs = self.selectedIndexes()
         rows = [ix.row() for ix in ixs]
         
         self.removeObjects(rows)
+        
+    @pyqtSlot()
+    def exportSTL(self):
+        
+        item = self.selectedItems()[-1]
+        if item.parent() is self.CQ:
+            shape = item.shape
+        else:
+            return
+        
+        fname,_ = QFileDialog.getSaveFileName(self,filter='*stl')
+        if fname is not '':
+             with open(fname,'w') as f:
+                exporters.exportShape(shape,
+                                      exporters.ExportTypes.STL,
+                                      f, 0.1)
     
     @pyqtSlot()    
     def handleSelection(self):

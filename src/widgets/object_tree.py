@@ -1,5 +1,9 @@
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QFileDialog, QAction
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QFileDialog, QAction, QMenu
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
+
+from pyqtgraph.parametertree import Parameter
+
+from cadquery import Vector, exporters
 
 from OCC.AIS import AIS_ColoredShape, AIS_Line
 from OCC.Quantity import Quantity_NOC_RED as RED
@@ -11,8 +15,6 @@ from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
 from ..icons import icon
-
-from cadquery import Vector, exporters
 
 class TopTreeItem(QTreeWidgetItem):
     
@@ -56,6 +58,9 @@ class ObjectTree(QTreeWidget,ComponentMixin):
     name = 'Object Tree'
     _stash = []
     
+    preferences = Parameter.create(name='Preferences',children=[
+        {'name': 'Clear all before each run', 'type': 'bool', 'value': True},])
+    
     sigObjectsAdded = pyqtSignal(list)
     sigObjectsRemoved = pyqtSignal(list)
     sigCQObjectSelected = pyqtSignal(object)
@@ -78,17 +83,44 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         root.addChild(self.Helpers)
         
         self._export_STL_action = QAction('Export as STL',
-                                        self,
-                                        triggered=self.exportSTL)
+                                          self,
+                                          enabled=False,
+                                          triggered=self.exportSTL)
+        
+        self._clear_current_action = QAction(icon('delete'),
+                                             'Clear current',
+                                             self,
+                                             enabled=False,
+                                             triggered=self.removeSelected)
         
         self._toolbar_actions = \
             [QAction(icon('delete-many'),'Clear all',self,triggered=self.removeObjects),
-             QAction(icon('delete'),'Clear current',self,triggered=self.removeSelected)]
+             self._clear_current_action]
         
-        self.addActions(self._toolbar_actions)
-        self.addAction(self._export_STL_action)
+        self.prepareMenu()
         
         self.itemSelectionChanged.connect(self.handleSelection)
+        self.customContextMenuRequested.connect(self.showMenu)
+        
+    
+    def prepareMenu(self):
+        
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        
+        self._context_menu = QMenu(self)
+        self._context_menu.addActions(self._toolbar_actions)
+        self._context_menu.addAction(self._export_STL_action)
+    
+    def showMenu(self,position):
+        
+        item = self.selectedItems()[-1]
+        if item.parent() is self.CQ:
+            self._export_STL_action.setEnabled(True)
+        else:
+            self._export_STL_action.setEnabled(False)
+            
+        self._context_menu.exec_(self.viewport().mapToGlobal(position))
+    
         
     def menuActions(self):
         
@@ -124,7 +156,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
     @pyqtSlot(dict)
     def addObjects(self,objects,clean=False,root=None,alpha=0.):
         
-        if clean:
+        if clean or self.preferences['Clear all before each run']:
             self.removeObjects()
         
         ais_list = []
@@ -214,5 +246,10 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         
         item = self.selectedItems()[-1]
         if item.parent() is self.CQ:
+            self._export_STL_action.setEnabled(True)
+            self._clear_current_action.setEnabled(True)
             self.sigCQObjectSelected.emit(item.shape)
+        else:
+            self._export_STL_action.setEnabled(False)
+            self._clear_current_action.setEnabled(False)
         

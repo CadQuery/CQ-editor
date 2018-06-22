@@ -58,11 +58,13 @@ class MainMixin(object):
         settings = self.settings
         
         if self.preferences and settings.value('General'):
-            self.preferences.restoreState(settings.value('General'))
+            self.preferences.restoreState(settings.value('General'),
+                                          removeChildren=False)
         
         for comp in (c for c in self.components.values() if c.preferences):
             if settings.value(comp.name):
-                comp.preferences.restoreState(settings.value(comp.name))
+                comp.preferences.restoreState(settings.value(comp.name),
+                                              removeChildren=False)
         
 
 class ComponentMixin(object):

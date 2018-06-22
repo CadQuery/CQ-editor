@@ -15,6 +15,7 @@ from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
 from ..icons import icon
+from ..cq_utils import make_AIS
 
 class TopTreeItem(QTreeWidgetItem):
     
@@ -59,7 +60,8 @@ class ObjectTree(QTreeWidget,ComponentMixin):
     _stash = []
     
     preferences = Parameter.create(name='Preferences',children=[
-        {'name': 'Clear all before each run', 'type': 'bool', 'value': True},])
+        {'name': 'Clear all before each run', 'type': 'bool', 'value': True},
+        {'name': 'STL precision','type': 'float', 'value': .1}])
     
     sigObjectsAdded = pyqtSignal(list)
     sigObjectsRemoved = pyqtSignal(list)
@@ -169,7 +171,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         {k:v for k,v in objects.items() if type(v.val()) not in (Vector,)}
         
         for name,shape in objects_f.items():
-            ais = AIS_ColoredShape(shape.val().wrapped)
+            ais = make_AIS(shape)
             ais.SetTransparency(alpha)
             ais_list.append(ais)
             root.addChild(ObjectTreeItem([name],
@@ -179,15 +181,15 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         self.sigObjectsAdded.emit(ais_list)
     
     @pyqtSlot(object,str,float)
-    def addObject(self,object,name='',alpha=.0,):
+    def addObject(self,obj,name='',alpha=.0,):
         
         root = self.CQ
         
-        ais = AIS_ColoredShape(object.val().wrapped)
+        ais = make_AIS(obj)
         ais.SetTransparency(alpha)
         
         root.addChild(ObjectTreeItem([name],
-                                     shape=object,
+                                     shape=obj,
                                      ais=ais))
         
         self.sigObjectsAdded.emit([ais])
@@ -239,7 +241,8 @@ class ObjectTree(QTreeWidget,ComponentMixin):
              with open(fname,'w') as f:
                 exporters.exportShape(shape,
                                       exporters.ExportTypes.STL,
-                                      f, 0.1)
+                                      f, 
+                                      self.preferences['STL precision'])
     
     @pyqtSlot()    
     def handleSelection(self):

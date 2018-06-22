@@ -84,10 +84,20 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         root.addChild(self.Imports)
         root.addChild(self.Helpers)
         
-        self._export_STL_action = QAction('Export as STL',
-                                          self,
-                                          enabled=False,
-                                          triggered=self.exportSTL)
+        self._export_STL_action = \
+            QAction('Export as STL',
+                    self,
+                    enabled=False,
+                    triggered=lambda: \
+                        self.export('*stl', exporters.ExportTypes.STL,
+                                    ['STL precision']))
+        
+        self._export_STEP_action = \
+            QAction('Export as SETP',
+                    self,
+                    enabled=False,
+                    triggered=lambda: \
+                        self.export('*step',exporters.ExportTypes.STEP,[]))
         
         self._clear_current_action = QAction(icon('delete'),
                                              'Clear current',
@@ -97,7 +107,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         
         self._toolbar_actions = \
             [QAction(icon('delete-many'),'Clear all',self,triggered=self.removeObjects),
-             self._clear_current_action]
+             self._clear_current_action,]
         
         self.prepareMenu()
         
@@ -111,7 +121,8 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         
         self._context_menu = QMenu(self)
         self._context_menu.addActions(self._toolbar_actions)
-        self._context_menu.addAction(self._export_STL_action)
+        self._context_menu.addActions((self._export_STL_action,
+                                       self._export_STEP_action))
     
     def showMenu(self,position):
         
@@ -126,7 +137,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         
     def menuActions(self):
         
-        return {}
+        return {'Tools' : [self._export_STL_action]}
     
     def toolbarActions(self):
         
@@ -227,8 +238,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         
         self.removeObjects(rows)
         
-    @pyqtSlot()
-    def exportSTL(self):
+    def export(self,file_wildcard,export_type,params):
         
         item = self.selectedItems()[-1]
         if item.parent() is self.CQ:
@@ -236,13 +246,11 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         else:
             return
         
-        fname,_ = QFileDialog.getSaveFileName(self,filter='*stl')
+        fname,_ = QFileDialog.getSaveFileName(self,filter=file_wildcard)
         if fname is not '':
              with open(fname,'w') as f:
-                exporters.exportShape(shape,
-                                      exporters.ExportTypes.STL,
-                                      f, 
-                                      self.preferences['STL precision'])
+                args = [self.preferences[p] for p in params]
+                exporters.exportShape(shape, export_type, f, *args)
     
     @pyqtSlot()    
     def handleSelection(self):
@@ -250,9 +258,11 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         item = self.selectedItems()[-1]
         if item.parent() is self.CQ:
             self._export_STL_action.setEnabled(True)
+            self._export_STEP_action.setEnabled(True)
             self._clear_current_action.setEnabled(True)
             self.sigCQObjectSelected.emit(item.shape)
         else:
             self._export_STL_action.setEnabled(False)
+            self._export_STEP_action.setEnabled(False)
             self._clear_current_action.setEnabled(False)
         

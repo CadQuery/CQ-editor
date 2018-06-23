@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
 from pyqtgraph.parametertree import Parameter
 
-from cadquery import Vector, exporters
+from cadquery import Vector
 
 from OCC.AIS import AIS_ColoredShape, AIS_Line
 from OCC.Quantity import Quantity_NOC_RED as RED
@@ -15,7 +15,7 @@ from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
 from ..icons import icon
-from ..cq_utils import make_AIS
+from ..cq_utils import make_AIS, export
 
 class TopTreeItem(QTreeWidgetItem):
     
@@ -89,15 +89,15 @@ class ObjectTree(QTreeWidget,ComponentMixin):
                     self,
                     enabled=False,
                     triggered=lambda: \
-                        self.export('*stl', exporters.ExportTypes.STL,
-                                    ['STL precision']))
+                        self.export('*stl','stl',
+                                    self.preferences['STL precision']))
         
         self._export_STEP_action = \
             QAction('Export as SETP',
                     self,
                     enabled=False,
                     triggered=lambda: \
-                        self.export('*step',exporters.ExportTypes.STEP,[]))
+                        self.export('*step','step',[]))
         
         self._clear_current_action = QAction(icon('delete'),
                                              'Clear current',
@@ -203,8 +203,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
                                      shape=obj,
                                      ais=ais))
         
-        self.sigObjectsAdded.emit([ais])
-    
+        self.sigObjectsAdded.emit([ais])    
     
     @pyqtSlot(list)
     @pyqtSlot()
@@ -238,7 +237,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         
         self.removeObjects(rows)
         
-    def export(self,file_wildcard,export_type,params):
+    def export(self,file_wildcard,export_type,precision=None):
         
         item = self.selectedItems()[-1]
         if item.parent() is self.CQ:
@@ -248,9 +247,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         
         fname,_ = QFileDialog.getSaveFileName(self,filter=file_wildcard)
         if fname is not '':
-             with open(fname,'w') as f:
-                args = [self.preferences[p] for p in params]
-                exporters.exportShape(shape, export_type, f, *args)
+             export(shape,export_type,fname,precision)
     
     @pyqtSlot()    
     def handleSelection(self):

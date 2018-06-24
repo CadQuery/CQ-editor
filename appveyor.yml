@@ -18,7 +18,7 @@ install:
     - conda env create --quiet --name cqgui -f cqgui_env.yml
     - sh: source activate cqgui
     - conda install -c conda-forge pytest pytest-qt 
-    - pip install pytest-xvfb
+    - pip install pytest-xvfb pytest-mock
 
 build: false
 

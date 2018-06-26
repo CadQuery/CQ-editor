@@ -1,4 +1,4 @@
-import sys
+import sys, imp
 from enum import Enum, auto
 
 from PyQt5.QtWidgets import (QWidget, QTreeWidget, QTreeWidgetItem, QAction,
@@ -6,7 +6,9 @@ from PyQt5.QtWidgets import (QWidget, QTreeWidget, QTreeWidgetItem, QAction,
 from PyQt5.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QEventLoop, QAbstractTableModel
 from PyQt5 import QtCore
 
+from logbook import info
 from spyder.utils.icon_manager import icon
+import cadquery as cq
 
 from ..mixins import ComponentMixin
 from ..utils import layout
@@ -95,12 +97,16 @@ class Debugger(QObject,ComponentMixin):
     
     name = 'Debugger'
     
+    sigRendered = pyqtSignal(dict)
+    sigLocals = pyqtSignal(dict)
+    sigTraceback = pyqtSignal(object,str)
+    
     sigFrameChanged = pyqtSignal(object)
     sigLineChanged = pyqtSignal(int)
     sigLocalsChanged = pyqtSignal(dict)
     sigCQChanged = pyqtSignal(dict,bool)
     sigDebugging = pyqtSignal(bool)
-    sigTraceback = pyqtSignal(object,str)
+    
     
     def __init__(self,parent):
         
@@ -110,7 +116,10 @@ class Debugger(QObject,ComponentMixin):
         self.inner_event_loop = QEventLoop(self)
         
         self._actions =  \
-            {'Run' : [QAction(icon('debug'),
+            {'Run' : [QAction(icon('run'),
+                              'Render',
+                               self,triggered=self.render),
+                      QAction(icon('debug'),
                              'Debug',
                              self,
                              checkable=True,
@@ -129,15 +138,65 @@ class Debugger(QObject,ComponentMixin):
                               triggered=lambda: self.debug_cmd(DbgState.CONT))
                       ]}
     
+    def get_current_script(self):
+        
+        return self.parent().components['editor'].get_text_with_eol()
+    
+    def get_breakpoints(self):
+        
+        return self.parent().components['editor'].get_breakpoints()
+    
+    def compile_code(self,cq_script):
+                
+        try:
+            module = imp.new_module('temp')
+            cq_code = compile(cq_script,'<string>','exec')
+            return cq_code,module
+        except Exception: 
+            self.sigTraceback.emit(sys.exc_info(),
+                                   cq_script)
+            return None,None
+
+    @pyqtSlot(bool)            
+    def render(self):
+        
+        cq_script = self.get_current_script()
+        cq_code,t = self.compile_code(cq_script)
+        
+        cq_objects = {}
+        
+        t.__dict__['show_object'] = lambda x: cq_objects.update({str(id(x)) : x})
+        t.__dict__['debug'] = lambda x: info(str(x))
+        t.__dict__['cq'] = cq
+        
+        if cq_code is None: return
+        
+        try:
+            exec(cq_code,t.__dict__,t.__dict__)
+            
+            #collect all CQ objects if no explicti show_object was called
+            if len(cq_objects) == 0:
+                cq_objects = find_cq_objects(t.__dict__)
+            self.sigRendered.emit(cq_objects)
+            self.sigTraceback.emit(None,
+                                   cq_script)
+            self.sigLocals.emit(t.__dict__)
+        except Exception: 
+            self.sigTraceback.emit(sys.exc_info(),
+                                   cq_script)
+    
     @pyqtSlot(bool)
     def debug(self,value):
         if value:
             self.sigDebugging.emit(True)
             self.state = DbgState.STEP
             
-            editor = self.parent().components['editor']
-            code,self.script,module = editor.get_compiled_code()
-            self.breakpoints = [ el[0] for el in editor.get_breakpoints()]
+            self.script = self.get_current_script()
+            code,module = self.compile_code(self.script)
+            
+            if code is None: return
+            
+            self.breakpoints = [ el[0] for el in self.get_breakpoints()]
             
             try:
                 sys.settrace(self.trace_callback)
@@ -149,7 +208,7 @@ class Debugger(QObject,ComponentMixin):
                 sys.settrace(None)
                 
             self.sigDebugging.emit(False)
-            self._actions['Run'][0].setChecked(False)
+            self._actions['Run'][1].setChecked(False)
         else:
             sys.settrace(None)
             self.inner_event_loop.exit(0)
@@ -199,6 +258,3 @@ class Debugger(QObject,ComponentMixin):
                 self.sigLineChanged.emit(lineno)
                 self.sigFrameChanged.emit(frame)
                 self.state = DbgState.STEP
-                
-                
-            

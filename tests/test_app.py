@@ -16,8 +16,8 @@ def main(qtbot):
     
     qtbot.addWidget(win)
     
-    editor = win.components['editor']
-    editor._actions['Run'][0].triggered.emit()
+    debugger = win.components['debugger']
+    debugger._actions['Run'][0].triggered.emit()
     
     return qtbot, win
 
@@ -37,8 +37,8 @@ def test_export(main,mock):
     
     qtbot, win = main
     
-    editor = win.components['editor']
-    editor._actions['Run'][0].triggered.emit()
+    debugger = win.components['debugger']
+    debugger._actions['Run'][0].triggered.emit()
        
     #set focus
     obj_tree = win.components['object_tree']
@@ -152,7 +152,7 @@ def test_debug(main,mock):
     
     debugger = win.components['debugger']
     actions = debugger._actions['Run']
-    debug,step,step_in,cont = actions
+    run,debug,step,step_in,cont = actions
     
     variables = win.components['variables_viewer']
     

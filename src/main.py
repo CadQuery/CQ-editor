@@ -190,11 +190,11 @@ class MainWindow(QMainWindow,MainMixin):
         
     def prepare_actions(self):
         
-        self.components['editor'].sigRendered\
+        self.components['debugger'].sigRendered\
             .connect(self.components['object_tree'].addObjects)
-        self.components['editor'].sigTraceback\
+        self.components['debugger'].sigTraceback\
             .connect(self.components['traceback_viewer'].addTraceback)
-        self.components['editor'].sigLocals\
+        self.components['debugger'].sigLocals\
             .connect(self.components['variables_viewer'].update_frame)
         
         self.components['object_tree'].sigObjectsAdded\

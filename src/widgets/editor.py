@@ -6,14 +6,12 @@ import cadquery as cq
 import imp
 import sys
 
-from logbook import info
 from pyqtgraph.parametertree import Parameter
 
 from ..mixins import ComponentMixin
 from ..cq_utils import find_cq_objects
 
 from ..icons import icon
-from spyder.utils.icon_manager import icon as spyder_icon
 
 class Editor(CodeEditor,ComponentMixin):
     
@@ -25,10 +23,6 @@ class Editor(CodeEditor,ComponentMixin):
          'values': ['Spyder','Monokai','Zenburn'], 'value': 'Spyder'}])
     
     EXTENSIONS = '*.py'
-
-    sigRendered = pyqtSignal(dict)
-    sigTraceback = pyqtSignal(object,str)
-    sigLocals = pyqtSignal(dict)
     
     def __init__(self,parent=None):
         
@@ -56,10 +50,7 @@ class Editor(CodeEditor,ComponentMixin):
                                   self,triggered=self.save),
                           QAction(icon('save_as'),
                                   'Save as',
-                                  self,triggered=self.save_as)],
-                'Run' : [QAction(spyder_icon('run'),
-                                 'Render',
-                                 self,triggered=self.render)]}
+                                  self,triggered=self.save_as)]}
         
         for a in self._actions.values():
             self.addActions(a)

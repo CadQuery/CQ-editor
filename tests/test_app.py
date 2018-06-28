@@ -207,6 +207,39 @@ def test_debug(main,mock):
     assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 3)
     
+code_err1 = \
+'''import cadquery as cq
+(
+result = cq.Workplane("XY" ).box(3, 3, 0.5).edges("|Z").fillet(0.125)
+'''
+   
+code_err2 = \
+'''import cadquery as cq
+result = cq.Workplane("XY" ).box(3, 3, 0.5).edges("|Z").fillet(0.125)
+f()
+'''
+ 
+def test_traceback(main):
+    
+    qtbot, win = main
+    
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    traceback_view = win.components['traceback_viewer']
+    
+    actions = debugger._actions['Run']
+    run,debug,step,step_in,cont = actions
+    
+    editor.set_text(code_err1)
+    run.triggered.emit()
+    
+    assert('SyntaxError' in traceback_view.current_exception.text())
+    
+    editor.set_text(code_err2)
+    run.triggered.emit()
+    
+    assert('NameError' in traceback_view.current_exception.text())
+    
 @pytest.fixture
 def editor(qtbot):
     

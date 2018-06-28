@@ -163,13 +163,13 @@ class Debugger(QObject,ComponentMixin):
         cq_script = self.get_current_script()
         cq_code,t = self.compile_code(cq_script)
         
+        if cq_code is None: return
+        
         cq_objects = {}
         
         t.__dict__['show_object'] = lambda x: cq_objects.update({str(id(x)) : x})
         t.__dict__['debug'] = lambda x: info(str(x))
         t.__dict__['cq'] = cq
-        
-        if cq_code is None: return
         
         try:
             exec(cq_code,t.__dict__,t.__dict__)
@@ -205,10 +205,9 @@ class Debugger(QObject,ComponentMixin):
                 self.sigTraceback.emit(sys.exc_info(),
                                        self.script)
             finally:
-                sys.settrace(None)
-                
-            self.sigDebugging.emit(False)
-            self._actions['Run'][1].setChecked(False)
+                sys.settrace(None)    
+                self.sigDebugging.emit(False)
+                self._actions['Run'][1].setChecked(False)
         else:
             sys.settrace(None)
             self.inner_event_loop.exit(0)

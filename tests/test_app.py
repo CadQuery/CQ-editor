@@ -235,6 +235,11 @@ def test_traceback(main):
     
     assert('SyntaxError' in traceback_view.current_exception.text())
     
+    debug.triggered.emit()
+    
+    assert('SyntaxError' in traceback_view.current_exception.text())
+    assert(debug.isChecked() == False)
+    
     editor.set_text(code_err2)
     run.triggered.emit()
     

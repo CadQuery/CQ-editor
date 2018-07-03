@@ -194,7 +194,10 @@ class Debugger(QObject,ComponentMixin):
             self.script = self.get_current_script()
             code,module = self.compile_code(self.script)
             
-            if code is None: return
+            if code is None: 
+                self.sigDebugging.emit(False)
+                self._actions['Run'][1].setChecked(False)
+                return
             
             self.breakpoints = [ el[0] for el in self.get_breakpoints()]
             

@@ -14,6 +14,9 @@ CadQuery GUI editor based on PyQT.
 * CadQery object stack inspector
   * Visual inspection of current workplane and selected items
   * Insight into evolution of the model
+* Export to various formats
+  * STL
+  * STEP
 
 ## Installation
 

@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QFileDialog, QAction, QMenu
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QFileDialog, QAction, QMenu, QWidget
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
-from pyqtgraph.parametertree import Parameter
+from pyqtgraph.parametertree import Parameter, ParameterTree
 
 from cadquery import Vector
 
@@ -15,7 +15,8 @@ from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
 from ..icons import icon
-from ..cq_utils import make_AIS, export
+from ..cq_utils import make_AIS, export, to_occ_color
+from ..utils import splitter, layout
 
 class TopTreeItem(QTreeWidgetItem):
     
@@ -25,14 +26,34 @@ class TopTreeItem(QTreeWidgetItem):
         
 class ObjectTreeItem(QTreeWidgetItem):
     
-    def __init__(self,*args,ais=None,shape=None,**kwargs):
+    props = [{'name': 'Name', 'type': 'str', 'value': ''},
+             {'name': 'Color', 'type': 'color', 'value': "FF0"},
+             {'name': 'Alpha', 'type': 'float', 'value': 0, 'limits': (0,1), 'step': 1e-1},
+             {'name': 'Visible', 'type': 'bool','value': True}]
+    
+    def __init__(self,*args,ais=None,shape=None,sig=None,**kwargs):
         
         super(ObjectTreeItem,self).__init__(*args,**kwargs)
         self.setFlags( self.flags() | Qt.ItemIsUserCheckable)
         self.setCheckState(0,Qt.Checked)
         
         self.ais = ais
-        self.shape= shape
+        self.shape = shape
+        self.sig = sig
+        
+        self.properties = Parameter.create(name='Properties',
+                                           children=self.props)
+    
+        self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
+    
+    def propertiesChanged(self,*args):
+        
+        self.ais.SetTransparency(self.properties['Alpha'])
+        self.ais.SetColor(to_occ_color(self.properties['Color']))
+        self.ais.Redisplay()
+        
+        if self.sig:
+            self.sig.emit()
 
 class CQRootItem(TopTreeItem):
     
@@ -54,7 +75,7 @@ class HelpersRootItem(TopTreeItem):
         super(HelpersRootItem,self).__init__(['Helpers'],*args,**kwargs)
 
 
-class ObjectTree(QTreeWidget,ComponentMixin):
+class ObjectTree(QWidget,ComponentMixin):
     
     name = 'Object Tree'
     _stash = []
@@ -66,20 +87,30 @@ class ObjectTree(QTreeWidget,ComponentMixin):
     sigObjectsAdded = pyqtSignal(list)
     sigObjectsRemoved = pyqtSignal(list)
     sigCQObjectSelected = pyqtSignal(object)
+    sigItemChanged = pyqtSignal(QTreeWidgetItem,int)
+    sigObjectPropertiesChanged = pyqtSignal()
     
     def  __init__(self,parent):
         
-        super(ObjectTree,self).__init__(parent)   
-        self.setHeaderHidden(True)
-        self.setItemsExpandable(False)
-        self.setRootIsDecorated(False)
-        self.setContextMenuPolicy(Qt.ActionsContextMenu)
+        super(ObjectTree,self).__init__(parent)
+        
+        self.tree = tree = QTreeWidget(self)
+        self.properties_editor = ParameterTree(self)
+        
+        tree.setHeaderHidden(True)
+        tree.setItemsExpandable(False)
+        tree.setRootIsDecorated(False)
+        tree.setContextMenuPolicy(Qt.ActionsContextMenu)                        
+        
+        #forward itemChanged singal
+        tree.itemChanged.connect(\
+            lambda item,col: self.sigItemChanged.emit(item,col))
         
         self.CQ = CQRootItem()
         self.Imports = ImportRootItem()
         self.Helpers = HelpersRootItem()
         
-        root = self.invisibleRootItem()
+        root = tree.invisibleRootItem()
         root.addChild(self.CQ)
         root.addChild(self.Imports)
         root.addChild(self.Helpers)
@@ -111,28 +142,39 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         
         self.prepareMenu()
         
-        self.itemSelectionChanged.connect(self.handleSelection)
-        self.customContextMenuRequested.connect(self.showMenu)
+        tree.itemSelectionChanged.connect(self.handleSelection)
+        tree.customContextMenuRequested.connect(self.showMenu)
         
-    
+        self.prepareLayout()
+        
+
     def prepareMenu(self):
         
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         
         self._context_menu = QMenu(self)
         self._context_menu.addActions(self._toolbar_actions)
         self._context_menu.addActions((self._export_STL_action,
                                        self._export_STEP_action))
+        
+    def prepareLayout(self):
+        
+        self._splitter = splitter((self.tree,self.properties_editor),
+                                  stretch_factors = (2,1),
+                                  orientation=Qt.Vertical)
+        layout(self,(self._splitter,),top_widget=self)
+        
+        self._splitter.show()
     
     def showMenu(self,position):
         
-        item = self.selectedItems()[-1]
+        item = self.tree.selectedItems()[-1]
         if item.parent() is self.CQ:
             self._export_STL_action.setEnabled(True)
         else:
             self._export_STL_action.setEnabled(False)
             
-        self._context_menu.exec_(self.viewport().mapToGlobal(position))
+        self._context_menu.exec_(self.tree.viewport().mapToGlobal(position))
     
         
     def menuActions(self):
@@ -162,8 +204,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
             ais_list.append(line)
             
         self.sigObjectsAdded.emit(ais_list)
-        self.expandToDepth(1)
-    
+        self.tree.expandToDepth(1)
     
     @pyqtSlot(dict,bool)
     @pyqtSlot(dict)
@@ -187,7 +228,8 @@ class ObjectTree(QTreeWidget,ComponentMixin):
             ais_list.append(ais)
             root.addChild(ObjectTreeItem([name],
                                          shape=shape,
-                                         ais=ais))
+                                         ais=ais,
+                                         sig=self.sigObjectPropertiesChanged))
     
         self.sigObjectsAdded.emit(ais_list)
     
@@ -201,9 +243,10 @@ class ObjectTree(QTreeWidget,ComponentMixin):
         
         root.addChild(ObjectTreeItem([name],
                                      shape=obj,
-                                     ais=ais))
+                                     ais=ais,
+                                     sig=self.sigObjectPropertiesChanged))
         
-        self.sigObjectsAdded.emit([ais])    
+        self.sigObjectsAdded.emit([ais])
     
     @pyqtSlot(list)
     @pyqtSlot()
@@ -216,7 +259,7 @@ class ObjectTree(QTreeWidget,ComponentMixin):
             
         self.sigObjectsRemoved.emit(removed_items_ais)
     
-    @pyqtSlot(bool)    
+    @pyqtSlot(bool)
     def stashObjects(self,action : bool):
         
         if action:
@@ -232,14 +275,14 @@ class ObjectTree(QTreeWidget,ComponentMixin):
     @pyqtSlot()    
     def removeSelected(self):
         
-        ixs = self.selectedIndexes()
+        ixs = self.tree.selectedIndexes()
         rows = [ix.row() for ix in ixs]
         
         self.removeObjects(rows)
         
     def export(self,file_wildcard,export_type,precision=None):
         
-        item = self.selectedItems()[-1]
+        item = self.tree.selectedItems()[-1]
         if item.parent() is self.CQ:
             shape = item.shape
         else:
@@ -252,14 +295,18 @@ class ObjectTree(QTreeWidget,ComponentMixin):
     @pyqtSlot()    
     def handleSelection(self):
         
-        item = self.selectedItems()[-1]
+        item = self.tree.selectedItems()[-1]
         if item.parent() is self.CQ:
             self._export_STL_action.setEnabled(True)
             self._export_STEP_action.setEnabled(True)
             self._clear_current_action.setEnabled(True)
             self.sigCQObjectSelected.emit(item.shape)
+            self.properties_editor.setParameters(item.properties,
+                                                 showTop=False)
+            self.properties_editor.setEnabled(True)
         else:
             self._export_STL_action.setEnabled(False)
             self._export_STEP_action.setEnabled(False)
             self._clear_current_action.setEnabled(False)
+            self.properties_editor.setEnabled(False)
         

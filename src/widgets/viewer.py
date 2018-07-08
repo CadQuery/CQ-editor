@@ -23,17 +23,11 @@ from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 from ..utils import layout
 from ..mixins import ComponentMixin
 from ..icons import icon
+from ..cq_utils import to_occ_color
 
 from pyqtgraph.parametertree import Parameter
 import qtawesome as qta
 
-
-def to_occ_color(color):
-    
-    return Quantity_Color(color.redF(),
-                          color.greenF(),
-                          color.blueF(),
-                          TOC_RGB)
 
 class OCCViewer(QWidget,ComponentMixin):
 
@@ -198,6 +192,11 @@ class OCCViewer(QWidget,ComponentMixin):
         
         ctx = self._get_context()
         for ais in ais_items: ctx.Erase(ais.GetHandle())
+
+    @pyqtSlot()        
+    def redraw(self):
+        
+        self._get_viewer().Redraw()
         
     def fit(self):
         

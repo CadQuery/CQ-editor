@@ -199,12 +199,14 @@ class MainWindow(QMainWindow,MainMixin):
         
         self.components['object_tree'].sigObjectsAdded\
             .connect(self.components['viewer'].display_many)
-        self.components['object_tree'].itemChanged.\
+        self.components['object_tree'].sigItemChanged.\
             connect(self.components['viewer'].update_item)
         self.components['object_tree'].sigObjectsRemoved\
             .connect(self.components['viewer'].remove_items)
         self.components['object_tree'].sigCQObjectSelected\
             .connect(self.components['cq_object_inspector'].setObject)
+        self.components['object_tree'].sigObjectPropertiesChanged\
+            .connect(self.components['viewer'].redraw)
             
         self.components['traceback_viewer'].sigHighlightLine\
             .connect(self.components['editor'].go_to_line)

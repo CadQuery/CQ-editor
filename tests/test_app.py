@@ -25,13 +25,13 @@ def test_render(main):
     
     qtbot, win = main
     
-    obj_tree = win.components['object_tree']
+    obj_tree_comp = win.components['object_tree']
     
-    assert(obj_tree.CQ.childCount() == 1)
+    assert(obj_tree_comp.CQ.childCount() == 1)
     
-    obj_tree._toolbar_actions[0].triggered.emit()
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
     
-    assert(obj_tree.CQ.childCount() == 0)
+    assert(obj_tree_comp.CQ.childCount() == 0)
     
 def test_export(main,mock):
     
@@ -41,19 +41,20 @@ def test_export(main,mock):
     debugger._actions['Run'][0].triggered.emit()
        
     #set focus
-    obj_tree = win.components['object_tree']
+    obj_tree = win.components['object_tree'].tree
+    obj_tree_comp = win.components['object_tree']
     qtbot.mouseClick(obj_tree, Qt.LeftButton)
     qtbot.keyClick(obj_tree, Qt.Key_Down)
     qtbot.keyClick(obj_tree, Qt.Key_Down)
     
     #export STL
     mock.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.stl',''))
-    obj_tree._export_STL_action.triggered.emit()
+    obj_tree_comp._export_STL_action.triggered.emit()
     assert(path.isfile('out.stl'))
     
     #export STEP
     mock.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.step',''))
-    obj_tree._export_STEP_action.triggered.emit()
+    obj_tree_comp._export_STEP_action.triggered.emit()
     assert(path.isfile('out.step'))
     
     #clean
@@ -75,7 +76,7 @@ def test_inspect(main):
     qtbot, win = main
     
     #set focus and make invisible
-    obj_tree = win.components['object_tree']
+    obj_tree = win.components['object_tree'].tree
     qtbot.mouseClick(obj_tree, Qt.LeftButton)
     qtbot.keyClick(obj_tree, Qt.Key_Down)
     qtbot.keyClick(obj_tree, Qt.Key_Down)
@@ -84,7 +85,7 @@ def test_inspect(main):
     #enable object inspector
     insp = win.components['cq_object_inspector']
     insp._toolbar_actions[0].toggled.emit(True)
-    
+
     #check if all stack items are visible in the tree
     assert(insp.root.childCount() == 3)
     

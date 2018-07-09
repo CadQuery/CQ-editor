@@ -201,6 +201,9 @@ class Debugger(QObject,ComponentMixin):
             
             self.breakpoints = [ el[0] for el in self.get_breakpoints()]
             
+            #clear possible traceback
+            self.sigTraceback.emit(None,
+                                   self.script)
             try:
                 sys.settrace(self.trace_callback)
                 exec(code,module.__dict__,module.__dict__)

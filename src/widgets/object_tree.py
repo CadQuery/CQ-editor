@@ -27,13 +27,19 @@ class TopTreeItem(QTreeWidgetItem):
 class ObjectTreeItem(QTreeWidgetItem):
     
     props = [{'name': 'Name', 'type': 'str', 'value': ''},
-             {'name': 'Color', 'type': 'color', 'value': "FF0"},
+             {'name': 'Color', 'type': 'color', 'value': "f4da16"},
              {'name': 'Alpha', 'type': 'float', 'value': 0, 'limits': (0,1), 'step': 1e-1},
              {'name': 'Visible', 'type': 'bool','value': True}]
     
-    def __init__(self,*args,ais=None,shape=None,sig=None,**kwargs):
+    def __init__(self,
+                 name,
+                 ais=None,
+                 shape=None,
+                 sig=None,
+                 alpha=0.,
+                 **kwargs):
         
-        super(ObjectTreeItem,self).__init__(*args,**kwargs)
+        super(ObjectTreeItem,self).__init__([name],**kwargs)
         self.setFlags( self.flags() | Qt.ItemIsUserCheckable)
         self.setCheckState(0,Qt.Checked)
         
@@ -43,14 +49,22 @@ class ObjectTreeItem(QTreeWidgetItem):
         
         self.properties = Parameter.create(name='Properties',
                                            children=self.props)
-    
+        
+        self.properties['Name'] = name
+        self.properties['Alpha'] = alpha
         self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
     
     def propertiesChanged(self,*args):
-        
+
+        self.setData(0,0,self.properties['Name'])        
         self.ais.SetTransparency(self.properties['Alpha'])
         self.ais.SetColor(to_occ_color(self.properties['Color']))
         self.ais.Redisplay()
+        
+        if self.properties['Visible']:
+            self.setCheckState(0,Qt.Checked)
+        else:
+            self.setCheckState(0,Qt.Unchecked)
         
         if self.sig:
             self.sig.emit()
@@ -105,6 +119,8 @@ class ObjectTree(QWidget,ComponentMixin):
         #forward itemChanged singal
         tree.itemChanged.connect(\
             lambda item,col: self.sigItemChanged.emit(item,col))
+        #handle visibility changes form tree
+        tree.itemChanged.connect(self.handleChecked)
         
         self.CQ = CQRootItem()
         self.Imports = ImportRootItem()
@@ -198,7 +214,7 @@ class ObjectTree(QWidget,ComponentMixin):
             line = AIS_Line(line_placement.GetHandle())
             line.SetColor(color)
             
-            self.Helpers.addChild(ObjectTreeItem([name],
+            self.Helpers.addChild(ObjectTreeItem(name,
                                                  ais=line))
             
             ais_list.append(line)
@@ -226,7 +242,7 @@ class ObjectTree(QWidget,ComponentMixin):
             ais = make_AIS(shape)
             ais.SetTransparency(alpha)
             ais_list.append(ais)
-            root.addChild(ObjectTreeItem([name],
+            root.addChild(ObjectTreeItem(name,
                                          shape=shape,
                                          ais=ais,
                                          sig=self.sigObjectPropertiesChanged))
@@ -241,7 +257,7 @@ class ObjectTree(QWidget,ComponentMixin):
         ais = make_AIS(obj)
         ais.SetTransparency(alpha)
         
-        root.addChild(ObjectTreeItem([name],
+        root.addChild(ObjectTreeItem(name,
                                      shape=obj,
                                      ais=ais,
                                      sig=self.sigObjectPropertiesChanged))
@@ -309,4 +325,17 @@ class ObjectTree(QWidget,ComponentMixin):
             self._export_STEP_action.setEnabled(False)
             self._clear_current_action.setEnabled(False)
             self.properties_editor.setEnabled(False)
+            self.properties_editor.clear()
+
+    @pyqtSlot(QTreeWidgetItem,int)            
+    def handleChecked(self,item,col):
+        
+        if type(item) is ObjectTreeItem:
+            if item.checkState(0):
+                item.properties['Visible'] = True
+            else:
+                item.properties['Visible'] = False
+        
+        
+            
         

@@ -329,8 +329,7 @@ class OCCViewer(QWidget,ComponentMixin):
         return self.canvas._display.GetContext().GetObject()
 
         
-if __name__ == "__main__":
-    
+if __name__ == "__main__": 
     
     import sys
     from OCC.BRepPrimAPI import BRepPrimAPI_MakeBox
@@ -338,9 +337,16 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     viewer = OCCViewer()
     viewer.show_line()
-    viewer.show()
+    
+    dlg = QDialog()
+    dlg.setFixedHeight(400)
+    dlg.setFixedWidth(600)
+    
+    layout(dlg,(viewer,),dlg)
+    dlg.show()
 
     box = BRepPrimAPI_MakeBox(20,20,30)
-    viewer.display(box.Shape())
+    box_ais = AIS_ColoredShape(box.Shape())
+    viewer.display(box_ais)
     
     sys.exit(app.exec_())

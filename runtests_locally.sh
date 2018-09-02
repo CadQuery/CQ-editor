@@ -1,1 +1,1 @@
-py.test --no-xvfb -s
+python -m pytest --no-xvfb -s

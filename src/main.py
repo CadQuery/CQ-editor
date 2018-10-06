@@ -29,7 +29,7 @@ class MainWindow(QMainWindow,MainMixin):
     name = 'CQ GUI'
     org = 'CadQuery'
     
-    def __init__(self,parent=None):
+    def __init__(self,parent=None,fname=''):
         
         super(MainWindow,self).__init__(parent)
         MainMixin.__init__(self)
@@ -51,7 +51,10 @@ class MainWindow(QMainWindow,MainMixin):
         
         self.prepare_console()
         
-        self.fill_dummy()
+        if fname:
+            self.components['editor'].openFile(fname)
+        else:
+            self.fill_dummy()
         
         self.setup_logging()
         
@@ -302,9 +305,17 @@ def main():
     
     app = QApplication(sys.argv,
                        applicationName='CadQuery GUI (PyQT)')
-    win = MainWindow()
+
+    # If an argument is provided, assume it's a filename
+    # $ qt-editor [filename.py]
+    fname = ''
+    if len(app.arguments()) == 2:
+        fname = app.arguments()[1]
+
+    win = MainWindow(fname=fname)
     
     win.show()
+
     sys.exit(app.exec_())
 
 

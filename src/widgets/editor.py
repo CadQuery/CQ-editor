@@ -44,7 +44,7 @@ class Editor(CodeEditor,ComponentMixin):
                                   self,triggered=self.new),
                           QAction(icon('open'),
                                   'Open',
-                                  self,triggered=self.open),
+                                  self,triggered=self.openDialog),
                           QAction(icon('save'),
                                   'Save',
                                   self,triggered=self.save),
@@ -81,12 +81,16 @@ class Editor(CodeEditor,ComponentMixin):
         self._filename = ''
         self.set_text('')
 
-    def open(self):
-        
-        fname,_ = QFileDialog.getOpenFileName(self,filter=self.EXTENSIONS)
+    def openFile(self, fname):
+
         if fname is not '':
             self.set_text_from_file(fname)
             self._filename = fname
+
+    def openDialog(self):
+
+        fname,_ = QFileDialog.getOpenFileName(self,filter=self.EXTENSIONS)
+        self.openFile(fname)
     
     def save(self):
         

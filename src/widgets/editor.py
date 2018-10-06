@@ -103,45 +103,7 @@ class Editor(CodeEditor,ComponentMixin):
              with open(fname,'w') as f:
                 f.write(self.get_text_with_eol())
                 self._filename = fname
-    
-    def get_compiled_code(self):
-        
-        cq_script = self.get_text_with_eol()
-                
-        try:
-            module = imp.new_module('temp')
-            cq_code = compile(cq_script,'<string>','exec')
-            return cq_code,cq_script,module
-        except Exception: 
-            self.sigTraceback.emit(sys.exc_info(),
-                                   cq_script)
-            return None,None,None
-            
-    def render(self):
-            
-        cq_code,cq_script,t = self.get_compiled_code()
-        
-        cq_objects = {}
-        
-        t.__dict__['show_object'] = lambda x: cq_objects.update({str(id(x)) : x})
-        t.__dict__['debug'] = lambda x: info(str(x))
-        t.__dict__['cq'] = cq
-        
-        if cq_code is None: return
-        
-        try:
-            exec(cq_code,t.__dict__,t.__dict__)
-            
-            #collect all CQ objects if no explicti show_object was called
-            if len(cq_objects) == 0:
-                cq_objects = find_cq_objects(t.__dict__)
-            self.sigRendered.emit(cq_objects)
-            self.sigTraceback.emit(None,
-                                   cq_script)
-            self.sigLocals.emit(t.__dict__)
-        except Exception: 
-            self.sigTraceback.emit(sys.exc_info(),
-                                   cq_script)
+
         
 if __name__ == "__main__":
     

@@ -1,5 +1,6 @@
 import os.path as path
 import os
+import tempfile
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog
@@ -256,6 +257,42 @@ def editor(qtbot):
     
     return qtbot, win
 
-def test_editor(editor):
+def test_editor(monkeypatch,editor):
     
-    pass
+    qtbot, editor = editor
+    
+    assert(editor.get_text_with_eol() == '')
+    
+    editor.load_from_file('test.py')
+    assert(len(editor.get_text_with_eol()) > 0)
+    
+    editor.new()
+    assert(editor.get_text_with_eol() == '')
+    
+    def filename(*args, **kwargs):
+        return 'test.py',None
+        
+    def filename2(*args, **kwargs):
+        return 'test2.py',None
+
+    monkeypatch.setattr(QFileDialog, 'getOpenFileName', 
+                        staticmethod(filename))
+
+    monkeypatch.setattr(QFileDialog, 'getSaveFileName', 
+                        staticmethod(filename2))
+                        
+    editor.open()
+    assert(len(editor.get_text_with_eol()) > 0)
+    
+    editor.set_text('a')
+    editor._filename = 'test2.py'
+    editor.save()
+    
+    monkeypatch.setattr(QFileDialog, 'getOpenFileName', 
+                        staticmethod(filename2))
+                        
+    editor.open()
+    assert(editor.get_text_with_eol() == 'a')
+    os.remove('test2.py')
+    editor.save_as()
+    assert(os.path.exists(filename2()[0]))

@@ -1,4 +1,5 @@
 import sys
+import argparse
 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QColor, QCursor, QIcon, QPainter, QPalette, QPen
@@ -23,6 +24,7 @@ from .mixins import MainMixin
 from .icons import icon
 from .preferences import PreferencesWidget
 
+NAME = 'CadQuery GUI (PyQT)'
 
 class MainWindow(QMainWindow,MainMixin):
     
@@ -301,8 +303,16 @@ def main():
     from PyQt5.QtWidgets import QApplication
     
     app = QApplication(sys.argv,
-                       applicationName='CadQuery GUI (PyQT)')
+                       applicationName=NAME)
     win = MainWindow()
+    
+    parser = argparse.ArgumentParser(description=NAME)
+    parser.add_argument('filename',nargs='?',default=None)
+
+    args = parser.parse_args(app.arguments()[1:])
+    print(args)
+    if args.filename:
+        win.components['editor'].load_from_file(args.filename)
     
     win.show()
     sys.exit(app.exec_())

@@ -85,8 +85,12 @@ class Editor(CodeEditor,ComponentMixin):
         
         fname,_ = QFileDialog.getOpenFileName(self,filter=self.EXTENSIONS)
         if fname is not '':
-            self.set_text_from_file(fname)
-            self._filename = fname
+            self.load_from_file(fname)
+            
+    def load_from_file(self,fname):
+        
+        self.set_text_from_file(fname)
+        self._filename = fname
     
     def save(self):
         

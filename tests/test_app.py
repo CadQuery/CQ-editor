@@ -261,6 +261,9 @@ def test_editor(monkeypatch,editor):
     
     qtbot, editor = editor
     
+    with open('test.py','w') as f:
+        f.write(code)
+    
     assert(editor.get_text_with_eol() == '')
     
     editor.load_from_file('test.py')

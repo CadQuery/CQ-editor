@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QFileDialog
 from src.main import MainWindow
 from src.widgets.editor import Editor
 import pytest
+import pytestqt
 
 @pytest.fixture
 def main(qtbot):
@@ -299,3 +300,52 @@ def test_editor(monkeypatch,editor):
     os.remove('test2.py')
     editor.save_as()
     assert(os.path.exists(filename2()[0]))
+
+def test_editor_autoreload(monkeypatch,editor):
+    qtbot, editor = editor
+
+    # start out with autoreload enabled
+    editor.autoreload(True)
+
+    with open('test.py','w') as f:
+        f.write(code)
+
+    assert(editor.get_text_with_eol() == '')
+
+    editor.load_from_file('test.py')
+    assert(len(editor.get_text_with_eol()) > 0)
+
+    # wait for reload.
+    with qtbot.waitSignal(editor.triggerRerender, timeout=500):
+        # modify file
+        with open('test.py', 'w') as f:
+            f.write('new_model = cq.Workplane("XY").box(1,1,1)\n')
+
+    # check that editor has updated file contents
+    assert("new_model" in editor.get_text_with_eol())
+
+    # disable autoreload
+    editor.autoreload(False)
+
+    # Wait for reload in case it incorrectly happens. A timeout should occur
+    # instead because a re-render should not be triggered with autoreload
+    # disabled.
+    with pytest.raises(pytestqt.exceptions.TimeoutError):
+        with qtbot.waitSignal(editor.triggerRerender, timeout=500):
+            # re-write original file contents
+            with open('test.py','w') as f:
+                f.write(code)
+
+    # editor should continue showing old contents since autoreload is disabled.
+    assert("new_model" in editor.get_text_with_eol())
+
+    # Saving a file with autoreload disabled should not trigger a rerender.
+    with pytest.raises(pytestqt.exceptions.TimeoutError):
+        with qtbot.waitSignal(editor.triggerRerender, timeout=500):
+            editor.save()
+
+    editor.autoreload(True)
+
+    # Saving a file with autoreload enabled should trigger a rerender.
+    with qtbot.waitSignal(editor.triggerRerender, timeout=500):
+        editor.save()

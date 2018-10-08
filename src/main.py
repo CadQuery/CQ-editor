@@ -234,6 +234,10 @@ class MainWindow(QMainWindow,MainMixin):
             .connect(self.components['object_tree'].addObjects)
         self.components['debugger'].sigTraceback\
             .connect(self.components['traceback_viewer'].addTraceback)
+
+        # trigger re-render when file is modified externally or saved
+        self.components['editor'].triggerRerender \
+            .connect(self.components['debugger'].render)
             
     def prepare_console(self):
         

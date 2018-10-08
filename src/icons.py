@@ -16,6 +16,8 @@ from . import icons_res
 _icons_specs = {
     'new'  : (('fa.file-o',),{}),
     'open' : (('fa.folder-open-o',),{}),
+    # borrowed from spider-ide
+    'autoreload': [('fa.repeat', 'fa.clock-o'), {'options': [{'scale_factor': 0.75, 'offset': (-0.1, -0.1)}, {'scale_factor': 0.5, 'offset': (0.25, 0.25)}]}],
     'save' : (('fa.save',),{}),
     'save_as': (('fa.save','fa.pencil'),
                {'options':[{'scale_factor': 1,},

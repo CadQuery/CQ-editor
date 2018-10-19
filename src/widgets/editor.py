@@ -1,5 +1,5 @@
 from spyder.widgets.sourcecode.codeeditor import  CodeEditor
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher
 from PyQt5.QtWidgets import QAction, QFileDialog
 
 import cadquery as cq
@@ -16,9 +16,14 @@ from ..icons import icon
 class Editor(CodeEditor,ComponentMixin):
     
     name = 'Code Editor'
+
+    # This signal is emitted whenever the currently-open file changes and
+    # autoreload is enabled.
+    triggerRerender = pyqtSignal(bool)
     
     preferences = Parameter.create(name='Preferences',children=[
         {'name': 'Font size', 'type': 'int', 'value': 12},
+        {'name': 'Autoreload', 'type': 'bool', 'value': False},
         {'name': 'Color scheme', 'type': 'list',
          'values': ['Spyder','Monokai','Zenburn'], 'value': 'Spyder'}])
     
@@ -50,7 +55,14 @@ class Editor(CodeEditor,ComponentMixin):
                                   self,triggered=self.save),
                           QAction(icon('save_as'),
                                   'Save as',
-                                  self,triggered=self.save_as)]}
+                                  self,triggered=self.save_as),
+                          QAction(icon('autoreload'),
+                                  'Automatic reload and preview',
+                                  self,triggered=self.autoreload,
+                                  checkable=True,
+                                  checked=False,
+                                  objectName='autoreload'),
+                          ]}
         
         for a in self._actions.values():
             self.addActions(a)
@@ -58,7 +70,12 @@ class Editor(CodeEditor,ComponentMixin):
 
         self._fixContextMenu()                   
         self.updatePreferences()
-        
+
+        # autoreload support
+        self._file_watcher = QFileSystemWatcher(self)
+        self._watched_file = None
+        self._file_watcher.fileChanged.connect(self._file_changed)
+
     def _fixContextMenu(self):
         
         menu = self.menu
@@ -75,10 +92,13 @@ class Editor(CodeEditor,ComponentMixin):
         font = self.font()
         font.setPointSize(self.preferences['Font size'])
         self.set_font(font)
-    
+
+        self.findChild(QAction, 'autoreload') \
+            .setChecked(self.preferences['Autoreload'])
+
     def new(self):
         
-        self._filename = ''
+        self.filename = ''
         self.set_text('')
 
     def open(self):
@@ -86,12 +106,12 @@ class Editor(CodeEditor,ComponentMixin):
         fname,_ = QFileDialog.getOpenFileName(self,filter=self.EXTENSIONS)
         if fname is not '':
             self.load_from_file(fname)
-            
+
     def load_from_file(self,fname):
         
         self.set_text_from_file(fname)
-        self._filename = fname
-    
+        self.filename = fname
+
     def save(self):
         
         if self._filename is not '':
@@ -99,14 +119,40 @@ class Editor(CodeEditor,ComponentMixin):
                 f.write(self.get_text_with_eol())
         else:
             self.save_as()
-        
+
     def save_as(self):
         
         fname,_ = QFileDialog.getSaveFileName(self,filter=self.EXTENSIONS)
         if fname is not '':
-             with open(fname,'w') as f:
+            with open(fname,'w') as f:
                 f.write(self.get_text_with_eol())
-                self._filename = fname
+                self.filename = fname
+
+    def _update_filewatcher(self):
+        if self._watched_file and (self._watched_file != self.filename or not self.preferences['Autoreload']):
+            self._file_watcher.removePath(self._watched_file)
+            self._watched_file = None
+        if self.preferences['Autoreload'] and self.filename and self.filename != self._watched_file:
+            self._watched_file = self._filename
+            self._file_watcher.addPath(self.filename)
+
+    @property
+    def filename(self):
+      return self._filename
+    @filename.setter
+    def filename(self, fname):
+        self._filename = fname
+        self._update_filewatcher()
+
+    # callback triggered by QFileSystemWatcher
+    def _file_changed(self, val):
+        self.set_text_from_file(self._filename)
+        self.triggerRerender.emit(True)
+
+    # Turn autoreload on/off.
+    def autoreload(self, enabled):
+        self.preferences['Autoreload'] = enabled
+        self._update_filewatcher()
 
         
 if __name__ == "__main__":

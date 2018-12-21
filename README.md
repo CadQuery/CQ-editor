@@ -1,6 +1,6 @@
 # CadQuery editor
 
-[![Build status](https://ci.appveyor.com/api/projects/status/g98rs7la393mgy91?svg=true)](https://ci.appveyor.com/project/adam-urbanczyk/cq-editor)
+[![Build status](https://ci.appveyor.com/api/projects/status/g98rs7la393mgy91/branch/master?svg=true)](https://ci.appveyor.com/project/adam-urbanczyk/cq-editor/branch/master)
 
 CadQuery GUI editor based on PyQT.
 

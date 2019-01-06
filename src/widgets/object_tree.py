@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
 from pyqtgraph.parametertree import Parameter, ParameterTree
 
-from cadquery import Vector
+from cadquery import Vector, Workplane
 
 from OCC.AIS import AIS_ColoredShape, AIS_Line
 from OCC.Quantity import Quantity_NOC_RED as RED
@@ -15,7 +15,7 @@ from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
 from ..icons import icon
-from ..cq_utils import make_AIS, export, to_occ_color
+from ..cq_utils import make_AIS, export, to_occ_color, to_workplane
 from ..utils import splitter, layout
 
 class TopTreeItem(QTreeWidgetItem):
@@ -234,9 +234,12 @@ class ObjectTree(QWidget,ComponentMixin):
         #if root is None:
         root = self.CQ
         
+        #convert cq.Shape objects to cq.Workplane
+        tmp = ((k,v) if isinstance(v,Workplane) else (k,to_workplane(v)) \
+               for k,v in objects.items())
         #remove Vector objects
         objects_f = \
-        {k:v for k,v in objects.items() if type(v.val()) not in (Vector,)}
+        {k:v for k,v in tmp if type(v.val()) not in (Vector,)}
         
         for name,shape in objects_f.items():
             ais = make_AIS(shape)

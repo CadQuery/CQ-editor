@@ -417,10 +417,10 @@ def test_console(main):
     console = win.components['console']
     
     # test execute command
-    a = 0
+    a = []
     console.push_vars({'a' : a})
-    console.execute_command('a=1')
-    assert(a == 1)
+    console.execute_command('a.append(1)')
+    assert(len(a) == 1)
     
     # test print text
     console.print_text('a')

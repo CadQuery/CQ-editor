@@ -29,4 +29,4 @@ test_script:
     - pytest -s --cov=src
     
 on_success:
-    - sh: codecov -t $CODECOV_TOKEN
+    - sh: codecov --token $CODECOV_TOKEN

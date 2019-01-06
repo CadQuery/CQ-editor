@@ -257,7 +257,11 @@ class ObjectTree(QWidget,ComponentMixin):
         
         root = self.CQ
         
-        ais = make_AIS(obj)
+        if isinstance(obj,Workplane):
+            ais = make_AIS(obj)
+        else:
+            ais = make_AIS(to_workplane(obj))
+        
         ais.SetTransparency(alpha)
         
         root.addChild(ObjectTreeItem(name,

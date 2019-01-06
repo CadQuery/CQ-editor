@@ -6,6 +6,8 @@ image:
 environment:
     matrix:
         - PYTEST_QT_API: pyqt5
+    my_variable:
+        secure: LgzfcnRvrluojH38dSmOYLeYCtYMwFVZq1bg2YHKoTGEK3pvGFqH6zLCdy9RxwynxF8dNLvmcp7d6w15WdidDQ==
 
 install:
     - sh: sudo apt update
@@ -27,4 +29,4 @@ test_script:
     - pytest -s --cov=src
     
 on_success:
-    - codecov
+    - sh: codecov -t $CODECOV_TOKEN

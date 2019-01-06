@@ -265,14 +265,19 @@ def test_editor(monkeypatch,editor):
     with open('test.py','w') as f:
         f.write(code)
     
+    #check that no text is present
     assert(editor.get_text_with_eol() == '')
     
+    #check that loading from file works properly
     editor.load_from_file('test.py')
     assert(len(editor.get_text_with_eol()) > 0)
+    assert(editor.get_text_with_eol() == code)
     
+    #check that loading from file works properly
     editor.new()
     assert(editor.get_text_with_eol() == '')
     
+    #monkeypatch QFileDialog methods
     def filename(*args, **kwargs):
         return 'test.py',None
         
@@ -284,10 +289,12 @@ def test_editor(monkeypatch,editor):
 
     monkeypatch.setattr(QFileDialog, 'getSaveFileName', 
                         staticmethod(filename2))
-                        
-    editor.open()
-    assert(len(editor.get_text_with_eol()) > 0)
     
+    #check that open file works properly                    
+    editor.open()
+    assert(editor.get_text_with_eol() == code)
+    
+    #check that save file works properly
     editor.set_text('a')
     editor._filename = 'test2.py'
     editor.save()
@@ -297,6 +304,9 @@ def test_editor(monkeypatch,editor):
                         
     editor.open()
     assert(editor.get_text_with_eol() == 'a')
+    assert(editor.get_text_with_eol() == 'a')
+    
+    #check that save as works properly
     os.remove('test2.py')
     editor.save_as()
     assert(os.path.exists(filename2()[0]))

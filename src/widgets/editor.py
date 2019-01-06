@@ -116,7 +116,7 @@ class Editor(CodeEditor,ComponentMixin):
         
         if self._filename is not '':
             with open(self._filename,'w') as f:
-                f.write(self.get_text_with_eol())
+                f.write(self.toPlainText())
         else:
             self.save_as()
 
@@ -125,7 +125,7 @@ class Editor(CodeEditor,ComponentMixin):
         fname,_ = QFileDialog.getSaveFileName(self,filter=self.EXTENSIONS)
         if fname is not '':
             with open(fname,'w') as f:
-                f.write(self.get_text_with_eol())
+                f.write(self.toPlainText())
                 self.filename = fname
 
     def _update_filewatcher(self):

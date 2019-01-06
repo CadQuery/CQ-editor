@@ -12,6 +12,13 @@ def to_compound(obj : cq.Workplane):
     
     return cq.Compound.makeCompound(obj.vals())
 
+def to_workplane(obj : cq.Shape):
+    
+    rv = cq.Workplane('XY')
+    rv.objects = [obj,]
+    
+    return rv
+
 def make_AIS(obj : cq.Workplane):
     
     ais = AIS_ColoredShape(to_compound(obj).wrapped)

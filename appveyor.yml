@@ -1,4 +1,4 @@
-shallow_clone: true
+shallow_clone: false
 
 image:
     - Ubuntu
@@ -6,6 +6,8 @@ image:
 environment:
     matrix:
         - PYTEST_QT_API: pyqt5
+    CODECOV_TOKEN:
+        secure: ZggK9wgDeFdTp0pu0MEV+SY4i/i1Ls0xrEC2MxSQOQ0JQV+TkpzJJzI4au7L8TpD
 
 install:
     - sh: sudo apt update
@@ -17,11 +19,14 @@ install:
     - conda update -q conda
     - conda env create --quiet --name cqgui -f cqgui_env.yml
     - sh: source activate cqgui
-    - conda install -c conda-forge pytest pytest-qt 
-    - pip install pytest-xvfb pytest-mock
+    - conda install -c conda-forge pytest pytest-qt
+    - pip install pytest-xvfb pytest-mock pytest-cov codecov
 
 build: false
 
 test_script:
     - sh: export PYTHONPATH=$(pwd)
-    - pytest -s
+    - pytest -s --cov=src
+    
+on_success:
+    - codecov

@@ -423,5 +423,6 @@ def test_console(main):
     assert(len(a) == 1)
     
     # test print text
+    pos_orig = console._prompt_pos
     console.print_text('a')
-    assert(console._prompt_pos == console._get_end_pos() - len('a'))
+    assert(console._prompt_pos == pos_orig + len('a'))

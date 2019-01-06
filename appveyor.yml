@@ -24,7 +24,7 @@ build: false
 
 test_script:
     - sh: export PYTHONPATH=$(pwd)
-    - pytest -s --cov=./
+    - pytest -s --cov=src
     
 on_success:
     - codecov

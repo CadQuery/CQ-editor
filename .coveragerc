@@ -1,4 +1,5 @@
 [run]
+timid = True
 branch = True
 source = src
 

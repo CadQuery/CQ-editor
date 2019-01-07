@@ -409,3 +409,32 @@ def test_editor_autoreload(monkeypatch,editor):
     # Saving a file with autoreload enabled should trigger a rerender.
     with qtbot.waitSignal(editor.triggerRerender, timeout=500):
         editor.save()
+
+def test_console(main):
+    
+    qtbot, win = main
+    
+    console = win.components['console']
+    
+    # test execute_command
+    a = []
+    console.push_vars({'a' : a})
+    console.execute_command('a.append(1)')
+    assert(len(a) == 1)
+    
+    # test print_text
+    pos_orig = console._prompt_pos
+    console.print_text('a')
+    assert(console._prompt_pos == pos_orig + len('a'))
+    
+def test_viewer(main):
+    
+    qtbot, win = main
+    
+    viewer = win.components['viewer']
+    
+    #not sure how to test this, so only smoke tests
+    
+    #trigger all 'View' actions
+    actions = viewer._actions['View']
+    for a in actions: a.trigger()

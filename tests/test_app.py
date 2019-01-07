@@ -437,4 +437,4 @@ def test_viewer(main):
     
     #trigger all 'View' actions
     actions = viewer._actions['View']
-    for a in actions: a.triggered.emit()
+    for a in actions: a.trigger()

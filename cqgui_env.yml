@@ -9,7 +9,7 @@ dependencies:
   - pyqtgraph=0.10.0
   - python=3.6
   - spyder=3.2.8
-  - pythonocc-core
-  - oce
+  - pythonocc-core=0.18.2
+  - oce=0.18.3
   - pip:
     - logbook==1.4.0

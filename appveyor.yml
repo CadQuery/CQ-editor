@@ -20,6 +20,7 @@ install:
     - conda install -c conda-forge pytest pytest-qt 
     - pip install pytest-xvfb pytest-mock
     - pip install  pyparsing git+https://github.com/CadQuery/cadquery.git
+    - conda list
 
 build: false
 

@@ -1,8 +1,6 @@
 name: cq-occ-conda-test-py3
 channels:
-  - oce
   - dlr-sc
-  - pythonocc
   - conda-forge
   - cadquery
 dependencies:
@@ -11,6 +9,7 @@ dependencies:
   - pyqtgraph=0.10.0
   - python=3.6
   - spyder=3.2.8
-  - cadquery-occ
+  - pythonocc-core
+  - oce
   - pip:
     - logbook==1.4.0

@@ -21,6 +21,7 @@ install:
     - sh: source activate cqgui
     - conda install -c conda-forge pytest=4.0.2 pytest-qt
     - pip install pytest-xvfb pytest-mock pytest-cov codecov
+    - conda list
 
 build: false
 

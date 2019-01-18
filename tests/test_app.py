@@ -10,6 +10,30 @@ from src.widgets.editor import Editor
 import pytest
 import pytestqt
 
+code = \
+'''import cadquery as cq
+result = cq.Workplane("XY" )
+result = result.box(3, 3, 0.5)
+result = result.edges("|Z").fillet(0.125)'''
+
+code_show_Workplane = \
+'''import cadquery as cq
+result = cq.Workplane("XY" )
+result = result.box(3, 3, 0.5)
+result = result.edges("|Z").fillet(0.125)
+
+show_object(result)
+'''
+
+code_show_Shape = \
+'''import cadquery as cq
+result = cq.Workplane("XY" )
+result = result.box(3, 3, 0.5)
+result = result.edges("|Z").fillet(0.125)
+
+show_object(result.val())
+'''
+
 @pytest.fixture
 def main(qtbot):
     
@@ -28,12 +52,44 @@ def test_render(main):
     qtbot, win = main
     
     obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+    
+    # check that object was rendered
+    assert(obj_tree_comp.CQ.childCount() == 1)
+    
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+    
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_show_Workplane)
+    debugger._actions['Run'][0].triggered.emit()
     
     assert(obj_tree_comp.CQ.childCount() == 1)
     
     obj_tree_comp._toolbar_actions[0].triggered.emit()
-    
     assert(obj_tree_comp.CQ.childCount() == 0)
+    
+    # check that cq.Shape object was rendered using explicit show_object call
+    editor.set_text(code_show_Shape)
+    debugger._actions['Run'][0].triggered.emit()
+    
+    assert(obj_tree_comp.CQ.childCount() == 1)
+    
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+    
+    # test rendering via console
+    console.execute(code_show_Workplane)
+    assert(obj_tree_comp.CQ.childCount() == 1)
+    
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+    
+    console.execute(code_show_Shape)
+    assert(obj_tree_comp.CQ.childCount() == 1)
     
 def test_export(main,mock):
     
@@ -105,12 +161,6 @@ def test_inspect(main):
     
     insp._toolbar_actions[0].toggled.emit(False)
     assert(number_visible_items(viewer) == 3)
-
-code = \
-'''import cadquery as cq
-result = cq.Workplane("XY" )
-result = result.box(3, 3, 0.5)
-result = result.edges("|Z").fillet(0.125)'''
     
 def test_debug(main,mock):
     
@@ -265,14 +315,19 @@ def test_editor(monkeypatch,editor):
     with open('test.py','w') as f:
         f.write(code)
     
+    #check that no text is present
     assert(editor.get_text_with_eol() == '')
     
+    #check that loading from file works properly
     editor.load_from_file('test.py')
     assert(len(editor.get_text_with_eol()) > 0)
+    assert(editor.get_text_with_eol() == code)
     
+    #check that loading from file works properly
     editor.new()
     assert(editor.get_text_with_eol() == '')
     
+    #monkeypatch QFileDialog methods
     def filename(*args, **kwargs):
         return 'test.py',None
         
@@ -284,10 +339,12 @@ def test_editor(monkeypatch,editor):
 
     monkeypatch.setattr(QFileDialog, 'getSaveFileName', 
                         staticmethod(filename2))
-                        
-    editor.open()
-    assert(len(editor.get_text_with_eol()) > 0)
     
+    #check that open file works properly                    
+    editor.open()
+    assert(editor.get_text_with_eol() == code)
+    
+    #check that save file works properly
     editor.set_text('a')
     editor._filename = 'test2.py'
     editor.save()
@@ -297,6 +354,9 @@ def test_editor(monkeypatch,editor):
                         
     editor.open()
     assert(editor.get_text_with_eol() == 'a')
+    assert(editor.get_text_with_eol() == 'a')
+    
+    #check that save as works properly
     os.remove('test2.py')
     editor.save_as()
     assert(os.path.exists(filename2()[0]))
@@ -349,3 +409,32 @@ def test_editor_autoreload(monkeypatch,editor):
     # Saving a file with autoreload enabled should trigger a rerender.
     with qtbot.waitSignal(editor.triggerRerender, timeout=500):
         editor.save()
+
+def test_console(main):
+    
+    qtbot, win = main
+    
+    console = win.components['console']
+    
+    # test execute_command
+    a = []
+    console.push_vars({'a' : a})
+    console.execute_command('a.append(1)')
+    assert(len(a) == 1)
+    
+    # test print_text
+    pos_orig = console._prompt_pos
+    console.print_text('a')
+    assert(console._prompt_pos == pos_orig + len('a'))
+    
+def test_viewer(main):
+    
+    qtbot, win = main
+    
+    viewer = win.components['viewer']
+    
+    #not sure how to test this, so only smoke tests
+    
+    #trigger all 'View' actions
+    actions = viewer._actions['View']
+    for a in actions: a.trigger()

@@ -55,7 +55,6 @@ class OCCViewer(QWidget,ComponentMixin):
                              margin=0)
         
         self.canvas.InitDriver()
-        self.show_edges()
         
         self.updatePreferences()
    
@@ -140,22 +139,6 @@ class OCCViewer(QWidget,ComponentMixin):
         self.displayed_ais.append(ais)
         
         self.canvas._display.Repaint()
-        
-    def show_edges(self,width=1.):
-        
-        context = self._get_context()
-        drawer = context.DefaultDrawer().GetObject()
-        drawer.SetFaceBoundaryDraw(True)
-        
-        face_boundry_aspect = drawer.FaceBoundaryAspect().GetObject()
-        face_boundry_aspect.SetColor(BLACK)
-        face_boundry_aspect.SetWidth(width)
-        
-    def hide_edges(self):
-        
-        context = self._get_context()
-        drawer = context.DefaultDrawer().GetObject()
-        drawer.SetFaceBoundaryDraw(False)
     
     @pyqtSlot(object)
     def display(self,ais):

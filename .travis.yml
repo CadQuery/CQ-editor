@@ -30,9 +30,18 @@ before_install:
 - export DISPLAY=:99.0;
 - ( sudo Xvfb :99 -ac -screen 0 1400x900x24 +render +iglx; echo ok )&
 
+before_script:
+- ulimit -c unlimited -S 
+- sudo rm -f /cores/core.*
+
 script:
 - export PYTHONPATH=$(pwd)
 - pytest -s --cov=src
+
+
+after_failure:
+- ls /cores/core.* 
+- lldb --core `ls /cores/core.*` --batch --one-line "bt"
 
 after_success:
 - codecov

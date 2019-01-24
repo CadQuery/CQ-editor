@@ -20,8 +20,9 @@ jobs:
       - run: conda env create --quiet --name cqgui -f cqgui_env.yml
       - run: ls ~
       - run: source activate cqgui
+      - run: conda list
       - run: pip install pytest-mock pytest-cov codecov
-      - run: echo "export PYTHONPATH=$(pwd)" >> $BASH_ENV
+      - run: echo "export PYTHONPATH=$(pwd):$PYTHONPATH" >> $BASH_ENV
       - run: pytest -s --cov=src
       
 workflows:

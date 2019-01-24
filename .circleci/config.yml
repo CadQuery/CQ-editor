@@ -8,21 +8,20 @@ jobs:
     
     environment:
       PYTEST_QT_API: pyqt5
-      MINICONDA: "$HOME/miniconda3"
-      PATH: "$MINICONDA/bin:$PATH"
       
     steps:
       - checkout
       - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget
       - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
       - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
-      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b -p $MINICONDA
-      - run: env
+      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
+      - run: echo "export PATH=~/miniconda3/bin:$PATH" >> $BASH_ENV
       - run: conda config --set always_yes yes
       - run: conda env create --quiet --name cqgui -f cqgui_env.yml
-      - run: conda activate $ENVNAME
+      - run: conda activate cqgui
       - run: pip install pytest-mock pytest-cov codecov
-      - run: export PYTHONPATH=$(pwd); pytest -s --cov=src
+      - run: echo "export PYTHONPATH=$(pwd)" >> $BASH_ENV
+      - run: pytest -s --cov=src
       
 workflows:
   version: 2

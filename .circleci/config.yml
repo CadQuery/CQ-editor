@@ -1,5 +1,10 @@
+version: 2
+
 jobs:
-  test:
+  runtests:
+  
+    macos:
+      xcode: "9.0"
     
     environment:
       PYTEST_QT_API: pyqt5
@@ -15,3 +20,10 @@ jobs:
       - run: conda activate $ENVNAME
       - run: pip install pytest-mock pytest-cov codecov
       - run: export PYTHONPATH=$(pwd); pytest -s --cov=src
+      
+workflows:
+  version: 2
+  
+  workflow:
+    jobs:
+    - runtests

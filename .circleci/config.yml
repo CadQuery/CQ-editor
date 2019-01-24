@@ -18,7 +18,8 @@ jobs:
       - run: echo "export PATH=~/miniconda3/bin:$PATH" >> $BASH_ENV
       - run: conda config --set always_yes yes
       - run: conda env create --quiet --name cqgui -f cqgui_env.yml
-      - run: . /miniconda3/etc/profile.d/conda.sh && conda activate cqgui
+      - run: ls ~
+      - run: ~/miniconda3/etc/profile.d/conda.sh && conda activate cqgui
       - run: pip install pytest-mock pytest-cov codecov
       - run: echo "export PYTHONPATH=$(pwd)" >> $BASH_ENV
       - run: pytest -s --cov=src

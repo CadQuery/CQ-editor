@@ -8,15 +8,16 @@ jobs:
     
     environment:
       PYTEST_QT_API: pyqt5
+      MINICONDA: "$HOME/miniconda3"
+      PATH: "$MINICONDA/bin:$PATH"
       
     steps:
       - checkout
       - run: HOMEBREW_NO_AUTO_UPDATE=1 brew install wget
       - run: cd && rm -rf ~/.pyenv && rm -rf ~/virtualenvs
       - run: wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O ~/miniconda.sh
-      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b
-      - run: export PATH="$HOME/miniconda3/bin;$PATH"
-      - run: ls && echo $PATH
+      - run: chmod +x ~/miniconda.sh && ~/miniconda.sh -b -p $MINICONDA
+      - run: env
       - run: conda config --set always_yes yes
       - run: conda env create --quiet --name cqgui -f cqgui_env.yml
       - run: conda activate $ENVNAME

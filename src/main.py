@@ -2,7 +2,7 @@ import sys
 import argparse
 
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QColor, QCursor, QIcon, QPainter, QPalette, QPen
+from PyQt5.QtGui import QColor, QCursor, QIcon, QPainter, QPalette, QPen, QSurfaceFormat
 from PyQt5.QtWidgets import (QDesktopWidget, QFileDialog, QFontDialog,
                              QGraphicsDropShadowEffect, QLabel, QMainWindow,
                              QMenu, QMessageBox, QShortcut, QSystemTrayIcon,
@@ -308,6 +308,12 @@ def main():
     
     app = QApplication(sys.argv,
                        applicationName=NAME)
+    
+    # Set default OpenGl API version to 2.1
+    format = QSurfaceFormat()
+    format.setVersion(2,1)
+    QSurfaceFormat.setDefaultFormat(format)
+    
     win = MainWindow()
     
     parser = argparse.ArgumentParser(description=NAME)

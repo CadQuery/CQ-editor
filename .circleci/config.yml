@@ -18,16 +18,14 @@ jobs:
       - run: echo "export PATH=~/miniconda3/bin:$PATH" >> $BASH_ENV
       - run: conda config --set always_yes yes
       - run: conda env create --quiet --name cqgui -f cqgui_env.yml
-      - run: ls ~
-      - run: source activate cqgui && conda list
-      - run: pip install pytest-mock pytest-cov codecov
       - run: |
           source activate cqgui
+          pip install pytest-mock pytest-cov codecov
           conda env list
           conda list
           export PYTHONPATH=$(pwd):$PYTHONPATH
           echo $PYTHONPATH
-          python -c "import sys; print(sys.path)"
+          python -c "import PyQt5"
           pytest -s --cov=src
       
 workflows:

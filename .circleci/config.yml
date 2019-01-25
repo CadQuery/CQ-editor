@@ -21,6 +21,7 @@ jobs:
       - run: |
           source activate cqgui
           pip install pytest-mock pytest-cov codecov
+          pip install git+https://github.com/CadQuery/cadquery.git
           conda env list
           conda list
           export PYTHONPATH=$(pwd):$PYTHONPATH

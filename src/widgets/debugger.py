@@ -168,9 +168,6 @@ class Debugger(QObject,ComponentMixin):
 
     def _exec(self, code, locals_dict, globals_dict):
 
-        if self.preferences['Reload CQ']:
-            reload_cq()
-
         old_path = sys.path
         if self.preferences['Add current dir to path']:
             p = Path(self.parent().components['editor'].filename).dirname()
@@ -185,6 +182,9 @@ class Debugger(QObject,ComponentMixin):
 
     @pyqtSlot(bool)
     def render(self):
+
+        if self.preferences['Reload CQ']:
+            reload_cq()
 
         cq_script = self.get_current_script()
         cq_code,t = self.compile_code(cq_script)

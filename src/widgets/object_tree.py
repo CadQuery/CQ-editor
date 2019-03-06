@@ -211,7 +211,7 @@ class ObjectTree(QWidget,ComponentMixin):
                                         ((1,0,0),(0,1,0),(0,0,1))):
             line_placement = Geom_Line(gp_Ax1(gp_Pnt(*origin),
                                        gp_Dir(*direction)))
-            line = AIS_Line(line_placement.GetHandle())
+            line = AIS_Line(line_placement)
             line.SetColor(color)
 
             self.Helpers.addChild(ObjectTreeItem(name,

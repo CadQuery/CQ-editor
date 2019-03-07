@@ -12,3 +12,5 @@ dependencies:
   - path.py=10.3.1
   - pip:
     - logbook==1.4.0
+    - "git+https://github.com/jupyter/qtconsole.git"
+    - "git+https://github.com/CadQuery/cadquery"

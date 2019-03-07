@@ -8,10 +8,12 @@ Created on Fri May 25 14:47:10 2018
 
 from PyQt5.QtGui import QIcon
 
-import qtawesome as qta
-
 from . import icons_res
+_icons = {
+    'app' : QIcon(":/images/icons/cadquery_logo_dark.svg")
+    }
 
+import qtawesome as qta
 
 _icons_specs = {
     'new'  : (('fa.file-o',),{}),
@@ -47,15 +49,11 @@ _icons_specs = {
                             'offset': (.2,.2)}]})
 }
 
-_icons = {
-    'app' : QIcon(":/images/icons/cadquery_logo_dark.svg")
-    }
-
 def icon(name):
-    
+
     if name in _icons:
         return _icons[name]
-    
+
     args,kwargs = _icons_specs[name]
-    
+
     return qta.icon(*args,**kwargs)

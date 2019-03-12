@@ -20,12 +20,13 @@ install:
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
     - conda config --set always_yes yes
     - conda update -q conda
-    - conda env create --name cqgui -f cqgui_env.yml
+    - conda env create -q --name cqgui -f cqgui_env.yml
     - sh: source activate cqgui
     - cmd: activate cqgui
     - conda install -c conda-forge pytest=4.0.2 pytest-qt
     - pip install pytest-xvfb pytest-mock pytest-cov codecov
     - pip install  pyparsing git+https://github.com/CadQuery/cadquery.git
+    - cmd: pip install logbook==1.4.0 #for some reason conda does not install logbook on Windows
     - conda list
 
 build: false

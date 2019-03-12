@@ -17,12 +17,12 @@ install:
     - sh: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     - sh: bash miniconda.sh -b -p $HOME/miniconda
     - sh: export PATH="$HOME/miniconda/bin:$HOME/miniconda/lib:$PATH"
-    - batch: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
+    - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
     - conda config --set always_yes yes
     - conda update -q conda
     - conda env create --quiet --name cqgui -f cqgui_env.yml
     - sh: source activate cqgui
-    - batch: activate cqgui
+    - cmd: activate cqgui
     - conda install -c conda-forge pytest=4.0.2 pytest-qt
     - pip install pytest-xvfb pytest-mock pytest-cov codecov
     - pip install  pyparsing git+https://github.com/CadQuery/cadquery.git
@@ -32,7 +32,7 @@ build: false
 
 test_script:
     - sh: export PYTHONPATH=$(pwd)
-    - batch: set PYTHONPATH=%cd%
+    - cmd: set PYTHONPATH=%cd%
     - pytest -s --cov=src
     
 on_success:

@@ -310,6 +310,9 @@ def editor(qtbot):
 
 def test_editor(monkeypatch,editor):
 
+    def conv_line_ends(text):
+        return '\n'.join(text.splitlines())
+
     qtbot, editor = editor
 
     with open('test.py','w') as f:
@@ -321,7 +324,7 @@ def test_editor(monkeypatch,editor):
     #check that loading from file works properly
     editor.load_from_file('test.py')
     assert(len(editor.get_text_with_eol()) > 0)
-    assert(editor.get_text_with_eol() == code)
+    assert(conv_line_ends(editor.get_text_with_eol()) == code)
 
     #check that loading from file works properly
     editor.new()
@@ -342,7 +345,7 @@ def test_editor(monkeypatch,editor):
 
     #check that open file works properly
     editor.open()
-    assert(editor.get_text_with_eol() == code)
+    assert(conv_line_ends(editor.get_text_with_eol()) == code)
 
     #check that save file works properly
     editor.set_text('a')
@@ -376,7 +379,7 @@ def test_editor_autoreload(monkeypatch,editor):
     assert(len(editor.get_text_with_eol()) > 0)
 
     # wait for reload.
-    with qtbot.waitSignal(editor.triggerRerender, timeout=500):
+    with qtbot.waitSignal(editor.triggerRerender, timeout=1000):
         # modify file
         with open('test.py', 'w') as f:
             f.write('new_model = cq.Workplane("XY").box(1,1,1)\n')

@@ -25,8 +25,7 @@ install:
     - cmd: activate cqgui
     - conda install -c conda-forge pytest=4.0.2 pytest-qt
     - pip install pytest-xvfb pytest-mock pytest-cov codecov
-    - pip install  pyparsing git+https://github.com/CadQuery/cadquery.git
-    # - cmd: pip install logbook==1.4.0 #for some reason conda does not install logbook on Windows
+    - pip install  pyparsing logbook==1.4.0 git+https://github.com/CadQuery/cadquery.git
     - conda list
 
 build: false

@@ -2,6 +2,7 @@ name: cq-occ-conda-test-py3
 channels:
   - conda-forge
   - cadquery
+  - anaconda
 dependencies:
   - pyqt=5.9.2
   - pyparsing
@@ -12,3 +13,5 @@ dependencies:
   - path.py=10.3.1
   - pip:
     - logbook==1.4.0
+    - "git+https://github.com/jupyter/qtconsole.git"
+    - "git+https://github.com/CadQuery/cadquery"

@@ -20,10 +20,9 @@ install:
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
     - conda config --set always_yes yes
     - conda update -q conda pip conda-env
-    - sh: conda init bash
-    - cmd: conda init cmd.exe
     - conda env create -q --name cqgui -f cqgui_env.yml
-    - conda activate cqgui
+    - sh: source activate cqgui
+    - cmd: activate cqgui
     - conda list
     - conda install -c conda-forge pytest=4.0.2 pytest-qt
     - pip install pytest-xvfb pytest-mock pytest-cov codecov

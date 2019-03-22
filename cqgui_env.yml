@@ -1,7 +1,7 @@
 name: cq-occ-conda-test-py3
 channels:
+  - CadQuery
   - conda-forge
-  - cadquery
   - anaconda
 dependencies:
   - pyqt=5.9.2

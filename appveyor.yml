@@ -9,7 +9,7 @@ environment:
         - PYTEST_QT_API: pyqt5
     CODECOV_TOKEN:
         secure: ZggK9wgDeFdTp0pu0MEV+SY4i/i1Ls0xrEC2MxSQOQ0JQV+TkpzJJzI4au7L8TpD
-    MINICONDA_DIRNAME: C:\Miniconda
+    MINICONDA_DIRNAME: C:\FreshMiniconda
 
 install:
     - sh: sudo apt update

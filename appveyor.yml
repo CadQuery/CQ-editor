@@ -20,8 +20,9 @@ install:
     - cmd: appveyor DownloadFile https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86_64.exe
     - cmd: Miniconda3-latest-Windows-x86_64.exe /S /D=%MINICONDA_DIRNAME%
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
+    - cmd: activate
     - conda config --set always_yes yes
-    # - conda update -q conda pip conda-env
+    - conda update -q conda pip conda-env
     - conda env create -v -v --name cqgui -f cqgui_env.yml
     - sh: source activate cqgui
     - cmd: activate cqgui

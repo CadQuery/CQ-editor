@@ -22,9 +22,9 @@ install:
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
     - cmd: activate
     - conda config --set always_yes yes
-    - conda update -q conda pip
     - conda install python=3.6
-    - conda env create -v --name cqgui -f cqgui_env.yml
+    - conda update -q conda pip
+    - conda env create -v -v -v --name cqgui -f cqgui_env.yml
     - sh: source activate cqgui
     - cmd: activate cqgui
     - conda list

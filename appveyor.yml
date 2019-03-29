@@ -20,7 +20,7 @@ install:
     - cmd: appveyor DownloadFile https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86_64.exe
     - cmd: Miniconda3-latest-Windows-x86_64.exe /S /D=%MINICONDA_DIRNAME% /InstallationType=JustMe
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
-    - cmd: conda activate
+    - cmd: %MINICONDA_DIRNAME%\\Scripts\\activate.bat
     - conda config --set always_yes yes
     - conda install python=3.6 conda=4.6.6
     - conda update -q pip

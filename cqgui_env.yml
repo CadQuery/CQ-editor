@@ -11,7 +11,7 @@ dependencies:
   - spyder=3.2.8
   - pythonocc-core=0.18.2
   - path.py
+  - logbook
   - pip:
-    - logbook==1.4.0
-    - "git+https://github.com/jupyter/qtconsole.git"
+    #- "git+https://github.com/jupyter/qtconsole.git"
     - "git+https://github.com/CadQuery/cadquery"

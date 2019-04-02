@@ -383,7 +383,8 @@ def test_editor_autoreload(monkeypatch,editor):
         # modify file
         with open('test.py', 'w') as f:
             f.write('new_model = cq.Workplane("XY").box(1,1,1)\n')
-        os.fsync(f.fileno())
+            f.flush()
+            os.fsync(f.fileno())
 
     # check that editor has updated file contents
     assert("new_model" in editor.get_text_with_eol())
@@ -399,6 +400,8 @@ def test_editor_autoreload(monkeypatch,editor):
             # re-write original file contents
             with open('test.py','w') as f:
                 f.write(code)
+                f.flush()
+                os.fsync(f.fileno())
 
     # editor should continue showing old contents since autoreload is disabled.
     assert("new_model" in editor.get_text_with_eol())

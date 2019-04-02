@@ -367,7 +367,7 @@ def test_editor(monkeypatch,editor):
 def test_editor_autoreload(monkeypatch,editor):
     qtbot, editor = editor
 
-    TIMEOUT = 5000
+    TIMEOUT = 20000
     
     # start out with autoreload enabled
     editor.autoreload(True)

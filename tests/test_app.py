@@ -367,6 +367,8 @@ def test_editor(monkeypatch,editor):
 def test_editor_autoreload(monkeypatch,editor):
     qtbot, editor = editor
 
+    TIMEOUT = 60000
+    
     # start out with autoreload enabled
     editor.autoreload(True)
 
@@ -379,10 +381,12 @@ def test_editor_autoreload(monkeypatch,editor):
     assert(len(editor.get_text_with_eol()) > 0)
 
     # wait for reload.
-    with qtbot.waitSignal(editor.triggerRerender, timeout=1000):
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
         # modify file
-        with open('test.py', 'w') as f:
+        with open('test.py', 'w', 2) as f:
             f.write('new_model = cq.Workplane("XY").box(1,1,1)\n')
+            f.close()
+        
 
     # check that editor has updated file contents
     assert("new_model" in editor.get_text_with_eol())
@@ -394,9 +398,9 @@ def test_editor_autoreload(monkeypatch,editor):
     # instead because a re-render should not be triggered with autoreload
     # disabled.
     with pytest.raises(pytestqt.exceptions.TimeoutError):
-        with qtbot.waitSignal(editor.triggerRerender, timeout=500):
+        with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
             # re-write original file contents
-            with open('test.py','w') as f:
+            with open('test.py','w', 2) as f:
                 f.write(code)
 
     # editor should continue showing old contents since autoreload is disabled.
@@ -404,13 +408,13 @@ def test_editor_autoreload(monkeypatch,editor):
 
     # Saving a file with autoreload disabled should not trigger a rerender.
     with pytest.raises(pytestqt.exceptions.TimeoutError):
-        with qtbot.waitSignal(editor.triggerRerender, timeout=500):
+        with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
             editor.save()
 
     editor.autoreload(True)
 
     # Saving a file with autoreload enabled should trigger a rerender.
-    with qtbot.waitSignal(editor.triggerRerender, timeout=500):
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
         editor.save()
 
 def test_console(main):

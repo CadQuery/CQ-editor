@@ -34,6 +34,10 @@ result = result.edges("|Z").fillet(0.125)
 show_object(result.val())
 '''
 
+def modify_file(code):
+        with open('test.py', 'w', 1) as f:
+                    f.write(code)
+
 @pytest.fixture
 def main(qtbot):
 
@@ -364,11 +368,14 @@ def test_editor(monkeypatch,editor):
     editor.save_as()
     assert(os.path.exists(filename2()[0]))
 
+@pytest.mark.repeat(5)
 def test_editor_autoreload(monkeypatch,editor):
     qtbot, editor = editor
 
-    TIMEOUT = 60000
-    
+    TIMEOUT = 500
+
+    from multiprocessing import Process
+
     # start out with autoreload enabled
     editor.autoreload(True)
 
@@ -383,10 +390,9 @@ def test_editor_autoreload(monkeypatch,editor):
     # wait for reload.
     with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
         # modify file
-        with open('test.py', 'w', 2) as f:
-            f.write('new_model = cq.Workplane("XY").box(1,1,1)\n')
-            f.close()
-        
+        p = Process(target=modify_file,args=('new_model = cq.Workplane("XY").box(1,1,1)\n',))
+        p.start()
+        p.join()
 
     # check that editor has updated file contents
     assert("new_model" in editor.get_text_with_eol())
@@ -400,7 +406,7 @@ def test_editor_autoreload(monkeypatch,editor):
     with pytest.raises(pytestqt.exceptions.TimeoutError):
         with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
             # re-write original file contents
-            with open('test.py','w', 2) as f:
+            with open('test.py','w', 1) as f:
                 f.write(code)
 
     # editor should continue showing old contents since autoreload is disabled.

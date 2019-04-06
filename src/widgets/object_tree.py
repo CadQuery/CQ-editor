@@ -98,7 +98,7 @@ class ObjectTree(QWidget,ComponentMixin):
         {'name': 'Clear all before each run', 'type': 'bool', 'value': True},
         {'name': 'STL precision','type': 'float', 'value': .1}])
 
-    sigObjectsAdded = pyqtSignal(list)
+    sigObjectsAdded = pyqtSignal([list],[list,bool])
     sigObjectsRemoved = pyqtSignal(list)
     sigCQObjectSelected = pyqtSignal(object)
     sigItemChanged = pyqtSignal(QTreeWidgetItem,int)
@@ -226,13 +226,15 @@ class ObjectTree(QWidget,ComponentMixin):
     @pyqtSlot(dict)
     def addObjects(self,objects,clean=False,root=None,alpha=0.):
 
+        if root is None:
+            root = self.CQ
+
+        request_fit_view = True if root.childCount() == 0 else False
+
         if clean or self.preferences['Clear all before each run']:
             self.removeObjects()
 
         ais_list = []
-
-        #if root is None:
-        root = self.CQ
 
         #convert cq.Shape objects to cq.Workplane
         tmp = ((k,v) if isinstance(v,cq.Workplane) else (k,to_workplane(v)) \
@@ -250,7 +252,10 @@ class ObjectTree(QWidget,ComponentMixin):
                                          ais=ais,
                                          sig=self.sigObjectPropertiesChanged))
 
-        self.sigObjectsAdded.emit(ais_list)
+        if request_fit_view:
+            self.sigObjectsAdded[list,bool].emit(ais_list,True)
+        else:
+            self.sigObjectsAdded[list].emit(ais_list)
 
     @pyqtSlot(object,str,float)
     def addObject(self,obj,name='',alpha=.0,):

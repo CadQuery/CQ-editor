@@ -152,7 +152,8 @@ class OCCViewer(QWidget,ComponentMixin):
         if self.preferences['Fit automatically']: self.fit()
 
     @pyqtSlot(list)
-    def display_many(self,ais_list):
+    @pyqtSlot(list,bool)
+    def display_many(self,ais_list,fit=None):
 
         context = self._get_context()
         for ais in ais_list:
@@ -160,7 +161,10 @@ class OCCViewer(QWidget,ComponentMixin):
 
         self.canvas._display.Repaint()
 
-        if self.preferences['Fit automatically']: self.fit()
+        if self.preferences['Fit automatically'] and fit is None:
+            self.fit()
+        elif fit:
+            self.fit()
 
     @pyqtSlot(QTreeWidgetItem,int)
     def update_item(self,item,col):

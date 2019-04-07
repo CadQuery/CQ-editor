@@ -16,6 +16,12 @@ result = cq.Workplane("XY" )
 result = result.box(3, 3, 0.5)
 result = result.edges("|Z").fillet(0.125)'''
 
+code_bigger_object = \
+'''import cadquery as cq
+result = cq.Workplane("XY" )
+result = result.box(20, 20, 0.5)
+result = result.edges("|Z").fillet(0.125)'''
+
 code_show_Workplane = \
 '''import cadquery as cq
 result = cq.Workplane("XY" )
@@ -389,7 +395,7 @@ def test_editor_autoreload(monkeypatch,editor):
 
     # wait for reload.
     with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
-        # modify file
+        # modify file - NB: separate process is needed to avoid Widows quirks
         p = Process(target=modify_file,args=('new_model = cq.Workplane("XY").box(1,1,1)\n',))
         p.start()
         p.join()
@@ -478,4 +484,52 @@ def test_module_import(main):
     #verify that no exception was generated
     assert(traceback_view.current_exception.text()  == '')
 
+@pytest.fixture
+def main_clean(qtbot):
 
+    win = MainWindow()
+    win.show()
+
+    qtbot.addWidget(win)
+
+    return qtbot, win
+
+def test_auto_fit_view(main_clean):
+
+    qtbot, win = main_clean
+
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    viewer = win.components['viewer']
+    object_tree = win.components['object_tree']
+
+    view = viewer.canvas._display.GetView()
+
+    viewer.preferences['Fit automatically'] = False
+    eye0,proj0,scale0 = view.Eye(),view.Proj(),view.Scale()
+
+    # check if camera position is adjusted automatically when rendering for the
+    # first time
+    debugger.render()
+    eye1,proj1,scale1 = view.Eye(),view.Proj(),view.Scale()
+    assert( (eye0,proj0,scale0) != pytest.approx(eye1,proj1,scale1) )
+
+    # check if camera position is not changed fter code change
+    editor.set_text(code_bigger_object)
+    debugger.render()
+    eye1,proj1,scale1 = view.Eye(),view.Proj(),view.Scale()
+    assert( (eye0,proj0,scale0) == pytest.approx(eye1,proj1,scale1) )
+
+    # check if position is adjusted automatically after erasing all objects
+    object_tree.removeObjects()
+    editor.set_text(code)
+    debugger.render()
+    eye1,proj1,scale1 = view.Eye(),view.Proj(),view.Scale()
+    assert( (eye0,proj0,scale0) != pytest.approx(eye1,proj1,scale1) )
+
+    # check if position is adjusted automatically if settings are changed
+    viewer.preferences['Fit automatically'] = True
+    editor.set_text(code_bigger_object)
+    debugger.render()
+    eye1,proj1,scale1 = view.Eye(),view.Proj(),view.Scale()
+    assert( (eye0,proj0,scale0) != pytest.approx(eye1,proj1,scale1) )

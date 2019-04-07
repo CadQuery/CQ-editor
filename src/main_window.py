@@ -197,7 +197,9 @@ class MainWindow(QMainWindow,MainMixin):
         self.components['debugger'].sigLocals\
             .connect(self.components['variables_viewer'].update_frame)
 
-        self.components['object_tree'].sigObjectsAdded\
+        self.components['object_tree'].sigObjectsAdded[list]\
+            .connect(self.components['viewer'].display_many)
+        self.components['object_tree'].sigObjectsAdded[list,bool]\
             .connect(self.components['viewer'].display_many)
         self.components['object_tree'].sigItemChanged.\
             connect(self.components['viewer'].update_item)

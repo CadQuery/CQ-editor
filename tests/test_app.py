@@ -1,19 +1,27 @@
 import os.path as path
 import os
-import tempfile
+
+from multiprocessing import Process
+
+import pytest
+import pytestqt
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog
 
 from src.main import MainWindow
 from src.widgets.editor import Editor
-import pytest
-import pytestqt
 
 code = \
 '''import cadquery as cq
 result = cq.Workplane("XY" )
 result = result.box(3, 3, 0.5)
+result = result.edges("|Z").fillet(0.125)'''
+
+code_bigger_object = \
+'''import cadquery as cq
+result = cq.Workplane("XY" )
+result = result.box(20, 20, 0.5)
 result = result.edges("|Z").fillet(0.125)'''
 
 code_show_Workplane = \
@@ -33,6 +41,15 @@ result = result.edges("|Z").fillet(0.125)
 
 show_object(result.val())
 '''
+
+def _modify_file(code):
+        with open('test.py', 'w', 1) as f:
+                    f.write(code)
+
+def modify_file(code):
+    p = Process(target=_modify_file,args=(code,))
+    p.start()
+    p.join()
 
 @pytest.fixture
 def main(qtbot):
@@ -364,11 +381,13 @@ def test_editor(monkeypatch,editor):
     editor.save_as()
     assert(os.path.exists(filename2()[0]))
 
+@pytest.mark.repeat(5)
 def test_editor_autoreload(monkeypatch,editor):
+
     qtbot, editor = editor
 
-    TIMEOUT = 60000
-    
+    TIMEOUT = 500
+
     # start out with autoreload enabled
     editor.autoreload(True)
 
@@ -382,14 +401,11 @@ def test_editor_autoreload(monkeypatch,editor):
 
     # wait for reload.
     with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
-        # modify file
-        with open('test.py', 'w', 2) as f:
-            f.write('new_model = cq.Workplane("XY").box(1,1,1)\n')
-            f.close()
-        
+        # modify file - NB: separate process is needed to avoid Widows quirks
+        modify_file(code_bigger_object)
 
     # check that editor has updated file contents
-    assert("new_model" in editor.get_text_with_eol())
+    assert(code_bigger_object.splitlines()[2] in editor.get_text_with_eol())
 
     # disable autoreload
     editor.autoreload(False)
@@ -400,11 +416,10 @@ def test_editor_autoreload(monkeypatch,editor):
     with pytest.raises(pytestqt.exceptions.TimeoutError):
         with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
             # re-write original file contents
-            with open('test.py','w', 2) as f:
-                f.write(code)
+            modify_file(code)
 
     # editor should continue showing old contents since autoreload is disabled.
-    assert("new_model" in editor.get_text_with_eol())
+    assert(code_bigger_object.splitlines()[2] in editor.get_text_with_eol())
 
     # Saving a file with autoreload disabled should not trigger a rerender.
     with pytest.raises(pytestqt.exceptions.TimeoutError):
@@ -472,4 +487,62 @@ def test_module_import(main):
     #verify that no exception was generated
     assert(traceback_view.current_exception.text()  == '')
 
+@pytest.fixture
+def main_clean(qtbot):
 
+    win = MainWindow()
+    win.show()
+
+    qtbot.addWidget(win)
+
+    return qtbot, win
+
+def test_auto_fit_view(main_clean):
+
+    def concat(eye,proj,scale):
+        return eye+proj+(scale,)
+
+    def approx_view_properties(eye,proj,scale):
+
+        return pytest.approx(eye+proj+(scale,))
+
+    qtbot, win = main_clean
+
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    viewer = win.components['viewer']
+    object_tree = win.components['object_tree']
+
+    view = viewer.canvas._display.GetView()
+
+    viewer.preferences['Fit automatically'] = False
+    eye0,proj0,scale0 = view.Eye(),view.Proj(),view.Scale()
+
+    # check if camera position is adjusted automatically when rendering for the
+    # first time
+    debugger.render()
+    eye1,proj1,scale1 = view.Eye(),view.Proj(),view.Scale()
+    assert( concat(eye0,proj0,scale0) != \
+            approx_view_properties(eye1,proj1,scale1) )
+
+    # check if camera position is not changed fter code change
+    editor.set_text(code_bigger_object)
+    debugger.render()
+    eye2,proj2,scale2 = view.Eye(),view.Proj(),view.Scale()
+    assert( concat(eye1,proj1,scale1) == \
+            approx_view_properties(eye2,proj2,scale2) )
+
+    # check if position is adjusted automatically after erasing all objects
+    object_tree.removeObjects()
+    debugger.render()
+    eye3,proj3,scale3 = view.Eye(),view.Proj(),view.Scale()
+    assert( concat(eye2,proj2,scale2) != \
+            approx_view_properties(eye3,proj3,scale3) )
+
+    # check if position is adjusted automatically if settings are changed
+    viewer.preferences['Fit automatically'] = True
+    editor.set_text(code)
+    debugger.render()
+    eye4,proj4,scale4 = view.Eye(),view.Proj(),view.Scale()
+    assert( concat(eye3,proj3,scale3) != \
+            approx_view_properties(eye4,proj4,scale4) )

@@ -193,7 +193,14 @@ class Debugger(QObject,ComponentMixin):
 
         cq_objects = {}
 
-        t.__dict__['show_object'] = lambda x: cq_objects.update({str(id(x)) : x})
+        def _show_object(obj,name=None):
+
+            if name:
+                cq_objects.update({name : obj})
+            else:
+                cq_objects.update({str(id(x=obj)) : obj})
+
+        t.__dict__['show_object'] = _show_object
         t.__dict__['debug'] = lambda x: info(str(x))
         t.__dict__['cq'] = cq
 

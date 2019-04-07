@@ -2,6 +2,7 @@ import cadquery as cq
 
 from importlib import reload
 from types import ModuleType
+from typing import List, Union
 
 from OCC.AIS import AIS_ColoredShape
 from OCC.Quantity import \
@@ -11,9 +12,16 @@ def find_cq_objects(results : dict):
 
     return {k:v for k,v in results.items() if isinstance(v,cq.Workplane)}
 
-def to_compound(obj : cq.Workplane):
+def to_compound(obj : Union[cq.Workplane, List[cq.Workplane]]):
 
-    return cq.Compound.makeCompound(obj.vals())
+    vals = []
+
+    if isinstance(obj,cq.Workplane):
+        vals.extend(obj.vals())
+    else:
+        for o in obj: vals.extend(o.vals())
+
+    return cq.Compound.makeCompound(vals)
 
 def to_workplane(obj : cq.Shape):
 
@@ -28,7 +36,8 @@ def make_AIS(obj : cq.Workplane):
 
     return ais
 
-def export(obj : cq.Workplane, type : str, file, precision=1e-1):
+def export(obj : Union[cq.Workplane, List[cq.Workplane]], type : str,
+           file, precision=1e-1):
 
     comp = to_compound(obj)
 

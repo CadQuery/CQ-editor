@@ -312,15 +312,12 @@ class ObjectTree(QWidget,ComponentMixin):
 
     def export(self,file_wildcard,export_type,precision=None):
 
-        item = self.tree.selectedItems()[-1]
-        if item.parent() is self.CQ:
-            shape = item.shape
-        else:
-            return
+        items = self.tree.selectedItems()
+        shapes = [item.shape for item in items if item.parent() is self.CQ]
 
         fname,_ = QFileDialog.getSaveFileName(self,filter=file_wildcard)
         if fname is not '':
-             export(shape,export_type,fname,precision)
+             export(shapes,export_type,fname,precision)
 
     @pyqtSlot()
     def handleSelection(self):

@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QFileDialog, QAction, QMenu, QWidget
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QFileDialog, \
+    QAction, QMenu, QWidget, QAbstractItemView
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
 from pyqtgraph.parametertree import Parameter, ParameterTree
@@ -108,7 +109,8 @@ class ObjectTree(QWidget,ComponentMixin):
 
         super(ObjectTree,self).__init__(parent)
 
-        self.tree = tree = QTreeWidget(self)
+        self.tree = tree = QTreeWidget(self,
+                                       selectionMode=QAbstractItemView.ExtendedSelection)
         self.properties_editor = ParameterTree(self)
 
         tree.setHeaderHidden(True)
@@ -140,7 +142,7 @@ class ObjectTree(QWidget,ComponentMixin):
                                     self.preferences['STL precision']))
 
         self._export_STEP_action = \
-            QAction('Export as SETP',
+            QAction('Export as STEP',
                     self,
                     enabled=False,
                     triggered=lambda: \
@@ -323,7 +325,11 @@ class ObjectTree(QWidget,ComponentMixin):
     @pyqtSlot()
     def handleSelection(self):
 
-        item = self.tree.selectedItems()[-1]
+        items =self.tree.selectedItems()
+        if len(items) == 0:
+            return
+
+        item = items[-1]
         if item.parent() is self.CQ:
             self._export_STL_action.setEnabled(True)
             self._export_STEP_action.setEnabled(True)

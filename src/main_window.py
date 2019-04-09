@@ -210,6 +210,9 @@ class MainWindow(QMainWindow,MainMixin):
         self.components['object_tree'].sigObjectPropertiesChanged\
             .connect(self.components['viewer'].redraw)
 
+        self.components['viewer'].sigObjectSelected\
+            .connect(self.components['object_tree'].handleGraphicalSelection)
+
         self.components['traceback_viewer'].sigHighlightLine\
             .connect(self.components['editor'].go_to_line)
 

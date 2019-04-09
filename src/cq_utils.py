@@ -32,9 +32,10 @@ def to_workplane(obj : cq.Shape):
 
 def make_AIS(obj : cq.Workplane):
 
-    ais = AIS_ColoredShape(to_compound(obj).wrapped)
+    shape = to_compound(obj)
+    ais = AIS_ColoredShape(shape.wrapped)
 
-    return ais
+    return ais,shape
 
 def export(obj : Union[cq.Workplane, List[cq.Workplane]], type : str,
            file, precision=1e-1):

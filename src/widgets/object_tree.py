@@ -36,6 +36,7 @@ class ObjectTreeItem(QTreeWidgetItem):
                  name,
                  ais=None,
                  shape=None,
+                 shape_display=None,
                  sig=None,
                  alpha=0.,
                  **kwargs):
@@ -46,6 +47,7 @@ class ObjectTreeItem(QTreeWidgetItem):
 
         self.ais = ais
         self.shape = shape
+        self.shape_display = shape_display
         self.sig = sig
 
         self.properties = Parameter.create(name='Properties',
@@ -240,11 +242,12 @@ class ObjectTree(QWidget,ComponentMixin):
         {k:v for k,v in tmp if not isinstance(v.val(),(cq.Vector,))}
 
         for name,shape in objects_f.items():
-            ais = make_AIS(shape)
+            ais,shape_display = make_AIS(shape)
             ais.SetTransparency(alpha)
             ais_list.append(ais)
             root.addChild(ObjectTreeItem(name,
                                          shape=shape,
+                                         shape_display=shape_display,
                                          ais=ais,
                                          sig=self.sigObjectPropertiesChanged))
 
@@ -345,6 +348,18 @@ class ObjectTree(QWidget,ComponentMixin):
             self._clear_current_action.setEnabled(False)
             self.properties_editor.setEnabled(False)
             self.properties_editor.clear()
+
+    @pyqtSlot(list)
+    def handleGraphicalSelection(self,shapes):
+
+        CQ = self.CQ
+        for i in range(CQ.childCount()):
+            item = CQ.child(i)
+            for shape in shapes:
+                if item.shape_display.wrapped.IsEqual(shape):
+                    item.setSelected(True)
+                else:
+                    item.setSelected(False)
 
     @pyqtSlot(QTreeWidgetItem,int)
     def handleChecked(self,item,col):

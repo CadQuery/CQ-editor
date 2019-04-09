@@ -186,12 +186,6 @@ class ObjectTree(QWidget,ComponentMixin):
 
     def showMenu(self,position):
 
-        item = self.tree.selectedItems()[-1]
-        if item.parent() is self.CQ:
-            self._export_STL_action.setEnabled(True)
-        else:
-            self._export_STL_action.setEnabled(False)
-
         self._context_menu.exec_(self.tree.viewport().mapToGlobal(position))
 
 
@@ -313,7 +307,14 @@ class ObjectTree(QWidget,ComponentMixin):
     def export(self,file_wildcard,export_type,precision=None):
 
         items = self.tree.selectedItems()
-        shapes = [item.shape for item in items if item.parent() is self.CQ]
+
+        # if CQ models is selected get all children
+        if [item for item in items if item is self.CQ]:
+            CQ = self.CQ
+            shapes = [CQ.child(i).shape for i in range(CQ.childCount())]
+        # otherwise collect all selected children of CQ
+        else:
+            shapes = [item.shape for item in items if item.parent() is self.CQ]
 
         fname,_ = QFileDialog.getSaveFileName(self,filter=file_wildcard)
         if fname is not '':
@@ -335,6 +336,9 @@ class ObjectTree(QWidget,ComponentMixin):
             self.properties_editor.setParameters(item.properties,
                                                  showTop=False)
             self.properties_editor.setEnabled(True)
+        elif item is self.CQ and item.childCount()>0:
+            self._export_STL_action.setEnabled(True)
+            self._export_STEP_action.setEnabled(True)
         else:
             self._export_STL_action.setEnabled(False)
             self._export_STEP_action.setEnabled(False)

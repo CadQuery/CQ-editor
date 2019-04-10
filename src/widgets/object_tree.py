@@ -104,6 +104,7 @@ class ObjectTree(QWidget,ComponentMixin):
     sigObjectsAdded = pyqtSignal([list],[list,bool])
     sigObjectsRemoved = pyqtSignal(list)
     sigCQObjectSelected = pyqtSignal(object)
+    sigAISObjectsSelected = pyqtSignal(list)
     sigItemChanged = pyqtSignal(QTreeWidgetItem,int)
     sigObjectPropertiesChanged = pyqtSignal()
 
@@ -262,9 +263,9 @@ class ObjectTree(QWidget,ComponentMixin):
         root = self.CQ
 
         if isinstance(obj, cq.Workplane):
-            ais = make_AIS(obj)
+            ais,_ = make_AIS(obj)
         else:
-            ais = make_AIS(to_workplane(obj))
+            ais,_ = make_AIS(to_workplane(obj))
 
         ais.SetTransparency(alpha)
 
@@ -330,6 +331,12 @@ class ObjectTree(QWidget,ComponentMixin):
         if len(items) == 0:
             return
 
+        # emit list of all selected ais objects (if present)
+        ais_objects = [item.ais for item in items if item.parent() is self.CQ]
+        if ais_objects:
+            self.sigAISObjectsSelected.emit(ais_objects)
+
+        # handle context menu and emit last selected CQ  object (if present)
         item = items[-1]
         if item.parent() is self.CQ:
             self._export_STL_action.setEnabled(True)
@@ -352,14 +359,14 @@ class ObjectTree(QWidget,ComponentMixin):
     @pyqtSlot(list)
     def handleGraphicalSelection(self,shapes):
 
+        self.tree.clearSelection()
+
         CQ = self.CQ
         for i in range(CQ.childCount()):
             item = CQ.child(i)
             for shape in shapes:
                 if item.shape_display.wrapped.IsEqual(shape):
                     item.setSelected(True)
-                else:
-                    item.setSelected(False)
 
     @pyqtSlot(QTreeWidgetItem,int)
     def handleChecked(self,item,col):

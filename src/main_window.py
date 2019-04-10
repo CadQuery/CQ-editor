@@ -209,6 +209,8 @@ class MainWindow(QMainWindow,MainMixin):
             .connect(self.components['cq_object_inspector'].setObject)
         self.components['object_tree'].sigObjectPropertiesChanged\
             .connect(self.components['viewer'].redraw)
+        self.components['object_tree'].sigAISObjectsSelected\
+            .connect(self.components['viewer'].set_selected)
 
         self.components['viewer'].sigObjectSelected\
             .connect(self.components['object_tree'].handleGraphicalSelection)

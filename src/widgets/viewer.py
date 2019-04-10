@@ -326,6 +326,16 @@ class OCCViewer(QWidget,ComponentMixin):
 
         self.sigObjectSelected.emit(obj)
 
+    @pyqtSlot(list)
+    def set_selected(self,ais):
+
+        ctx = self._get_context()
+        ctx.ClearSelected(False)
+
+        for obj in ais:
+            ctx.AddOrRemoveSelected(obj,False)
+
+        self.redraw()
 
 
 if __name__ == "__main__":

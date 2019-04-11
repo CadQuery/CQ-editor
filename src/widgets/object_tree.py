@@ -141,7 +141,7 @@ class ObjectTree(QWidget,ComponentMixin):
                     self,
                     enabled=False,
                     triggered=lambda: \
-                        self.export('*stl','stl',
+                        self.export('*.stl','stl',
                                     self.preferences['STL precision']))
 
         self._export_STEP_action = \
@@ -149,7 +149,7 @@ class ObjectTree(QWidget,ComponentMixin):
                     self,
                     enabled=False,
                     triggered=lambda: \
-                        self.export('*step','step',[]))
+                        self.export('*.step','step',[]))
 
         self._clear_current_action = QAction(icon('delete'),
                                              'Clear current',

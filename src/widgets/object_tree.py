@@ -28,7 +28,7 @@ class TopTreeItem(QTreeWidgetItem):
 class ObjectTreeItem(QTreeWidgetItem):
 
     props = [{'name': 'Name', 'type': 'str', 'value': ''},
-             {'name': 'Color', 'type': 'color', 'value': "f4da16"},
+             {'name': 'Color', 'type': 'color', 'value': "f4a824"},
              {'name': 'Alpha', 'type': 'float', 'value': 0, 'limits': (0,1), 'step': 1e-1},
              {'name': 'Visible', 'type': 'bool','value': True}]
 
@@ -56,6 +56,8 @@ class ObjectTreeItem(QTreeWidgetItem):
         self.properties['Name'] = name
         self.properties['Alpha'] = alpha
         self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
+
+        self.ais.SetColor(to_occ_color(self.properties['Color']))
 
     def propertiesChanged(self,*args):
 

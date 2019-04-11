@@ -194,7 +194,8 @@ class ObjectTree(QWidget,ComponentMixin):
 
     def menuActions(self):
 
-        return {'Tools' : [self._export_STL_action]}
+        return {'Tools' : [self._export_STL_action,
+                           self._export_STEP_action]}
 
     def toolbarActions(self):
 

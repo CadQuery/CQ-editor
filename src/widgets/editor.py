@@ -123,8 +123,12 @@ class Editor(CodeEditor,ComponentMixin):
     def save(self):
 
         if self._filename is not '':
+            self._file_watcher.blockSignals(True)
+
             with open(self._filename,'w') as f:
                 f.write(self.toPlainText())
+
+            self._file_watcher.blockSignals(False)
         else:
             self.save_as()
 

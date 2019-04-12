@@ -7,7 +7,7 @@ import pytest
 import pytestqt
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from src.main import MainWindow
 from src.widgets.editor import Editor
@@ -52,7 +52,9 @@ def modify_file(code):
     p.join()
 
 @pytest.fixture
-def main(qtbot):
+def main(qtbot,mock):
+
+    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
 
     win = MainWindow()
     win.show()
@@ -61,6 +63,18 @@ def main(qtbot):
 
     debugger = win.components['debugger']
     debugger._actions['Run'][0].triggered.emit()
+
+    return qtbot, win
+
+@pytest.fixture
+def main_clean(qtbot,mock):
+
+    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
+
+    win = MainWindow()
+    win.show()
+
+    qtbot.addWidget(win)
 
     return qtbot, win
 
@@ -486,16 +500,6 @@ def test_module_import(main):
 
     #verify that no exception was generated
     assert(traceback_view.current_exception.text()  == '')
-
-@pytest.fixture
-def main_clean(qtbot):
-
-    win = MainWindow()
-    win.show()
-
-    qtbot.addWidget(win)
-
-    return qtbot, win
 
 def test_auto_fit_view(main_clean):
 

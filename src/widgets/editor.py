@@ -106,8 +106,9 @@ class Editor(CodeEditor,ComponentMixin):
 
     def new(self):
 
-        self.filename = ''
         self.set_text('')
+        self.filename = ''
+        self.reset_modified()
 
     def open(self):
 
@@ -119,6 +120,7 @@ class Editor(CodeEditor,ComponentMixin):
 
         self.set_text_from_file(fname)
         self.filename = fname
+        self.reset_modified()
 
     def save(self):
 

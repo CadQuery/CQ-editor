@@ -129,6 +129,7 @@ class Editor(CodeEditor,ComponentMixin):
                 f.write(self.toPlainText())
 
             self._file_watcher.blockSignals(False)
+            self.reset_modified()
         else:
             self.save_as()
 
@@ -139,6 +140,8 @@ class Editor(CodeEditor,ComponentMixin):
             with open(fname,'w') as f:
                 f.write(self.toPlainText())
                 self.filename = fname
+
+            self.reset_modified()
 
     def _update_filewatcher(self):
         if self._watched_file and (self._watched_file != self.filename or not self.preferences['Autoreload']):
@@ -165,6 +168,10 @@ class Editor(CodeEditor,ComponentMixin):
     def autoreload(self, enabled):
         self.preferences['Autoreload'] = enabled
         self._update_filewatcher()
+
+    def reset_modified(self):
+
+        self.document().setModified(False)
 
 
 if __name__ == "__main__":

@@ -62,7 +62,19 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.saveWindow()
         self.savePreferences()
-        super(MainWindow,self).closeEvent(event)
+
+        if self.components['editor'].document().isModified():
+
+            rv = QMessageBox.question(self, 'Confirm close',
+                                      'Close without saving?',
+                                      QMessageBox.Yes, QMessageBox.No)
+            if rv == QMessageBox.Yes:
+                event.accept()
+                super(MainWindow,self).closeEvent(event)
+            else:
+                event.ignore()
+        else:
+            super(MainWindow,self).closeEvent(event)
 
     def prepare_panes(self):
 
@@ -304,6 +316,9 @@ class MainWindow(QMainWindow,MainMixin):
     def cq_documentation(self):
 
         open_url('https://dcowden.github.io/cadquery')
+
+
+
 
 
 if __name__ == "__main__":

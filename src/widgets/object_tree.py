@@ -334,10 +334,9 @@ class ObjectTree(QWidget,ComponentMixin):
         if len(items) == 0:
             return
 
-        # emit list of all selected ais objects (if present)
+        # emit list of all selected ais objects (might be empty)
         ais_objects = [item.ais for item in items if item.parent() is self.CQ]
-        if ais_objects:
-            self.sigAISObjectsSelected.emit(ais_objects)
+        self.sigAISObjectsSelected.emit(ais_objects)
 
         # handle context menu and emit last selected CQ  object (if present)
         item = items[-1]

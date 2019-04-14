@@ -126,13 +126,19 @@ class Editor(CodeEditor,ComponentMixin):
     def save(self):
 
         if self._filename is not '':
-            self._file_watcher.blockSignals(True)
+
+            if self.preferences['Autoreload']:
+                self._file_watcher.removePath(self.filename)
 
             with open(self._filename,'w') as f:
                 f.write(self.toPlainText())
 
-            self._file_watcher.blockSignals(False)
+            if self.preferences['Autoreload']:
+                self._file_watcher.addPath(self.filename)
+                self.triggerRerender.emit(True)
+
             self.reset_modified()
+
         else:
             self.save_as()
 

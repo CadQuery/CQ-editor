@@ -57,11 +57,13 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.restorePreferences()
         self.restoreWindow()
+        self.restoreComponenetState()
 
     def closeEvent(self,event):
 
         self.saveWindow()
         self.savePreferences()
+        self.saveComponenetState()
 
         if self.components['editor'].document().isModified():
 

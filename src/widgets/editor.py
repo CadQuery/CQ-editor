@@ -20,6 +20,7 @@ class Editor(CodeEditor,ComponentMixin):
     # This signal is emitted whenever the currently-open file changes and
     # autoreload is enabled.
     triggerRerender = pyqtSignal(bool)
+    sigFilenameChanged = pyqtSignal(str)
 
     preferences = Parameter.create(name='Preferences',children=[
         {'name': 'Font size', 'type': 'int', 'value': 12},
@@ -156,10 +157,12 @@ class Editor(CodeEditor,ComponentMixin):
     @property
     def filename(self):
       return self._filename
+
     @filename.setter
     def filename(self, fname):
         self._filename = fname
         self._update_filewatcher()
+        self.sigFilenameChanged.emit(fname)
 
     # callback triggered by QFileSystemWatcher
     def _file_changed(self, val):
@@ -174,6 +177,18 @@ class Editor(CodeEditor,ComponentMixin):
     def reset_modified(self):
 
         self.document().setModified(False)
+
+    def saveComponenetState(self,store):
+
+        if self.filename is not '':
+            store.setValue(self.name+'/state',self.filename)
+
+    def restoreComponenetState(self,store):
+
+        filename = store.value(self.name+'/state',self.filename)
+
+        if filename and filename is not '':
+            self.load_from_file(filename)
 
 
 if __name__ == "__main__":

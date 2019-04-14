@@ -61,6 +61,9 @@ def main(qtbot,mock):
 
     qtbot.addWidget(win)
 
+    editor = win.components['editor']
+    editor.set_text(code)
+
     debugger = win.components['debugger']
     debugger._actions['Run'][0].triggered.emit()
 
@@ -75,6 +78,9 @@ def main_clean(qtbot,mock):
     win.show()
 
     qtbot.addWidget(win)
+
+    editor = win.components['editor']
+    editor.set_text(code)
 
     return qtbot, win
 

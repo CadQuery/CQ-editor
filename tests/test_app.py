@@ -5,6 +5,7 @@ from multiprocessing import Process
 
 import pytest
 import pytestqt
+import cadquery as cq
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
@@ -22,7 +23,8 @@ code_bigger_object = \
 '''import cadquery as cq
 result = cq.Workplane("XY" )
 result = result.box(20, 20, 0.5)
-result = result.edges("|Z").fillet(0.125)'''
+result = result.edges("|Z").fillet(0.125)
+'''
 
 code_show_Workplane = \
 '''import cadquery as cq
@@ -40,6 +42,12 @@ result = result.box(3, 3, 0.5)
 result = result.edges("|Z").fillet(0.125)
 
 show_object(result.val())
+'''
+
+code_multi = \
+'''import cadquery as cq
+result1 = cq.Workplane("XY" ).box(3, 3, 0.5)
+result2 = cq.Workplane("XY" ).box(3, 3, 0.5).translate((0,15,0))
 '''
 
 def _modify_file(code):
@@ -81,6 +89,25 @@ def main_clean(qtbot,mock):
 
     editor = win.components['editor']
     editor.set_text(code)
+
+    debugger = win.components['debugger']
+    debugger._actions['Run'][0].triggered.emit()
+
+    return qtbot, win
+
+@pytest.fixture
+def main_multi(qtbot,mock):
+
+    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
+    mock.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.step',''))
+
+    win = MainWindow()
+    win.show()
+
+    qtbot.addWidget(win)
+
+    editor = win.components['editor']
+    editor.set_text(code_multi)
 
     return qtbot, win
 
@@ -401,7 +428,7 @@ def test_editor(monkeypatch,editor):
     editor.save_as()
     assert(os.path.exists(filename2()[0]))
 
-@pytest.mark.repeat(5)
+@pytest.mark.repeat(1)
 def test_editor_autoreload(monkeypatch,editor):
 
     qtbot, editor = editor
@@ -556,3 +583,36 @@ def test_auto_fit_view(main_clean):
     eye4,proj4,scale4 = view.Eye(),view.Proj(),view.Scale()
     assert( concat(eye3,proj3,scale3) != \
             approx_view_properties(eye4,proj4,scale4) )
+
+def test_selection(main_multi,mock):
+
+    qtbot, win = main_multi
+
+    viewer = win.components['viewer']
+    object_tree = win.components['object_tree']
+
+    CQ = object_tree.CQ
+    obj1 = CQ.child(0)
+    obj2 = CQ.child(1)
+
+    obj1.setSelected(True)
+    obj2.setSelected(True)
+
+    qtbot.stopForInteraction()
+
+    object_tree._export_STEP_action.triggered.emit()
+    imported = cq.importers.importSTEP('out.step')
+    assert(len(imported.solids().vals()) == 2)
+
+    obj2.setSelected(False)
+
+    object_tree._export_STEP_action.triggered.emit()
+    imported = cq.importers.importSTEP('out.step')
+    assert(len(imported.solids().vals()) == 1)
+
+    obj1.setSelected(True)
+    CQ.setSelected(True)
+
+    object_tree._export_STEP_action.triggered.emit()
+    imported = cq.importers.importSTEP('out.step')
+    assert(len(imported.solids().vals()) == 1)

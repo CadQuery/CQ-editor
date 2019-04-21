@@ -90,9 +90,6 @@ def main_clean(qtbot,mock):
     editor = win.components['editor']
     editor.set_text(code)
 
-    debugger = win.components['debugger']
-    debugger._actions['Run'][0].triggered.emit()
-
     return qtbot, win
 
 @pytest.fixture
@@ -108,6 +105,9 @@ def main_multi(qtbot,mock):
 
     editor = win.components['editor']
     editor.set_text(code_multi)
+
+    debugger = win.components['debugger']
+    debugger._actions['Run'][0].triggered.emit()
 
     return qtbot, win
 
@@ -595,24 +595,44 @@ def test_selection(main_multi,mock):
     obj1 = CQ.child(0)
     obj2 = CQ.child(1)
 
+    # export with two selected objects
     obj1.setSelected(True)
     obj2.setSelected(True)
 
-    qtbot.stopForInteraction()
-
     object_tree._export_STEP_action.triggered.emit()
-    imported = cq.importers.importSTEP('out.step')
+    imported = cq.importers.importStep('out.step')
     assert(len(imported.solids().vals()) == 2)
 
+    # export with one selected objects
     obj2.setSelected(False)
 
     object_tree._export_STEP_action.triggered.emit()
-    imported = cq.importers.importSTEP('out.step')
+    imported = cq.importers.importStep('out.step')
     assert(len(imported.solids().vals()) == 1)
 
-    obj1.setSelected(True)
+    # export with one selected objects
+    obj1.setSelected(False)
     CQ.setSelected(True)
 
     object_tree._export_STEP_action.triggered.emit()
-    imported = cq.importers.importSTEP('out.step')
-    assert(len(imported.solids().vals()) == 1)
+    imported = cq.importers.importStep('out.step')
+    assert(len(imported.solids().vals()) == 2)
+
+    # check if viewer and object tree are properly connected
+    CQ.setSelected(False)
+    obj1.setSelected(True)
+    obj2.setSelected(True)
+    #qtbot.stopForInteraction()
+    ctx = viewer._get_context()
+    ctx.InitSelected()
+    shapes = []
+    while ctx.MoreSelected():
+        shapes.append(ctx.SelectedShape())
+        ctx.NextSelected()
+    assert(len(shapes) == 2)
+
+    viewer.fit()
+    qtbot.mouseClick(viewer.canvas, Qt.LeftButton)
+
+    assert(len(object_tree.tree.selectedItems()) == 0)
+

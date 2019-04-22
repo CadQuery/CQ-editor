@@ -432,15 +432,21 @@ def test_editor(monkeypatch,editor):
     assert(conv_line_ends(editor.get_text_with_eol()) == code)
 
     #check that save file works properly
-    editor.set_text('a')
-    editor._filename = 'test2.py'
+    editor.new()
+    qtbot.mouseClick(editor, Qt.LeftButton)
+    qtbot.keyClick(editor,Qt.Key_A)
+
+    assert(editor.document().isModified() == True)
+
+    editor.filename = 'test2.py'
     editor.save()
+
+    assert(editor.document().isModified() == False)
 
     monkeypatch.setattr(QFileDialog, 'getOpenFileName',
                         staticmethod(filename2))
 
     editor.open()
-    assert(editor.get_text_with_eol() == 'a')
     assert(editor.get_text_with_eol() == 'a')
 
     #check that save as works properly

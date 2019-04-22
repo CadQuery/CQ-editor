@@ -1,5 +1,5 @@
 import os.path as path
-import os
+import os, sys
 
 from multiprocessing import Process
 
@@ -248,6 +248,9 @@ def test_inspect(main):
 
 def test_debug(main,mock):
 
+    # store the tracing function
+    trace_function = sys.gettrace()
+
     class event_loop(object):
         '''Used to mock the QEventLoop for the debugger component
         '''
@@ -343,6 +346,9 @@ def test_debug(main,mock):
 
     assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 3)
+
+    # restore the tracing function
+    sys.settrace(trace_function)
 
 code_err1 = \
 '''import cadquery as cq

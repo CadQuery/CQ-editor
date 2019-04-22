@@ -7,7 +7,7 @@ import pytest
 import pytestqt
 import cadquery as cq
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSettings
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from src.main import MainWindow
@@ -453,6 +453,17 @@ def test_editor(monkeypatch,editor):
     os.remove('test2.py')
     editor.save_as()
     assert(os.path.exists(filename2()[0]))
+
+    #test persistance
+    settings = QSettings('test')
+    editor.saveComponenetState(settings)
+
+    editor.new()
+    assert(editor.get_text_with_eol() == '')
+
+    editor.restoreComponenetState(settings)
+    assert(editor.get_text_with_eol() == 'a')
+
 
 @pytest.mark.repeat(1)
 def test_editor_autoreload(monkeypatch,editor):

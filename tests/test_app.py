@@ -35,6 +35,16 @@ result = result.edges("|Z").fillet(0.125)
 show_object(result)
 '''
 
+code_show_Workplane_named = \
+'''import cadquery as cq
+result = cq.Workplane("XY" )
+result = result.box(3, 3, 0.5)
+result = result.edges("|Z").fillet(0.125)
+
+debug('test')
+show_object(result,name='test')
+'''
+
 code_show_Shape = \
 '''import cadquery as cq
 result = cq.Workplane("XY" )
@@ -119,6 +129,7 @@ def test_render(main):
     editor = win.components['editor']
     debugger = win.components['debugger']
     console = win.components['console']
+    log = win.components['log']
 
     # check that object was rendered
     assert(obj_tree_comp.CQ.childCount() == 1)
@@ -154,6 +165,15 @@ def test_render(main):
 
     console.execute(code_show_Shape)
     assert(obj_tree_comp.CQ.childCount() == 1)
+
+    # check object rendering using show_object call with a name specified and
+    # debug call
+    editor.set_text(code_show_Workplane_named)
+    debugger._actions['Run'][0].triggered.emit()
+
+    qtbot.wait(100)
+    assert(obj_tree_comp.CQ.child(0).text(0) == 'test')
+    assert('test' in log.toPlainText().splitlines()[-1])
 
 def test_export(main,mock):
 
@@ -622,7 +642,6 @@ def test_selection(main_multi,mock):
     CQ.setSelected(False)
     obj1.setSelected(True)
     obj2.setSelected(True)
-    #qtbot.stopForInteraction()
     ctx = viewer._get_context()
     ctx.InitSelected()
     shapes = []
@@ -635,4 +654,3 @@ def test_selection(main_multi,mock):
     qtbot.mouseClick(viewer.canvas, Qt.LeftButton)
 
     assert(len(object_tree.tree.selectedItems()) == 0)
-

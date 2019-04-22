@@ -246,6 +246,7 @@ def test_inspect(main):
     insp._toolbar_actions[0].toggled.emit(False)
     assert(number_visible_items(viewer) == 3)
 
+
 def test_debug(main,mock):
 
     # store the tracing function
@@ -364,6 +365,9 @@ f()
 
 def test_traceback(main):
 
+    # store the tracing function
+    trace_function = sys.gettrace()
+
     qtbot, win = main
 
     editor = win.components['editor']
@@ -387,6 +391,9 @@ def test_traceback(main):
     run.triggered.emit()
 
     assert('NameError' in traceback_view.current_exception.text())
+
+    # restore the tracing function
+    sys.settrace(trace_function)
 
 @pytest.fixture
 def editor(qtbot):

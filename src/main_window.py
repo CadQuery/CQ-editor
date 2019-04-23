@@ -57,12 +57,26 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.restorePreferences()
         self.restoreWindow()
+        self.restoreComponenetState()
 
     def closeEvent(self,event):
 
         self.saveWindow()
         self.savePreferences()
-        super(MainWindow,self).closeEvent(event)
+        self.saveComponenetState()
+
+        if self.components['editor'].document().isModified():
+
+            rv = QMessageBox.question(self, 'Confirm close',
+                                      'Close without saving?',
+                                      QMessageBox.Yes, QMessageBox.No)
+            if rv == QMessageBox.Yes:
+                event.accept()
+                super(MainWindow,self).closeEvent(event)
+            else:
+                event.ignore()
+        else:
+            super(MainWindow,self).closeEvent(event)
 
     def prepare_panes(self):
 
@@ -209,6 +223,11 @@ class MainWindow(QMainWindow,MainMixin):
             .connect(self.components['cq_object_inspector'].setObject)
         self.components['object_tree'].sigObjectPropertiesChanged\
             .connect(self.components['viewer'].redraw)
+        self.components['object_tree'].sigAISObjectsSelected\
+            .connect(self.components['viewer'].set_selected)
+
+        self.components['viewer'].sigObjectSelected\
+            .connect(self.components['object_tree'].handleGraphicalSelection)
 
         self.components['traceback_viewer'].sigHighlightLine\
             .connect(self.components['editor'].go_to_line)
@@ -299,6 +318,9 @@ class MainWindow(QMainWindow,MainMixin):
     def cq_documentation(self):
 
         open_url('https://dcowden.github.io/cadquery')
+
+
+
 
 
 if __name__ == "__main__":

@@ -1,13 +1,14 @@
 import os.path as path
-import os
+import os, sys
 
 from multiprocessing import Process
 
 import pytest
 import pytestqt
+import cadquery as cq
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtCore import Qt, QSettings
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication
 
 from src.main import MainWindow
 from src.widgets.editor import Editor
@@ -22,7 +23,8 @@ code_bigger_object = \
 '''import cadquery as cq
 result = cq.Workplane("XY" )
 result = result.box(20, 20, 0.5)
-result = result.edges("|Z").fillet(0.125)'''
+result = result.edges("|Z").fillet(0.125)
+'''
 
 code_show_Workplane = \
 '''import cadquery as cq
@@ -31,6 +33,16 @@ result = result.box(3, 3, 0.5)
 result = result.edges("|Z").fillet(0.125)
 
 show_object(result)
+'''
+
+code_show_Workplane_named = \
+'''import cadquery as cq
+result = cq.Workplane("XY" )
+result = result.box(3, 3, 0.5)
+result = result.edges("|Z").fillet(0.125)
+
+debug('test')
+show_object(result,name='test')
 '''
 
 code_show_Shape = \
@@ -42,6 +54,12 @@ result = result.edges("|Z").fillet(0.125)
 show_object(result.val())
 '''
 
+code_multi = \
+'''import cadquery as cq
+result1 = cq.Workplane("XY" ).box(3, 3, 0.5)
+result2 = cq.Workplane("XY" ).box(3, 3, 0.5).translate((0,15,0))
+'''
+
 def _modify_file(code):
         with open('test.py', 'w', 1) as f:
                     f.write(code)
@@ -51,13 +69,82 @@ def modify_file(code):
     p.start()
     p.join()
 
+def get_center(widget):
+
+    pos = widget.pos()
+    pos.setX(pos.x()+widget.width()//2)
+    pos.setY(pos.y()+widget.height()//2)
+
+    return pos
+
+def get_bottom_left(widget):
+
+    pos = widget.pos()
+    pos.setY(pos.y()+widget.height())
+
+    return pos
+
 @pytest.fixture
-def main(qtbot):
+def main(qtbot,mock):
+
+    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
 
     win = MainWindow()
     win.show()
 
     qtbot.addWidget(win)
+
+    editor = win.components['editor']
+    editor.set_text(code)
+
+    debugger = win.components['debugger']
+    debugger._actions['Run'][0].triggered.emit()
+
+    return qtbot, win
+
+@pytest.fixture
+def main_clean(qtbot,mock):
+
+    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
+
+    win = MainWindow()
+    win.show()
+
+    qtbot.addWidget(win)
+
+    editor = win.components['editor']
+    editor.set_text(code)
+
+    return qtbot, win
+
+@pytest.fixture
+def main_clean_do_not_close(qtbot,mock):
+
+    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.No)
+
+    win = MainWindow()
+    win.show()
+
+    qtbot.addWidget(win)
+
+    editor = win.components['editor']
+    editor.set_text(code)
+
+    return qtbot, win
+
+@pytest.fixture
+def main_multi(qtbot,mock):
+
+    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
+    mock.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.step',''))
+
+    win = MainWindow()
+    win.show()
+
+    qtbot.addWidget(win)
+
+    editor = win.components['editor']
+    editor.set_text(code_multi)
 
     debugger = win.components['debugger']
     debugger._actions['Run'][0].triggered.emit()
@@ -72,6 +159,7 @@ def test_render(main):
     editor = win.components['editor']
     debugger = win.components['debugger']
     console = win.components['console']
+    log = win.components['log']
 
     # check that object was rendered
     assert(obj_tree_comp.CQ.childCount() == 1)
@@ -107,6 +195,15 @@ def test_render(main):
 
     console.execute(code_show_Shape)
     assert(obj_tree_comp.CQ.childCount() == 1)
+
+    # check object rendering using show_object call with a name specified and
+    # debug call
+    editor.set_text(code_show_Workplane_named)
+    debugger._actions['Run'][0].triggered.emit()
+
+    qtbot.wait(100)
+    assert(obj_tree_comp.CQ.child(0).text(0) == 'test')
+    assert('test' in log.toPlainText().splitlines()[-1])
 
 def test_export(main,mock):
 
@@ -179,7 +276,11 @@ def test_inspect(main):
     insp._toolbar_actions[0].toggled.emit(False)
     assert(number_visible_items(viewer) == 3)
 
+
 def test_debug(main,mock):
+
+    # store the tracing function
+    trace_function = sys.gettrace()
 
     class event_loop(object):
         '''Used to mock the QEventLoop for the debugger component
@@ -277,6 +378,9 @@ def test_debug(main,mock):
     assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 3)
 
+    # restore the tracing function
+    sys.settrace(trace_function)
+
 code_err1 = \
 '''import cadquery as cq
 (
@@ -290,6 +394,9 @@ f()
 '''
 
 def test_traceback(main):
+
+    # store the tracing function
+    trace_function = sys.gettrace()
 
     qtbot, win = main
 
@@ -314,6 +421,9 @@ def test_traceback(main):
     run.triggered.emit()
 
     assert('NameError' in traceback_view.current_exception.text())
+
+    # restore the tracing function
+    sys.settrace(trace_function)
 
 @pytest.fixture
 def editor(qtbot):
@@ -365,15 +475,21 @@ def test_editor(monkeypatch,editor):
     assert(conv_line_ends(editor.get_text_with_eol()) == code)
 
     #check that save file works properly
-    editor.set_text('a')
-    editor._filename = 'test2.py'
+    editor.new()
+    qtbot.mouseClick(editor, Qt.LeftButton)
+    qtbot.keyClick(editor,Qt.Key_A)
+
+    assert(editor.document().isModified() == True)
+
+    editor.filename = 'test2.py'
     editor.save()
+
+    assert(editor.document().isModified() == False)
 
     monkeypatch.setattr(QFileDialog, 'getOpenFileName',
                         staticmethod(filename2))
 
     editor.open()
-    assert(editor.get_text_with_eol() == 'a')
     assert(editor.get_text_with_eol() == 'a')
 
     #check that save as works properly
@@ -381,7 +497,18 @@ def test_editor(monkeypatch,editor):
     editor.save_as()
     assert(os.path.exists(filename2()[0]))
 
-@pytest.mark.repeat(5)
+    #test persistance
+    settings = QSettings('test')
+    editor.saveComponenetState(settings)
+
+    editor.new()
+    assert(editor.get_text_with_eol() == '')
+
+    editor.restoreComponenetState(settings)
+    assert(editor.get_text_with_eol() == 'a')
+
+
+@pytest.mark.repeat(1)
 def test_editor_autoreload(monkeypatch,editor):
 
     qtbot, editor = editor
@@ -487,16 +614,6 @@ def test_module_import(main):
     #verify that no exception was generated
     assert(traceback_view.current_exception.text()  == '')
 
-@pytest.fixture
-def main_clean(qtbot):
-
-    win = MainWindow()
-    win.show()
-
-    qtbot.addWidget(win)
-
-    return qtbot, win
-
 def test_auto_fit_view(main_clean):
 
     def concat(eye,proj,scale):
@@ -546,3 +663,89 @@ def test_auto_fit_view(main_clean):
     eye4,proj4,scale4 = view.Eye(),view.Proj(),view.Scale()
     assert( concat(eye3,proj3,scale3) != \
             approx_view_properties(eye4,proj4,scale4) )
+
+def test_selection(main_multi,mock):
+
+    qtbot, win = main_multi
+
+    viewer = win.components['viewer']
+    object_tree = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+
+    CQ = object_tree.CQ
+    obj1 = CQ.child(0)
+    obj2 = CQ.child(1)
+
+    # export with two selected objects
+    obj1.setSelected(True)
+    obj2.setSelected(True)
+
+    object_tree._export_STEP_action.triggered.emit()
+    imported = cq.importers.importStep('out.step')
+    assert(len(imported.solids().vals()) == 2)
+
+    # export with one selected objects
+    obj2.setSelected(False)
+
+    object_tree._export_STEP_action.triggered.emit()
+    imported = cq.importers.importStep('out.step')
+    assert(len(imported.solids().vals()) == 1)
+
+    # export with one selected objects
+    obj1.setSelected(False)
+    CQ.setSelected(True)
+
+    object_tree._export_STEP_action.triggered.emit()
+    imported = cq.importers.importStep('out.step')
+    assert(len(imported.solids().vals()) == 2)
+
+    # check if viewer and object tree are properly connected
+    CQ.setSelected(False)
+    obj1.setSelected(True)
+    obj2.setSelected(True)
+    ctx = viewer._get_context()
+    ctx.InitSelected()
+    shapes = []
+    while ctx.MoreSelected():
+        shapes.append(ctx.SelectedShape())
+        ctx.NextSelected()
+    assert(len(shapes) == 2)
+
+    viewer.fit()
+    qtbot.mouseClick(viewer.canvas, Qt.LeftButton)
+
+    assert(len(object_tree.tree.selectedItems()) == 0)
+
+    viewer.sigObjectSelected.emit([obj1.shape_display.wrapped])
+    assert(len(object_tree.tree.selectedItems()) == 1)
+
+    # go through different handleSelection paths
+    qtbot.mouseClick(object_tree.tree, Qt.LeftButton)
+    qtbot.keyClick(object_tree.tree, Qt.Key_Down)
+    qtbot.keyClick(object_tree.tree, Qt.Key_Down)
+    qtbot.keyClick(object_tree.tree, Qt.Key_Down)
+    qtbot.keyClick(object_tree.tree, Qt.Key_Down)
+
+    assert(object_tree._export_STL_action.isEnabled() == False)
+    assert(object_tree._export_STEP_action.isEnabled() == False)
+    assert(object_tree._clear_current_action.isEnabled() == False)
+    assert(object_tree.properties_editor.isEnabled() == False)
+
+def test_closing(main_clean_do_not_close):
+
+    qtbot,win = main_clean_do_not_close
+
+    editor = win.components['editor']
+
+    # make sure that windows is visible
+    assert(win.isVisible())
+
+    # should not quit
+    win.close()
+    assert(win.isVisible())
+
+    # should quit
+    editor.reset_modified()
+    win.close()
+    assert(not win.isVisible())

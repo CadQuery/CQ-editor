@@ -127,23 +127,29 @@ class Debugger(QObject,ComponentMixin):
         self._actions =  \
             {'Run' : [QAction(icon('run'),
                               'Render',
-                               self,triggered=self.render),
+                               self,
+                               shortcut='F5',
+                               triggered=self.render),
                       QAction(icon('debug'),
                              'Debug',
                              self,
                              checkable=True,
+                             shortcut='ctrl+F5',
                              triggered=self.debug),
                       QAction(icon('arrow-step-over'),
                              'Step',
                              self,
+                             shortcut='ctrl+F10',
                              triggered=lambda: self.debug_cmd(DbgState.STEP)),
                       QAction(icon('arrow-step-in'),
                              'Step in',
                              self,
+                             shortcut='ctrl+F11',
                              triggered=lambda: None),
                       QAction(icon('arrow-continue'),
                               'Continue',
                               self,
+                              shortcut='ctrl+F12',
                               triggered=lambda: self.debug_cmd(DbgState.CONT))
                       ]}
 
@@ -193,7 +199,14 @@ class Debugger(QObject,ComponentMixin):
 
         cq_objects = {}
 
-        t.__dict__['show_object'] = lambda x: cq_objects.update({str(id(x)) : x})
+        def _show_object(obj,name=None):
+
+            if name:
+                cq_objects.update({name : obj})
+            else:
+                cq_objects.update({str(id(obj)) : obj})
+
+        t.__dict__['show_object'] = _show_object
         t.__dict__['debug'] = lambda x: info(str(x))
         t.__dict__['cq'] = cq
 

@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QFileDialog, QAction, QMenu, QWidget
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QFileDialog, \
+    QAction, QMenu, QWidget, QAbstractItemView
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
 from pyqtgraph.parametertree import Parameter, ParameterTree
@@ -27,7 +28,7 @@ class TopTreeItem(QTreeWidgetItem):
 class ObjectTreeItem(QTreeWidgetItem):
 
     props = [{'name': 'Name', 'type': 'str', 'value': ''},
-             {'name': 'Color', 'type': 'color', 'value': "f4da16"},
+             {'name': 'Color', 'type': 'color', 'value': "f4a824"},
              {'name': 'Alpha', 'type': 'float', 'value': 0, 'limits': (0,1), 'step': 1e-1},
              {'name': 'Visible', 'type': 'bool','value': True}]
 
@@ -35,6 +36,7 @@ class ObjectTreeItem(QTreeWidgetItem):
                  name,
                  ais=None,
                  shape=None,
+                 shape_display=None,
                  sig=None,
                  alpha=0.,
                  **kwargs):
@@ -45,6 +47,7 @@ class ObjectTreeItem(QTreeWidgetItem):
 
         self.ais = ais
         self.shape = shape
+        self.shape_display = shape_display
         self.sig = sig
 
         self.properties = Parameter.create(name='Properties',
@@ -53,6 +56,8 @@ class ObjectTreeItem(QTreeWidgetItem):
         self.properties['Name'] = name
         self.properties['Alpha'] = alpha
         self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
+
+        self.ais.SetColor(to_occ_color(self.properties['Color']))
 
     def propertiesChanged(self,*args):
 
@@ -101,6 +106,7 @@ class ObjectTree(QWidget,ComponentMixin):
     sigObjectsAdded = pyqtSignal([list],[list,bool])
     sigObjectsRemoved = pyqtSignal(list)
     sigCQObjectSelected = pyqtSignal(object)
+    sigAISObjectsSelected = pyqtSignal(list)
     sigItemChanged = pyqtSignal(QTreeWidgetItem,int)
     sigObjectPropertiesChanged = pyqtSignal()
 
@@ -108,7 +114,8 @@ class ObjectTree(QWidget,ComponentMixin):
 
         super(ObjectTree,self).__init__(parent)
 
-        self.tree = tree = QTreeWidget(self)
+        self.tree = tree = QTreeWidget(self,
+                                       selectionMode=QAbstractItemView.ExtendedSelection)
         self.properties_editor = ParameterTree(self)
 
         tree.setHeaderHidden(True)
@@ -136,15 +143,15 @@ class ObjectTree(QWidget,ComponentMixin):
                     self,
                     enabled=False,
                     triggered=lambda: \
-                        self.export('*stl','stl',
+                        self.export('*.stl','stl',
                                     self.preferences['STL precision']))
 
         self._export_STEP_action = \
-            QAction('Export as SETP',
+            QAction('Export as STEP',
                     self,
                     enabled=False,
                     triggered=lambda: \
-                        self.export('*step','step',[]))
+                        self.export('*.step','step'))
 
         self._clear_current_action = QAction(icon('delete'),
                                              'Clear current',
@@ -184,18 +191,13 @@ class ObjectTree(QWidget,ComponentMixin):
 
     def showMenu(self,position):
 
-        item = self.tree.selectedItems()[-1]
-        if item.parent() is self.CQ:
-            self._export_STL_action.setEnabled(True)
-        else:
-            self._export_STL_action.setEnabled(False)
-
         self._context_menu.exec_(self.tree.viewport().mapToGlobal(position))
 
 
     def menuActions(self):
 
-        return {'Tools' : [self._export_STL_action]}
+        return {'Tools' : [self._export_STL_action,
+                           self._export_STEP_action]}
 
     def toolbarActions(self):
 
@@ -244,11 +246,12 @@ class ObjectTree(QWidget,ComponentMixin):
         {k:v for k,v in tmp if not isinstance(v.val(),(cq.Vector,))}
 
         for name,shape in objects_f.items():
-            ais = make_AIS(shape)
+            ais,shape_display = make_AIS(shape)
             ais.SetTransparency(alpha)
             ais_list.append(ais)
             root.addChild(ObjectTreeItem(name,
                                          shape=shape,
+                                         shape_display=shape_display,
                                          ais=ais,
                                          sig=self.sigObjectPropertiesChanged))
 
@@ -263,9 +266,9 @@ class ObjectTree(QWidget,ComponentMixin):
         root = self.CQ
 
         if isinstance(obj, cq.Workplane):
-            ais = make_AIS(obj)
+            ais,_ = make_AIS(obj)
         else:
-            ais = make_AIS(to_workplane(obj))
+            ais,_ = make_AIS(to_workplane(obj))
 
         ais.SetTransparency(alpha)
 
@@ -310,20 +313,33 @@ class ObjectTree(QWidget,ComponentMixin):
 
     def export(self,file_wildcard,export_type,precision=None):
 
-        item = self.tree.selectedItems()[-1]
-        if item.parent() is self.CQ:
-            shape = item.shape
+        items = self.tree.selectedItems()
+
+        # if CQ models is selected get all children
+        if [item for item in items if item is self.CQ]:
+            CQ = self.CQ
+            shapes = [CQ.child(i).shape for i in range(CQ.childCount())]
+        # otherwise collect all selected children of CQ
         else:
-            return
+            shapes = [item.shape for item in items if item.parent() is self.CQ]
 
         fname,_ = QFileDialog.getSaveFileName(self,filter=file_wildcard)
         if fname is not '':
-             export(shape,export_type,fname,precision)
+             export(shapes,export_type,fname,precision)
 
     @pyqtSlot()
     def handleSelection(self):
 
-        item = self.tree.selectedItems()[-1]
+        items =self.tree.selectedItems()
+        if len(items) == 0:
+            return
+
+        # emit list of all selected ais objects (might be empty)
+        ais_objects = [item.ais for item in items if item.parent() is self.CQ]
+        self.sigAISObjectsSelected.emit(ais_objects)
+
+        # handle context menu and emit last selected CQ  object (if present)
+        item = items[-1]
         if item.parent() is self.CQ:
             self._export_STL_action.setEnabled(True)
             self._export_STEP_action.setEnabled(True)
@@ -332,12 +348,27 @@ class ObjectTree(QWidget,ComponentMixin):
             self.properties_editor.setParameters(item.properties,
                                                  showTop=False)
             self.properties_editor.setEnabled(True)
+        elif item is self.CQ and item.childCount()>0:
+            self._export_STL_action.setEnabled(True)
+            self._export_STEP_action.setEnabled(True)
         else:
             self._export_STL_action.setEnabled(False)
             self._export_STEP_action.setEnabled(False)
             self._clear_current_action.setEnabled(False)
             self.properties_editor.setEnabled(False)
             self.properties_editor.clear()
+
+    @pyqtSlot(list)
+    def handleGraphicalSelection(self,shapes):
+
+        self.tree.clearSelection()
+
+        CQ = self.CQ
+        for i in range(CQ.childCount()):
+            item = CQ.child(i)
+            for shape in shapes:
+                if item.shape_display.wrapped.IsEqual(shape):
+                    item.setSelected(True)
 
     @pyqtSlot(QTreeWidgetItem,int)
     def handleChecked(self,item,col):

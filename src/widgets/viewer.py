@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QDialog, QTreeWidget,
                              QHBoxLayout, QFrame, QLabel, QApplication,
                              QToolBar, QAction)
 
-from PyQt5.QtCore import QSize, pyqtSlot
+from PyQt5.QtCore import QSize, pyqtSlot, pyqtSignal
 from PyQt5.QtGui import QIcon
 import OCC.Display.backend
 back = OCC.Display.backend.load_backend()
@@ -42,12 +42,16 @@ class OCCViewer(QWidget,ComponentMixin):
 
     IMAGE_EXTENSIONS = '*.png'
 
+    sigObjectSelected = pyqtSignal(list)
+
     def __init__(self,parent=None):
 
         super(OCCViewer,self).__init__(parent)
         ComponentMixin.__init__(self)
 
         self.canvas = qtViewer3d(self)
+        self.canvas.sig_topods_selected.connect(self.handle_selection)
+
         self.create_actions(self)
 
         self.layout_ = layout(self,
@@ -58,6 +62,7 @@ class OCCViewer(QWidget,ComponentMixin):
         self.canvas.InitDriver()
 
         self.updatePreferences()
+
 
     def updatePreferences(self,*args):
 
@@ -315,6 +320,22 @@ class OCCViewer(QWidget,ComponentMixin):
     def _get_context(self):
 
         return self.canvas._display.GetContext()
+
+    @pyqtSlot(list)
+    def handle_selection(self,obj):
+
+        self.sigObjectSelected.emit(obj)
+
+    @pyqtSlot(list)
+    def set_selected(self,ais):
+
+        ctx = self._get_context()
+        ctx.ClearSelected(False)
+
+        for obj in ais:
+            ctx.AddOrRemoveSelected(obj,False)
+
+        self.redraw()
 
 
 if __name__ == "__main__":

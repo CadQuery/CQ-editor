@@ -8,7 +8,7 @@ import pytestqt
 import cadquery as cq
 
 from PyQt5.QtCore import Qt, QSettings
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication
 
 from src.main import MainWindow
 from src.widgets.editor import Editor
@@ -68,6 +68,21 @@ def modify_file(code):
     p = Process(target=_modify_file,args=(code,))
     p.start()
     p.join()
+
+def get_center(widget):
+
+    pos = widget.pos()
+    pos.setX(pos.x()+widget.width()//2)
+    pos.setY(pos.y()+widget.height()//2)
+
+    return pos
+
+def get_bottom_left(widget):
+
+    pos = widget.pos()
+    pos.setY(pos.y()+widget.height())
+
+    return pos
 
 @pytest.fixture
 def main(qtbot,mock):
@@ -640,6 +655,8 @@ def test_selection(main_multi,mock):
 
     viewer = win.components['viewer']
     object_tree = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
 
     CQ = object_tree.CQ
     obj1 = CQ.child(0)
@@ -684,3 +701,18 @@ def test_selection(main_multi,mock):
     qtbot.mouseClick(viewer.canvas, Qt.LeftButton)
 
     assert(len(object_tree.tree.selectedItems()) == 0)
+
+    viewer.sigObjectSelected.emit([obj1.shape_display.wrapped])
+    assert(len(object_tree.tree.selectedItems()) == 1)
+
+    # go through different handleSelection paths
+    qtbot.mouseClick(object_tree.tree, Qt.LeftButton)
+    qtbot.keyClick(object_tree.tree, Qt.Key_Down)
+    qtbot.keyClick(object_tree.tree, Qt.Key_Down)
+    qtbot.keyClick(object_tree.tree, Qt.Key_Down)
+    qtbot.keyClick(object_tree.tree, Qt.Key_Down)
+
+    assert(object_tree._export_STL_action.isEnabled() == False)
+    assert(object_tree._export_STEP_action.isEnabled() == False)
+    assert(object_tree._clear_current_action.isEnabled() == False)
+    assert(object_tree.properties_editor.isEnabled() == False)

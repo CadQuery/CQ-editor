@@ -118,6 +118,21 @@ def main_clean(qtbot,mock):
     return qtbot, win
 
 @pytest.fixture
+def main_clean_do_not_close(qtbot,mock):
+
+    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.No)
+
+    win = MainWindow()
+    win.show()
+
+    qtbot.addWidget(win)
+
+    editor = win.components['editor']
+    editor.set_text(code)
+
+    return qtbot, win
+
+@pytest.fixture
 def main_multi(qtbot,mock):
 
     mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
@@ -716,3 +731,21 @@ def test_selection(main_multi,mock):
     assert(object_tree._export_STEP_action.isEnabled() == False)
     assert(object_tree._clear_current_action.isEnabled() == False)
     assert(object_tree.properties_editor.isEnabled() == False)
+
+def test_closing(main_clean_do_not_close):
+
+    qtbot,win = main_clean_do_not_close
+
+    editor = win.components['editor']
+
+    # make sure that windows is visible
+    assert(win.isVisible())
+
+    # should not quit
+    win.close()
+    assert(win.isVisible())
+
+    # should quit
+    editor.reset_modified()
+    win.close()
+    assert(not win.isVisible())

@@ -85,9 +85,9 @@ def get_bottom_left(widget):
     return pos
 
 @pytest.fixture
-def main(qtbot,mock):
+def main(qtbot,mocker):
 
-    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
+    mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
 
     win = MainWindow()
     win.show()
@@ -103,24 +103,9 @@ def main(qtbot,mock):
     return qtbot, win
 
 @pytest.fixture
-def main_clean(qtbot,mock):
+def main_clean(qtbot,mocker):
 
-    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
-
-    win = MainWindow()
-    win.show()
-
-    qtbot.addWidget(win)
-
-    editor = win.components['editor']
-    editor.set_text(code)
-
-    return qtbot, win
-
-@pytest.fixture
-def main_clean_do_not_close(qtbot,mock):
-
-    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.No)
+    mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
 
     win = MainWindow()
     win.show()
@@ -133,10 +118,25 @@ def main_clean_do_not_close(qtbot,mock):
     return qtbot, win
 
 @pytest.fixture
-def main_multi(qtbot,mock):
+def main_clean_do_not_close(qtbot,mocker):
 
-    mock.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
-    mock.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.step',''))
+    mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.No)
+
+    win = MainWindow()
+    win.show()
+
+    qtbot.addWidget(win)
+
+    editor = win.components['editor']
+    editor.set_text(code)
+
+    return qtbot, win
+
+@pytest.fixture
+def main_multi(qtbot,mocker):
+
+    mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
+    mocker.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.step',''))
 
     win = MainWindow()
     win.show()
@@ -205,7 +205,7 @@ def test_render(main):
     assert(obj_tree_comp.CQ.child(0).text(0) == 'test')
     assert('test' in log.toPlainText().splitlines()[-1])
 
-def test_export(main,mock):
+def test_export(main,mocker):
 
     qtbot, win = main
 
@@ -220,12 +220,12 @@ def test_export(main,mock):
     qtbot.keyClick(obj_tree, Qt.Key_Down)
 
     #export STL
-    mock.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.stl',''))
+    mocker.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.stl',''))
     obj_tree_comp._export_STL_action.triggered.emit()
     assert(path.isfile('out.stl'))
 
     #export STEP
-    mock.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.step',''))
+    mocker.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.step',''))
     obj_tree_comp._export_STEP_action.triggered.emit()
     assert(path.isfile('out.step'))
 
@@ -277,7 +277,7 @@ def test_inspect(main):
     assert(number_visible_items(viewer) == 3)
 
 
-def test_debug(main,mock):
+def test_debug(main,mocker):
 
     # store the tracing function
     trace_function = sys.gettrace()
@@ -664,7 +664,7 @@ def test_auto_fit_view(main_clean):
     assert( concat(eye3,proj3,scale3) != \
             approx_view_properties(eye4,proj4,scale4) )
 
-def test_selection(main_multi,mock):
+def test_selection(main_multi,mocker):
 
     qtbot, win = main_multi
 

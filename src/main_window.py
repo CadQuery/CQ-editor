@@ -47,8 +47,6 @@ class MainWindow(QMainWindow,MainMixin):
         self.prepare_statusbar()
         self.prepare_actions()
 
-        self.components['object_tree'].addLines()
-
         self.prepare_console()
 
         self.fill_dummy()
@@ -58,6 +56,12 @@ class MainWindow(QMainWindow,MainMixin):
         self.restorePreferences()
         self.restoreWindow()
         self.restoreComponenetState()
+        
+    def showEvent(self,event):
+        
+        super(MainWindow,self).showEvent(event)
+        
+        self.components['object_tree'].addLines()
 
     def closeEvent(self,event):
 
@@ -271,7 +275,6 @@ class MainWindow(QMainWindow,MainMixin):
                            'show_object' : obj_tree.addObject,
                            'cq' : cq})
 
-
     def fill_dummy(self):
 
         self.components['editor']\
@@ -318,10 +321,6 @@ class MainWindow(QMainWindow,MainMixin):
     def cq_documentation(self):
 
         open_url('https://dcowden.github.io/cadquery')
-
-
-
-
 
 if __name__ == "__main__":
 

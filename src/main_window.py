@@ -57,11 +57,15 @@ class MainWindow(QMainWindow,MainMixin):
         self.restoreWindow()
         self.restoreComponenetState()
         
+        self._needs_initialization = True
+        
     def showEvent(self,event):
         
         super(MainWindow,self).showEvent(event)
         
-        self.components['object_tree'].addLines()
+        if self._needs_initialization:
+            self.components['object_tree'].addLines()
+            self._needs_initialization = False
 
     def closeEvent(self,event):
 

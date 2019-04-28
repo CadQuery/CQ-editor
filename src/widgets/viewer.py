@@ -59,12 +59,16 @@ class OCCViewer(QWidget,ComponentMixin):
                              top_widget=self,
                              margin=0)
         
+        self._needs_initialization = True
+        
     def showEvent(self,event):
         
         super(OCCViewer,self).showEvent(event)
         
-        self.canvas.InitDriver()
-        self.updatePreferences()
+        if self._needs_initialization:
+            self.canvas.InitDriver()
+            self.updatePreferences()
+            self._needs_initialization = False
 
     def updatePreferences(self,*args):
 

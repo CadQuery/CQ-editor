@@ -72,14 +72,14 @@ class OCCViewer(QWidget,ComponentMixin):
 
     def updatePreferences(self,*args):
 
-
-        color1 = to_occ_color(self.preferences['Background color'])
-        color2 = to_occ_color(self.preferences['Background color (aux)'])
-
-        if not self.preferences['Use gradient']:
-            color2 = color1
-        self.canvas._display.View.SetBgGradientColors(color1,color2,True)
-        self.canvas._display.Repaint()
+        if not self._needs_initialization:
+            color1 = to_occ_color(self.preferences['Background color'])
+            color2 = to_occ_color(self.preferences['Background color (aux)'])
+    
+            if not self.preferences['Use gradient']:
+                color2 = color1
+            self.canvas._display.View.SetBgGradientColors(color1,color2,True)
+            self.canvas._display.Repaint()
 
     def create_actions(self,parent):
 

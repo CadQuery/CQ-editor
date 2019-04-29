@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QDialog, QTreeWidget,
                              QHBoxLayout, QFrame, QLabel, QApplication,
                              QToolBar, QAction)
 
-from PyQt5.QtCore import QSize, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import QSize, pyqtSlot, pyqtSignal, QMetaObject, Qt
 from PyQt5.QtGui import QIcon
 import OCC.Display.backend
 back = OCC.Display.backend.load_backend()
@@ -62,13 +62,18 @@ class OCCViewer(QWidget,ComponentMixin):
         self._needs_initialization = True
         
     def paintEvent(self,event):
+                
+        super(OCCViewer,self).paintEvent(event)
         
         if self._needs_initialization:
             self._needs_initialization = False
-            self.canvas.InitDriver()
-            self.updatePreferences()
+            QMetaObject.invokeMethod(self,"_finish_init", Qt.QueuedConnection)
+
+    @pyqtSlot()            
+    def _finish_init(self):
         
-        super(OCCViewer,self).paintEvent(event)
+        self.canvas.InitDriver()
+        self.updatePreferences()
 
     def updatePreferences(self,*args):
 

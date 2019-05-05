@@ -46,6 +46,8 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.prepare_statusbar()
         self.prepare_actions()
+        
+        self.components['object_tree'].addLines()
 
         self.prepare_console()
 
@@ -56,16 +58,6 @@ class MainWindow(QMainWindow,MainMixin):
         self.restorePreferences()
         self.restoreWindow()
         self.restoreComponenetState()
-        
-        self._needs_initialization = True
-        
-    def showEvent(self,event):
-        
-        super(MainWindow,self).showEvent(event)
-        
-        if self._needs_initialization:
-            self.components['object_tree'].addLines()
-            self._needs_initialization = False
 
     def closeEvent(self,event):
 

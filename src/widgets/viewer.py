@@ -49,7 +49,7 @@ class OCCViewer(QWidget,ComponentMixin):
         super(OCCViewer,self).__init__(parent)
         ComponentMixin.__init__(self)
 
-        self.canvas = qtViewer3d(self)
+        self.canvas = qtViewer3d()
         self.canvas.sig_topods_selected.connect(self.handle_selection)
 
         self.create_actions(self)
@@ -59,32 +59,18 @@ class OCCViewer(QWidget,ComponentMixin):
                              top_widget=self,
                              margin=0)
         
-        self._needs_initialization = True
-        
-    def paintEvent(self,event):
-                
-        super(OCCViewer,self).paintEvent(event)
-        
-        if self._needs_initialization:
-            self._needs_initialization = False
-            QMetaObject.invokeMethod(self,"_finish_init", Qt.QueuedConnection)
-
-    @pyqtSlot()            
-    def _finish_init(self):
-        
-        self.canvas.InitDriver()
         self.updatePreferences()
 
     def updatePreferences(self,*args):
 
-        if not self._needs_initialization:
-            color1 = to_occ_color(self.preferences['Background color'])
-            color2 = to_occ_color(self.preferences['Background color (aux)'])
-    
-            if not self.preferences['Use gradient']:
-                color2 = color1
-            self.canvas._display.View.SetBgGradientColors(color1,color2,True)
-            self.canvas._display.Repaint()
+        color1 = to_occ_color(self.preferences['Background color'])
+        color2 = to_occ_color(self.preferences['Background color (aux)'])
+
+        if not self.preferences['Use gradient']:
+            color2 = color1
+        self.canvas._display.View.SetBgGradientColors(color1,color2,True)
+        
+        self.canvas.update()
 
     def create_actions(self,parent):
 

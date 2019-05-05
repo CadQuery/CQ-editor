@@ -111,7 +111,8 @@ def main_clean(qtbot,mocker):
     win.show()
 
     qtbot.addWidget(win)
-
+    qtbot.waitForWindowShown(win)
+    
     editor = win.components['editor']
     editor.set_text(code)
 
@@ -126,7 +127,8 @@ def main_clean_do_not_close(qtbot,mocker):
     win.show()
 
     qtbot.addWidget(win)
-
+    qtbot.waitForWindowShown(win)
+    
     editor = win.components['editor']
     editor.set_text(code)
 
@@ -142,7 +144,8 @@ def main_multi(qtbot,mocker):
     win.show()
 
     qtbot.addWidget(win)
-
+    qtbot.waitForWindowShown(win)
+    
     editor = win.components['editor']
     editor.set_text(code_multi)
 
@@ -623,18 +626,16 @@ def test_auto_fit_view(main_clean):
 
         return pytest.approx(eye+proj+(scale,))
 
-    qtbot, win = main_clean
-
+    qtbot, win = main_clean    
+    
     editor = win.components['editor']
     debugger = win.components['debugger']
     viewer = win.components['viewer']
     object_tree = win.components['object_tree']
 
     view = viewer.canvas._display.GetView()
-
     viewer.preferences['Fit automatically'] = False
     eye0,proj0,scale0 = view.Eye(),view.Proj(),view.Scale()
-
     # check if camera position is adjusted automatically when rendering for the
     # first time
     debugger.render()

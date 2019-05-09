@@ -4,8 +4,8 @@ from importlib import reload
 from types import ModuleType
 from typing import List, Union
 
-from OCC.AIS import AIS_ColoredShape
-from OCC.Quantity import \
+from OCC.Core.AIS import AIS_ColoredShape
+from OCC.Core.Quantity import \
     Quantity_TOC_RGB as TOC_RGB, Quantity_Color
 
 def find_cq_objects(results : dict):

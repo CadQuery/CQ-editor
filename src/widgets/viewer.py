@@ -5,20 +5,20 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QDialog, QTreeWidget,
                              QHBoxLayout, QFrame, QLabel, QApplication,
                              QToolBar, QAction)
 
-from PyQt5.QtCore import QSize, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import QSize, pyqtSlot, pyqtSignal, QMetaObject, Qt
 from PyQt5.QtGui import QIcon
 import OCC.Display.backend
 back = OCC.Display.backend.load_backend()
 
 from OCC.Display.qtDisplay import qtViewer3d
-from OCC.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, \
+from OCC.Core.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, \
     AIS_Axis, AIS_Line
-from OCC.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular, Aspect_GFM_VER
-from OCC.Quantity import Quantity_NOC_BLACK as BLACK, \
+from OCC.Core.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular, Aspect_GFM_VER
+from OCC.Core.Quantity import Quantity_NOC_BLACK as BLACK, \
     Quantity_TOC_RGB as TOC_RGB, Quantity_Color
-from OCC.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
+from OCC.Core.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
      Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
-from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
+from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..utils import layout
 from ..mixins import ComponentMixin
@@ -49,7 +49,7 @@ class OCCViewer(QWidget,ComponentMixin):
         super(OCCViewer,self).__init__(parent)
         ComponentMixin.__init__(self)
 
-        self.canvas = qtViewer3d(self)
+        self.canvas = qtViewer3d()
         self.canvas.sig_topods_selected.connect(self.handle_selection)
 
         self.create_actions(self)
@@ -58,14 +58,10 @@ class OCCViewer(QWidget,ComponentMixin):
                              [self.canvas,],
                              top_widget=self,
                              margin=0)
-
-        self.canvas.InitDriver()
-
+        
         self.updatePreferences()
 
-
     def updatePreferences(self,*args):
-
 
         color1 = to_occ_color(self.preferences['Background color'])
         color2 = to_occ_color(self.preferences['Background color (aux)'])
@@ -73,7 +69,8 @@ class OCCViewer(QWidget,ComponentMixin):
         if not self.preferences['Use gradient']:
             color2 = color1
         self.canvas._display.View.SetBgGradientColors(color1,color2,True)
-        self.canvas._display.Repaint()
+        
+        self.canvas.update()
 
     def create_actions(self,parent):
 
@@ -341,7 +338,7 @@ class OCCViewer(QWidget,ComponentMixin):
 if __name__ == "__main__":
 
     import sys
-    from OCC.BRepPrimAPI import BRepPrimAPI_MakeBox
+    from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
 
     app = QApplication(sys.argv)
     viewer = OCCViewer()

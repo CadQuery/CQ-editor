@@ -6,13 +6,13 @@ from pyqtgraph.parametertree import Parameter, ParameterTree
 
 import cadquery as cq
 
-from OCC.AIS import AIS_ColoredShape, AIS_Line
-from OCC.Quantity import Quantity_NOC_RED as RED
-from OCC.Quantity import Quantity_NOC_GREEN as GREEN
-from OCC.Quantity import Quantity_NOC_BLUE1 as BLUE
-from OCC.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
+from OCC.Core.AIS import AIS_ColoredShape, AIS_Line
+from OCC.Core.Quantity import Quantity_NOC_RED as RED
+from OCC.Core.Quantity import Quantity_NOC_GREEN as GREEN
+from OCC.Core.Quantity import Quantity_NOC_BLUE1 as BLUE
+from OCC.Core.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
      Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
-from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
+from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
 from ..icons import icon

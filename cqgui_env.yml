@@ -7,10 +7,10 @@ dependencies:
   - pyparsing
   - pyqtgraph=0.10.0
   - python=3.6
-  - spyder=3.2.8
+  - spyder=3.3.4
   - pythonocc-core=0.18.2
   - path.py
   - logbook
+  - qtconsole=4.4.4
   - pip:
-    #- "git+https://github.com/jupyter/qtconsole.git"
     - "git+https://github.com/CadQuery/cadquery"

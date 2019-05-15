@@ -4,10 +4,11 @@
 [![codecov](https://codecov.io/gh/CadQuery/CQ-editor/branch/master/graph/badge.svg)](https://codecov.io/gh/CadQuery/CQ-editor)
 
 
-CadQuery GUI editor based on PyQT.
+CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 
-![Screenshot](https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot2.png)
-![Screenshot](https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot3.png)
+<img src="https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot2.png" alt="Screenshot" width="70%" >
+<img src="https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot3.png" alt="Screenshot" width="70%" >
+<img src="https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot4.png" alt="Screenshot" width="70%" >
 
 ## Notable features
 
@@ -23,10 +24,9 @@ CadQuery GUI editor based on PyQT.
 
 ## Installation
 
-CQ-editor works on Linux, Windows and Mac. To try it out clone this git repository and set up the following conda environment:
+To try it out clone this git repository and set up the following conda environment:
 ```
 conda env create -f cqgui_env.yml -n cqgui
 conda activate cqgui
-pip install 
 python run.py
 ```

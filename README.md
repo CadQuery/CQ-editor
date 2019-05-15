@@ -7,6 +7,7 @@
 CadQuery GUI editor based on PyQT.
 
 ![Screenshot](https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot2.png)
+![Screenshot](https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot3.png)
 
 ## Notable features
 

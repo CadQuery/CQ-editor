@@ -1,8 +1,7 @@
 import cadquery as cq
 
-from importlib import reload
-from types import ModuleType
 from typing import List, Union
+from imp import reload
 
 from OCC.Core.AIS import AIS_ColoredShape
 from OCC.Core.Quantity import \
@@ -58,8 +57,11 @@ def to_occ_color(color):
 
 def reload_cq():
 
-    mods = (el for el in tuple(cq.__dict__.values()) if isinstance(el,ModuleType))
-    cq_mods = (mod for mod in mods\
-               if mod.__name__.startswith('cadquery'))
-    for mod in cq_mods: reload(mod)
+    # NB: order of reloads is important
+    reload(cq.occ_impl.geom)
+    reload(cq.occ_impl.shapes)
+    reload(cq.occ_impl.importers)
+    reload(cq.occ_impl.exporters)
+    reload(cq)
+    reload(cq.cq)
     reload(cq)

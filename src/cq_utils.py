@@ -56,12 +56,13 @@ def to_occ_color(color):
                           TOC_RGB)
 
 def reload_cq():
-
+    
     # NB: order of reloads is important
     reload(cq.occ_impl.geom)
     reload(cq.occ_impl.shapes)
     reload(cq.occ_impl.importers)
     reload(cq.occ_impl.exporters)
     reload(cq)
+    reload(cq.selectors)
     reload(cq.cq)
     reload(cq)

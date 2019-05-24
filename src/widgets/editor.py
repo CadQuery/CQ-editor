@@ -2,14 +2,12 @@ from spyder.widgets.sourcecode.codeeditor import  CodeEditor
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher
 from PyQt5.QtWidgets import QAction, QFileDialog
 
-import cadquery as cq
-import imp
 import sys
 
 from pyqtgraph.parametertree import Parameter
 
 from ..mixins import ComponentMixin
-from ..cq_utils import find_cq_objects
+from ..utils import get_save_filename, get_open_filename
 
 from ..icons import icon
 
@@ -28,7 +26,7 @@ class Editor(CodeEditor,ComponentMixin):
         {'name': 'Color scheme', 'type': 'list',
          'values': ['Spyder','Monokai','Zenburn'], 'value': 'Spyder'}])
 
-    EXTENSIONS = '*.py'
+    EXTENSIONS = 'py'
 
     def __init__(self,parent=None):
 
@@ -113,7 +111,7 @@ class Editor(CodeEditor,ComponentMixin):
 
     def open(self):
 
-        fname,_ = QFileDialog.getOpenFileName(self,filter=self.EXTENSIONS)
+        fname = get_open_filename(self.EXTENSIONS)
         if fname is not '':
             self.load_from_file(fname)
 
@@ -141,10 +139,9 @@ class Editor(CodeEditor,ComponentMixin):
 
         else:
             self.save_as()
-
     def save_as(self):
 
-        fname,_ = QFileDialog.getSaveFileName(self,filter=self.EXTENSIONS)
+        fname = get_save_filename(self.EXTENSIONS)
         if fname is not '':
             with open(fname,'w') as f:
                 f.write(self.toPlainText())

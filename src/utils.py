@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtCore import QUrl
+from PyQt5.QtWidgets import QFileDialog
 
 DOCK_POSITIONS = {'right'   : QtCore.Qt.RightDockWidgetArea,
                   'left'    : QtCore.Qt.LeftDockWidgetArea,
@@ -85,3 +86,19 @@ def open_url(url):
 def about_dialog(parent,title,text):
     
     QtWidgets.QMessageBox.about(parent,title,text)
+    
+def get_save_filename(suffix):
+    
+    rv,_ = QFileDialog.getSaveFileName(filter='*.{}'.format(suffix))
+    if rv is not '' and not rv.endswith(suffix): rv += '.'+suffix
+    
+    return rv
+
+def get_open_filename(suffix):
+    
+    rv,_ = QFileDialog.getOpenFileName(filter='*.{}'.format(suffix))    
+    if rv is not '' and not rv.endswith(suffix): rv += '.'+suffix
+    
+    return rv
+        
+        

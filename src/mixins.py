@@ -8,6 +8,7 @@ Created on Wed May 23 22:02:30 2018
 
 from functools import reduce
 from operator import add
+from logbook import Logger
 
 from PyQt5.QtCore import pyqtSlot, QSettings
 
@@ -95,6 +96,8 @@ class ComponentMixin(object):
         if self.preferences:
             self.preferences.sigTreeStateChanged.\
                 connect(self.updatePreferences)
+        
+        self._logger = Logger(self.name)
 
     def menuActions(self):
 

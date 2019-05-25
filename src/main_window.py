@@ -18,7 +18,7 @@ from .widgets.debugger import Debugger, LocalsView
 from .widgets.cq_object_inspector import CQObjectInspector
 from .widgets.log import LogViewer
 
-from .utils import dock, add_actions, open_url, about_dialog
+from .utils import dock, add_actions, open_url, about_dialog, check_gtihub_for_updates
 from .mixins import MainMixin
 from .icons import icon
 from .preferences import PreferencesWidget
@@ -182,6 +182,10 @@ class MainWindow(QMainWindow,MainMixin):
             QAction(icon('about'),
                     'About',
                     self,triggered=self.about))
+        
+        menu_help.addAction( \
+            QAction('Check for CadQuery updates',
+                    self,triggered=self.check_for_cq_updates))
 
     def prepare_menubar_componenet(self,menus,comp_menu_dict):
 
@@ -309,6 +313,10 @@ class MainWindow(QMainWindow,MainMixin):
         about_dialog(self,
                      'CadQuery GUI (PyQT)',
                      'Experimental PyQt GUI for CadQuery')
+        
+    def check_for_cq_updates(self):
+        
+        check_gtihub_for_updates(self,cq)
 
     def documentation(self):
 

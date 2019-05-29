@@ -57,13 +57,13 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.restorePreferences()
         self.restoreWindow()
-        self.restoreComponenetState()
+        self.restoreComponentState()
 
     def closeEvent(self,event):
 
         self.saveWindow()
         self.savePreferences()
-        self.saveComponenetState()
+        self.saveComponentState()
 
         if self.components['editor'].document().isModified():
 
@@ -143,7 +143,7 @@ class MainWindow(QMainWindow,MainMixin):
         menu_view = menu.addMenu('&View')
         menu_help = menu.addMenu('&Help')
 
-        #per componenet menu elements
+        #per component menu elements
         menus = {'File' : menu_file,
                  'Edit' : menu_edit,
                  'Run'  : menu_run,
@@ -152,7 +152,7 @@ class MainWindow(QMainWindow,MainMixin):
                  'Help' : menu_help}
 
         for comp in self.components.values():
-            self.prepare_menubar_componenet(menus,
+            self.prepare_menubar_component(menus,
                                             comp.menuActions())
 
         #global menu elements
@@ -183,7 +183,7 @@ class MainWindow(QMainWindow,MainMixin):
                     'About',
                     self,triggered=self.about))
 
-    def prepare_menubar_componenet(self,menus,comp_menu_dict):
+    def prepare_menubar_component(self,menus,comp_menu_dict):
 
         for name,action in comp_menu_dict.items():
             menus[name].addActions(action)

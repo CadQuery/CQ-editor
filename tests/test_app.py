@@ -502,12 +502,12 @@ def test_editor(monkeypatch,editor):
 
     #test persistance
     settings = QSettings('test')
-    editor.saveComponenetState(settings)
+    editor.saveComponentState(settings)
 
     editor.new()
     assert(editor.get_text_with_eol() == '')
 
-    editor.restoreComponenetState(settings)
+    editor.restoreComponentState(settings)
     assert(editor.get_text_with_eol() == 'a')
 
 

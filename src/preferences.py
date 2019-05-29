@@ -16,7 +16,7 @@ class PreferencesTreeItem(QTreeWidgetItem):
 
 class PreferencesWidget(QDialog):
     
-    def __init__(self,parent,componenets):
+    def __init__(self,parent,components):
         
         super(PreferencesWidget,self).__init__(parent,windowTitle='Preferences')
         
@@ -40,12 +40,12 @@ class PreferencesWidget(QDialog):
         
         self.preferences_tree.currentItemChanged.connect(self.handleSelection)
         
-    def add(self,name,componenet):
+    def add(self,name,component):
         
-        if componenet.preferences:
+        if component.preferences:
             widget = ParameterTree()
             widget.setHeaderHidden(True)
-            widget.setParameters(componenet.preferences,showTop=False)
+            widget.setParameters(component.preferences,showTop=False)
             self.root.addChild(PreferencesTreeItem((name,),
                                                     widget))
             

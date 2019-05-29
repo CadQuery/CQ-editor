@@ -185,12 +185,12 @@ class Editor(CodeEditor,ComponentMixin):
 
         self.document().setModified(False)
 
-    def saveComponenetState(self,store):
+    def saveComponentState(self,store):
 
         if self.filename is not '':
             store.setValue(self.name+'/state',self.filename)
 
-    def restoreComponenetState(self,store):
+    def restoreComponentState(self,store):
 
         filename = store.value(self.name+'/state',self.filename)
 

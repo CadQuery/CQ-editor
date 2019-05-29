@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QAction, QFileDialog
 import cadquery as cq
 import imp
 import sys
+import os
 
 from pyqtgraph.parametertree import Parameter
 
@@ -193,7 +194,7 @@ class Editor(CodeEditor,ComponentMixin):
 
         filename = store.value(self.name+'/state',self.filename)
 
-        if filename and filename is not '':
+        if filename and os.path.isfile(filename):
             self.load_from_file(filename)
 
 

@@ -100,6 +100,7 @@ class ObjectTree(QWidget,ComponentMixin):
     _stash = []
 
     preferences = Parameter.create(name='Preferences',children=[
+        {'name': 'Preserve properties on reload', 'type': 'bool', 'value': False},
         {'name': 'Clear all before each run', 'type': 'bool', 'value': True},
         {'name': 'STL precision','type': 'float', 'value': .1}])
 
@@ -233,6 +234,13 @@ class ObjectTree(QWidget,ComponentMixin):
 
         request_fit_view = True if root.childCount() == 0 else False
 
+        preserve_props = self.preferences['Preserve properties on reload']
+        if preserve_props:
+            old_params = {}
+            for i in range(self.CQ.childCount()):
+                child = self.CQ.child(i)
+                old_params[child.properties['Name']] = child.properties
+
         if clean or self.preferences['Clear all before each run']:
             self.removeObjects()
 
@@ -248,12 +256,17 @@ class ObjectTree(QWidget,ComponentMixin):
         for name,shape in objects_f.items():
             ais,shape_display = make_AIS(shape)
             ais.SetTransparency(alpha)
-            ais_list.append(ais)
-            root.addChild(ObjectTreeItem(name,
-                                         shape=shape,
-                                         shape_display=shape_display,
-                                         ais=ais,
-                                         sig=self.sigObjectPropertiesChanged))
+            child = ObjectTreeItem(name,
+                                   shape=shape,
+                                   shape_display=shape_display,
+                                   ais=ais,
+                                   sig=self.sigObjectPropertiesChanged)
+            if preserve_props and name in old_params:
+                for p in old_params[name]:
+                    child.properties[p.name()] = p.value()
+            if child.properties['Visible']:
+                ais_list.append(ais)
+            root.addChild(child)
 
         if request_fit_view:
             self.sigObjectsAdded[list,bool].emit(ais_list,True)

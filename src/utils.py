@@ -113,7 +113,7 @@ def check_gtihub_for_updates(parent,
     url = f'https://api.github.com/repos/{github_org}/{github_proj}/releases'    
     resp = requests.get(url).json()
     
-    newer = [el['tag_name'] for el in resp if not resp['draft'] and \
+    newer = [el['tag_name'] for el in resp if not el['draft'] and \
              parse_version(el['tag_name']) > parse_version(mod.__version__)]    
     
     if newer:

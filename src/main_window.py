@@ -18,7 +18,7 @@ from .widgets.debugger import Debugger, LocalsView
 from .widgets.cq_object_inspector import CQObjectInspector
 from .widgets.log import LogViewer
 
-from .utils import dock, add_actions, open_url, about_dialog
+from .utils import dock, add_actions, open_url, about_dialog, check_gtihub_for_updates
 from .mixins import MainMixin
 from .icons import icon
 from .preferences import PreferencesWidget
@@ -57,13 +57,13 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.restorePreferences()
         self.restoreWindow()
-        self.restoreComponenetState()
+        self.restoreComponentState()
 
     def closeEvent(self,event):
 
         self.saveWindow()
         self.savePreferences()
-        self.saveComponenetState()
+        self.saveComponentState()
 
         if self.components['editor'].document().isModified():
 
@@ -143,7 +143,7 @@ class MainWindow(QMainWindow,MainMixin):
         menu_view = menu.addMenu('&View')
         menu_help = menu.addMenu('&Help')
 
-        #per componenet menu elements
+        #per component menu elements
         menus = {'File' : menu_file,
                  'Edit' : menu_edit,
                  'Run'  : menu_run,
@@ -152,7 +152,7 @@ class MainWindow(QMainWindow,MainMixin):
                  'Help' : menu_help}
 
         for comp in self.components.values():
-            self.prepare_menubar_componenet(menus,
+            self.prepare_menubar_component(menus,
                                             comp.menuActions())
 
         #global menu elements
@@ -182,8 +182,12 @@ class MainWindow(QMainWindow,MainMixin):
             QAction(icon('about'),
                     'About',
                     self,triggered=self.about))
+        
+        menu_help.addAction( \
+            QAction('Check for CadQuery updates',
+                    self,triggered=self.check_for_cq_updates))
 
-    def prepare_menubar_componenet(self,menus,comp_menu_dict):
+    def prepare_menubar_component(self,menus,comp_menu_dict):
 
         for name,action in comp_menu_dict.items():
             menus[name].addActions(action)
@@ -309,6 +313,10 @@ class MainWindow(QMainWindow,MainMixin):
         about_dialog(self,
                      'CadQuery GUI (PyQT)',
                      'Experimental PyQt GUI for CadQuery')
+        
+    def check_for_cq_updates(self):
+        
+        check_gtihub_for_updates(self,cq)
 
     def documentation(self):
 

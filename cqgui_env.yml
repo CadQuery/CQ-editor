@@ -13,5 +13,7 @@ dependencies:
   - path.py
   - logbook
   - qtconsole=4.4.4
+  - requests
+  - pip
   - pip:
     - "git+https://github.com/CadQuery/cadquery"

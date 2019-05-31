@@ -8,6 +8,7 @@ Created on Wed May 23 22:02:30 2018
 
 from functools import reduce
 from operator import add
+from logbook import Logger
 
 from PyQt5.QtCore import pyqtSlot, QSettings
 
@@ -66,19 +67,19 @@ class MainMixin(object):
                 comp.preferences.restoreState(settings.value(comp.name),
                                               removeChildren=False)
 
-    def saveComponenetState(self):
+    def saveComponentState(self):
 
         settings = self.settings
 
         for comp in self.components.values():
-            comp.saveComponenetState(settings)
+            comp.saveComponentState(settings)
 
-    def restoreComponenetState(self):
+    def restoreComponentState(self):
 
         settings = self.settings
 
         for comp in self.components.values():
-            comp.restoreComponenetState(settings)
+            comp.restoreComponentState(settings)
 
 
 class ComponentMixin(object):
@@ -95,6 +96,8 @@ class ComponentMixin(object):
         if self.preferences:
             self.preferences.sigTreeStateChanged.\
                 connect(self.updatePreferences)
+        
+        self._logger = Logger(self.name)
 
     def menuActions(self):
 
@@ -112,10 +115,10 @@ class ComponentMixin(object):
 
         pass
 
-    def saveComponenetState(self,store):
+    def saveComponentState(self,store):
 
         pass
 
-    def restoreComponenetState(self,store):
+    def restoreComponentState(self,store):
 
         pass

@@ -20,7 +20,7 @@ from OCC.Core.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
      Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
 from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
-from ..utils import layout
+from ..utils import layout, get_save_filename
 from ..mixins import ComponentMixin
 from ..icons import icon
 from ..cq_utils import to_occ_color
@@ -40,7 +40,7 @@ class OCCViewer(QWidget,ComponentMixin):
         {'name': 'Background color (aux)', 'type': 'color', 'value': (30,30,30)},
         {'name': 'Default object color', 'type': 'color', 'value': "FF0"}])
 
-    IMAGE_EXTENSIONS = '*.png'
+    IMAGE_EXTENSIONS = 'png'
 
     sigObjectSelected = pyqtSignal(list)
 
@@ -297,7 +297,7 @@ class OCCViewer(QWidget,ComponentMixin):
 
     def save_screenshot(self):
 
-        fname,_ = QFileDialog.getSaveFileName(self,filter=self.IMAGE_EXTENSIONS)
+        fname = get_save_filename(self.IMAGE_EXTENSIONS)
         if fname is not '':
              self._get_view().Dump(fname)
 

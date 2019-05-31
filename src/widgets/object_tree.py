@@ -17,7 +17,7 @@ from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 from ..mixins import ComponentMixin
 from ..icons import icon
 from ..cq_utils import make_AIS, export, to_occ_color, to_workplane
-from ..utils import splitter, layout
+from ..utils import splitter, layout, get_save_filename
 
 class TopTreeItem(QTreeWidgetItem):
 
@@ -143,7 +143,7 @@ class ObjectTree(QWidget,ComponentMixin):
                     self,
                     enabled=False,
                     triggered=lambda: \
-                        self.export('*.stl','stl',
+                        self.export('stl',
                                     self.preferences['STL precision']))
 
         self._export_STEP_action = \
@@ -151,7 +151,7 @@ class ObjectTree(QWidget,ComponentMixin):
                     self,
                     enabled=False,
                     triggered=lambda: \
-                        self.export('*.step','step'))
+                        self.export('step'))
 
         self._clear_current_action = QAction(icon('delete'),
                                              'Clear current',
@@ -311,7 +311,7 @@ class ObjectTree(QWidget,ComponentMixin):
 
         self.removeObjects(rows)
 
-    def export(self,file_wildcard,export_type,precision=None):
+    def export(self,export_type,precision=None):
 
         items = self.tree.selectedItems()
 
@@ -323,7 +323,7 @@ class ObjectTree(QWidget,ComponentMixin):
         else:
             shapes = [item.shape for item in items if item.parent() is self.CQ]
 
-        fname,_ = QFileDialog.getSaveFileName(self,filter=file_wildcard)
+        fname = get_save_filename(export_type)
         if fname is not '':
              export(shapes,export_type,fname,precision)
 

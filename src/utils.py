@@ -1,6 +1,11 @@
+import requests
+
+from pkg_resources import parse_version
+
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtCore import QUrl
+from PyQt5.QtWidgets import QFileDialog
 
 DOCK_POSITIONS = {'right'   : QtCore.Qt.RightDockWidgetArea,
                   'left'    : QtCore.Qt.LeftDockWidgetArea,
@@ -85,3 +90,46 @@ def open_url(url):
 def about_dialog(parent,title,text):
     
     QtWidgets.QMessageBox.about(parent,title,text)
+    
+def get_save_filename(suffix):
+    
+    rv,_ = QFileDialog.getSaveFileName(filter='*.{}'.format(suffix))
+    if rv is not '' and not rv.endswith(suffix): rv += '.'+suffix
+    
+    return rv
+
+def get_open_filename(suffix):
+    
+    rv,_ = QFileDialog.getOpenFileName(filter='*.{}'.format(suffix))    
+    if rv is not '' and not rv.endswith(suffix): rv += '.'+suffix
+    
+    return rv
+
+def check_gtihub_for_updates(parent,
+                             mod,
+                             github_org='cadquery',
+                             github_proj='cadquery'):
+    
+    url = f'https://api.github.com/repos/{github_org}/{github_proj}/releases'    
+    resp = requests.get(url).json()
+    
+    newer = [el['tag_name'] for el in resp if not el['draft'] and \
+             parse_version(el['tag_name']) > parse_version(mod.__version__)]    
+    
+    if newer:
+        title='Updates available'
+        text=f'There are newer versions of {github_proj} available on github:'\
+              '\n'.join(newer)
+    else:
+        title='No updates available'
+        text=f'You are already using the latest version of {github_proj}'
+        
+    QtWidgets.QMessageBox.about(parent,title,text)
+    
+    
+    
+    
+    
+    
+        
+        

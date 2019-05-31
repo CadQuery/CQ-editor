@@ -502,14 +502,18 @@ def test_editor(monkeypatch,editor):
 
     #test persistance
     settings = QSettings('test')
-    editor.saveComponenetState(settings)
+    editor.saveComponentState(settings)
 
     editor.new()
     assert(editor.get_text_with_eol() == '')
 
-    editor.restoreComponenetState(settings)
+    editor.restoreComponentState(settings)
     assert(editor.get_text_with_eol() == 'a')
 
+    #test error handling
+    os.remove('test2.py')
+    assert(not os.path.exists('test2.py'))
+    editor.restoreComponentState(settings)
 
 @pytest.mark.repeat(1)
 def test_editor_autoreload(monkeypatch,editor):
@@ -750,3 +754,39 @@ def test_closing(main_clean_do_not_close):
     editor.reset_modified()
     win.close()
     assert(not win.isVisible())
+
+def test_check_for_updates(main,mocker):
+
+    qtbot,win = main
+
+    # patch requests
+    import requests
+    mocker.patch.object(requests.models.Response,'json',
+                        return_value=[{'tag_name' : '0.0.2','draft' : False}])
+
+    # stub QMessageBox about
+    about_stub = mocker.stub()
+    mocker.patch.object(QMessageBox, 'about', about_stub)
+
+    import cadquery
+
+    cadquery.__version__ = '0.0.1'
+    win.check_for_cq_updates()
+    assert(about_stub.call_args[0][1] == 'Updates available')
+
+    cadquery.__version__ = '0.0.3'
+    win.check_for_cq_updates()
+    assert(about_stub.call_args[0][1] == 'No updates available')
+
+@pytest.mark.skipif(sys.platform.startswith('linux'),reason='Segfault workaround for linux')
+def test_screenshot(main,mocker):
+
+    qtbot,win = main
+
+    mocker.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.png',''))
+    
+    viewer = win.components['viewer']
+    viewer._actions['Tools'][0].triggered.emit()
+
+    assert(os.path.exists('out.png'))
+

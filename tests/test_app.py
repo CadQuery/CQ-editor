@@ -510,6 +510,10 @@ def test_editor(monkeypatch,editor):
     editor.restoreComponenetState(settings)
     assert(editor.get_text_with_eol() == 'a')
 
+    #test error handling
+    os.remove('test2.py')
+    assert(not os.path.exists('test2.py'))
+    editor.restoreComponenetState(settings)
 
 @pytest.mark.repeat(1)
 def test_editor_autoreload(monkeypatch,editor):

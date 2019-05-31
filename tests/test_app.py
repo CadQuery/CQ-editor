@@ -754,3 +754,26 @@ def test_closing(main_clean_do_not_close):
     editor.reset_modified()
     win.close()
     assert(not win.isVisible())
+
+def test_check_for_updates(main,mocker):
+
+    qtbot,win = main
+
+    # patch requests
+    import requests
+    mocker.patch.object(requests.models.Response,'json',
+                        return_value=[{'tag_name' : '0.0.2','draft' : False}])
+
+    # stub QMessageBox about
+    about_stub = mocker.stub()
+    mocker.patch.object(QMessageBox, 'about', about_stub)
+
+    import cadquery
+
+    cadquery.__version__ = '0.0.1'
+    win.check_for_cq_updates()
+    assert(about_stub.call_args[0][1] == 'Updates available')
+
+    cadquery.__version__ = '0.0.3'
+    win.check_for_cq_updates()
+    assert(about_stub.call_args[0][1] == 'No updates available')

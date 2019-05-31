@@ -29,7 +29,7 @@ install:
     - cmd: activate cqgui
     - conda list
     - conda install -c conda-forge pytest=4.0.2 pluggy=0.9.0 pytest-qt
-    - pip install pytest-xvfb pytest-mock pytest-cov pytest-repeat codecov
+    - pip install pytest-xvfb pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay=0.2.1
 
 build: false
 

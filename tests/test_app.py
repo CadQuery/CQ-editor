@@ -777,3 +777,15 @@ def test_check_for_updates(main,mocker):
     cadquery.__version__ = '0.0.3'
     win.check_for_cq_updates()
     assert(about_stub.call_args[0][1] == 'No updates available')
+
+def test_screenshot(main,mocker):
+
+    qtbot,win = main
+
+    mocker.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.png',''))
+    
+    viewer = win.components['viewer']
+    viewer._actions['Tools'][0].triggered.emit()
+
+    assert(os.path.exists('out.png'))
+

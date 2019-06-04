@@ -669,6 +669,29 @@ def test_auto_fit_view(main_clean):
     assert( concat(eye3,proj3,scale3) != \
             approx_view_properties(eye4,proj4,scale4) )
 
+def test_preserve_properties(main):
+    qtbot, win = main
+
+    debugger = win.components['debugger']
+    debugger._actions['Run'][0].triggered.emit()
+
+    object_tree = win.components['object_tree']
+    object_tree.preferences['Preserve properties on reload'] = True
+
+    assert(object_tree.CQ.childCount() == 1)
+    props = object_tree.CQ.child(0).properties
+    props['Visible'] = False
+    props['Color'] = '#caffee'
+    props['Alpha'] = 0.5
+
+    debugger._actions['Run'][0].triggered.emit()
+
+    assert(object_tree.CQ.childCount() == 1)
+    props = object_tree.CQ.child(0).properties
+    assert(props['Visible'] == False)
+    assert(props['Color'].name() == '#caffee')
+    assert(props['Alpha'] == 0.5)
+
 def test_selection(main_multi,mocker):
 
     qtbot, win = main_multi

@@ -1,5 +1,5 @@
 from spyder.widgets.sourcecode.codeeditor import  CodeEditor
-from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher
+from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer
 from PyQt5.QtWidgets import QAction, QFileDialog
 
 import sys
@@ -81,7 +81,13 @@ class Editor(CodeEditor,ComponentMixin):
         # autoreload support
         self._file_watcher = QFileSystemWatcher(self)
         self._watched_file = None
-        self._file_watcher.fileChanged.connect(self._file_changed)
+        # we wait for 50ms after a file change for the file to be written completely
+        self._file_watch_timer = QTimer(self)
+        self._file_watch_timer.setInterval(50)
+        self._file_watch_timer.setSingleShot(True)
+        self._file_watcher.fileChanged.connect(
+                lambda val: self._file_watch_timer.start())
+        self._file_watch_timer.timeout.connect(self._file_changed)
 
     def _fixContextMenu(self):
 
@@ -127,6 +133,7 @@ class Editor(CodeEditor,ComponentMixin):
 
             if self.preferences['Autoreload']:
                 self._file_watcher.removePath(self.filename)
+                self._file_watch_timer.stop()
 
             with open(self._filename,'w') as f:
                 f.write(self.toPlainText())
@@ -168,7 +175,10 @@ class Editor(CodeEditor,ComponentMixin):
         self.sigFilenameChanged.emit(fname)
 
     # callback triggered by QFileSystemWatcher
-    def _file_changed(self, val):
+    def _file_changed(self):
+        # neovim writes a file by removing it first
+        # this causes QFileSystemWatcher to forget the file
+        self._file_watcher.addPath(self._filename)
         self.set_text_from_file(self._filename)
         self.triggerRerender.emit(True)
 

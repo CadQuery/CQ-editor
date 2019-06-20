@@ -2,6 +2,7 @@ shallow_clone: false
 
 image:
     - Ubuntu
+    - Ubuntu1804
     - Visual Studio 2015
 
 environment:

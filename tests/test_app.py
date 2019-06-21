@@ -813,3 +813,13 @@ def test_screenshot(main,mocker):
 
     assert(os.path.exists('out.png'))
 
+def test_resize(main):
+
+    qtbot,win = main    
+    editor = win.components['editor']
+    
+    editor.hide()
+    qtbot.wait(50)
+    editor.show()
+    qtbot.wait(50)
+

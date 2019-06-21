@@ -2,6 +2,7 @@ shallow_clone: false
 
 image:
     - Ubuntu
+    - Ubuntu1804
     - Visual Studio 2015
 
 environment:
@@ -13,7 +14,7 @@ environment:
 
 install:
     - sh: sudo apt update
-    - sh: sudo apt -y --force-yes install libglu1-mesa xvfb libgl1-mesa-dri
+    - sh: sudo apt -y --force-yes install libglu1-mesa xvfb libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev
     - sh: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
     - sh: bash miniconda.sh -b -p $HOME/miniconda
     - sh: export PATH="$HOME/miniconda/bin:$HOME/miniconda/lib:$PATH"

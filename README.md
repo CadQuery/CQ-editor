@@ -30,3 +30,8 @@ conda env create -f cqgui_env.yml -n cqgui
 conda activate cqgui
 python run.py
 ```
+
+On some linux distributions (e.g. `Ubuntu 18.04`) it might be necessary to install additonal packages:
+```
+sudo apt install libglu1-mesa libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev
+```

@@ -801,7 +801,6 @@ def test_check_for_updates(main,mocker):
     win.check_for_cq_updates()
     assert(about_stub.call_args[0][1] == 'No updates available')
 
-@pytest.mark.skipif(sys.platform.startswith('linux'),reason='Segfault workaround for linux')
 def test_screenshot(main,mocker):
 
     qtbot,win = main

@@ -199,7 +199,7 @@ class Debugger(QObject,ComponentMixin):
 
         cq_objects = {}
 
-        def _show_object(obj,name=None):
+        def _show_object(obj,name=None, options={}):
 
             if name:
                 cq_objects.update({name : obj})

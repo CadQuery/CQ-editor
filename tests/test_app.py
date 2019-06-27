@@ -10,8 +10,8 @@ import cadquery as cq
 from PyQt5.QtCore import Qt, QSettings
 from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication
 
-from src.main import MainWindow
-from src.widgets.editor import Editor
+from cq_editor.__main__ import MainWindow
+from cq_editor.widgets.editor import Editor
 
 code = \
 '''import cadquery as cq

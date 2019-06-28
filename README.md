@@ -24,7 +24,13 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 
 ## Installation
 
-To try it out clone this git repository and set up the following conda environment:
+The easiest way to try it out it using conda:
+```
+conda install -c cadquery cq-editor
+```
+and then simply type `cq-editor` to run it.
+
+Alternatively clone this git repository and set up the following conda environment:
 ```
 conda env create -f cqgui_env.yml -n cqgui
 conda activate cqgui

@@ -39,6 +39,7 @@ class ObjectTreeItem(QTreeWidgetItem):
                  shape_display=None,
                  sig=None,
                  alpha=0.,
+                 color='f4a824',
                  **kwargs):
 
         super(ObjectTreeItem,self).__init__([name],**kwargs)
@@ -55,6 +56,7 @@ class ObjectTreeItem(QTreeWidgetItem):
 
         self.properties['Name'] = name
         self.properties['Alpha'] = alpha
+        self.properties['Color'] = color
         self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
 
         self.ais.SetColor(to_occ_color(self.properties['Color']))
@@ -210,15 +212,15 @@ class ObjectTree(QWidget,ComponentMixin):
         ais_list = []
 
         for name,color,direction in zip(('X','Y','Z'),
-                                        (RED,GREEN,BLUE),
+                                        ('ff0000','00ff00','0000ff'),
                                         ((1,0,0),(0,1,0),(0,0,1))):
             line_placement = Geom_Line(gp_Ax1(gp_Pnt(*origin),
                                        gp_Dir(*direction)))
             line = AIS_Line(line_placement)
-            line.SetColor(color)
 
             self.Helpers.addChild(ObjectTreeItem(name,
-                                                 ais=line))
+                                                 ais=line,
+                                                 color=color))
 
             ais_list.append(line)
 

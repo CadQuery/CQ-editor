@@ -37,7 +37,7 @@ build: false
 test_script:
     - sh: export PYTHONPATH=$(pwd)
     - cmd: set PYTHONPATH=%cd%
-    - pytest -s --cov=src
+    - pytest -s --cov=cq_editor
 
 on_success:
     - codecov

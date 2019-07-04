@@ -5,8 +5,8 @@ from path import Path
 
 block_cipher = None
 
-spyder_fonts = Path(site.getsitepackages()[0]) / 'spyder/fonts'
-parso_grammar = Path(site.getsitepackages()[0]) / 'parso/python/grammar36.txt'
+spyder_fonts = Path(site.getsitepackages()[-1]) / 'spyder/fonts'
+parso_grammar = Path(site.getsitepackages()[-1]) / 'parso/python/grammar36.txt'
 
 with open('dummy','wb'):
     pass

@@ -21,7 +21,7 @@ a = Analysis(['run.py'],
              hiddenimports=['ipykernel.datapub'],
              hookspath=[],
              runtime_hooks=[],
-             excludes=[],
+             excludes=['_tkinter',],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher,
@@ -37,7 +37,8 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          console=True )
+          console=True,
+          icon='icons/cadquery_logo_dark.ico')
 
 coll = COLLECT(exe,
                a.binaries,
@@ -45,4 +46,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
-               name='run')
+               name='CQ-editor')

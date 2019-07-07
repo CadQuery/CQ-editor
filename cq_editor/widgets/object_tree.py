@@ -140,6 +140,8 @@ class ObjectTree(QWidget,ComponentMixin):
         root.addChild(self.CQ)
         root.addChild(self.Imports)
         root.addChild(self.Helpers)
+        
+        tree.expandToDepth(1)
 
         self._export_STL_action = \
             QAction('Export as STL',
@@ -225,7 +227,6 @@ class ObjectTree(QWidget,ComponentMixin):
             ais_list.append(line)
 
         self.sigObjectsAdded.emit(ais_list)
-        self.tree.expandToDepth(1)
 
     @pyqtSlot(dict,bool)
     @pyqtSlot(dict)

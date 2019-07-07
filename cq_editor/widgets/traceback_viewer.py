@@ -55,7 +55,7 @@ class TracebackPane(QWidget,ComponentMixin):
             
             root = self.tree.root
             code = code.splitlines()
-            tb = extract_tb(tb)[2:] #ignore highest frames (debug, exec)
+            tb = [t for t in extract_tb(tb) if '<string>' in t.filename] #ignore highest frames (debug, exec)
             
             for el in tb:
                 #workaround of the traceback module

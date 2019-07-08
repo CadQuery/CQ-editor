@@ -1,13 +1,17 @@
 # -*- mode: python -*-
 
-import sys, site
+import sys, site, os
 from path import Path
 
 block_cipher = None
 
 spyder_fonts = Path(site.getsitepackages()[-1]) / 'spyder/fonts'
 parso_grammar = Path(site.getsitepackages()[-1]) / 'parso/python/grammar36.txt'
-oce_dir = Path(sys.prefix) / 'Library' / 'share' / 'oce'
+
+if sys.platform == 'linux':
+    oce_dir = Path(sys.prefix) / 'share' / 'oce-0.18'
+else:
+    oce_dir = Path(sys.prefix) / 'Library' / 'share' / 'oce'
 
 with open('dummy','wb'):
     pass

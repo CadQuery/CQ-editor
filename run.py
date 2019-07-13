@@ -1,4 +1,8 @@
 import os
+import faulthandler
+
+faulthandler.enable()
+
 if 'CASROOT' in os.environ:
     del os.environ['CASROOT']
 

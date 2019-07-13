@@ -24,7 +24,12 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 
 ## Installation
 
-The easiest way to try it out it using conda:
+The easiest way to try it out is using provided self-contained archives:
+
+* [0.1 RC0 Linux](https://github.com/CadQuery/CQ-editor/releases/download/0.1RC0/CQ-editor-0.1RC0-linux64.tar.bz2)
+* [0.1 RC0 Windows](https://github.com/CadQuery/CQ-editor/releases/download/0.1RC0/CQ-editor-0.1RC0-win64.zip)
+
+Alternatively on can use conda:
 ```
 conda install -c cadquery cq-editor
 ```
@@ -40,4 +45,8 @@ python run.py
 On some linux distributions (e.g. `Ubuntu 18.04`) it might be necessary to install additonal packages:
 ```
 sudo apt install libglu1-mesa libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev
+```
+On Fedora 29 the packages can be installed as follows:
+```
+dnf install -y mesa-libGLU mesa-libGL mesa-libGLU-devel
 ```

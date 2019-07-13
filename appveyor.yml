@@ -37,7 +37,8 @@ build: false
 test_script:
     - sh: export PYTHONPATH=$(pwd)
     - cmd: set PYTHONPATH=%cd%
-    - pytest -s --cov=src
+    - sh: catchsegv pytest -s --cov=src
+    - cmd: pytest -s --cov=src
 
 on_success:
     - codecov

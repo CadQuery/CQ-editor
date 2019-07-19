@@ -29,9 +29,9 @@ The easiest way to try it out is using provided self-contained archives:
 * [0.1 RC0 Linux](https://github.com/CadQuery/CQ-editor/releases/download/0.1RC0/CQ-editor-0.1RC0-linux64.tar.bz2)
 * [0.1 RC0 Windows](https://github.com/CadQuery/CQ-editor/releases/download/0.1RC0/CQ-editor-0.1RC0-win64.zip)
 
-Alternatively on can use conda:
+Alternatively one can use conda:
 ```
-conda install -c cadquery cq-editor
+conda install -c cadquery -c conda-forge cq-editor
 ```
 and then simply type `cq-editor` to run it.
 

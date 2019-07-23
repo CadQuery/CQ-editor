@@ -1,15 +1,8 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAction
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
-from OCC.AIS import AIS_ColoredShape, AIS_Line, AIS_Plane
-from OCC.Quantity import Quantity_NOC_RED as RED
-from OCC.Quantity import Quantity_NOC_GREEN as GREEN
-from OCC.Quantity import Quantity_NOC_BLUE1 as BLUE
-from OCC.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
-     Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
-from OCC.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1, gp_Pln
-
-from OCC.BRepBuilderAPI import BRepBuilderAPI_MakeFace
+from OCC.Core.AIS import AIS_ColoredShape
+from OCC.Core.gp import gp_Ax3
 
 from cadquery import Vector
 

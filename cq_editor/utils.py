@@ -118,8 +118,9 @@ def check_gtihub_for_updates(parent,
     
     if newer:
         title='Updates available'
-        text=f'There are newer versions of {github_proj} available on github:'\
-              '\n'.join(newer)
+        text=f'There are newer versions of {github_proj} ' \
+             f'available on github:\n' + '\n'.join(newer)
+             
     else:
         title='No updates available'
         text=f'You are already using the latest version of {github_proj}'

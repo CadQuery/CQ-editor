@@ -1,0 +1,11 @@
+[Desktop Entry]
+
+Type=Application
+Version=0.1
+Name=CaqQuery editor
+Comment=GUI editor for CadQuery, a parametric CAD scripting framework
+Path=/app/bin/
+Exec=CQ-editor
+Icon=org.cadquery.cadquery-editor
+Terminal=false
+Categories=Development;IDE

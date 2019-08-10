@@ -1,0 +1,17 @@
+app-id: org.cadquery.cadquery-editor
+runtime: org.kde.Platform
+runtime-version: '5.12'
+sdk: org.kde.Sdk
+command: CQ-editor
+finish-args:
+  - --socket=fallback-x11
+  - --filesystem=home:rw
+modules:
+  - name: cadquery-editor
+    buildsystem: simple
+    build-commands:
+        - cp -r /run/build/cadquery-editor/ /app/bin/
+    sources:
+      - type: archive
+        url: https://github.com/CadQuery/CQ-editor/releases/download/0.1RC1/CQ-editor-0.1RC1-linux64.tar.bz2
+        sha256: 6e93272680db4ffc27795a71e0490d0809c63c151f25c49bd30322ed9a2fb636

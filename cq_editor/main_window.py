@@ -324,7 +324,7 @@ class MainWindow(QMainWindow,MainMixin):
 
     def cq_documentation(self):
 
-        open_url('https://dcowden.github.io/cadquery')
+        open_url('https://cadquery.readthedocs.io/en/latest/')
 
 if __name__ == "__main__":
 

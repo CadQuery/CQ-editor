@@ -348,6 +348,8 @@ class ObjectTree(QWidget,ComponentMixin):
 
         items =self.tree.selectedItems()
         if len(items) == 0:
+            self._export_STL_action.setEnabled(False)
+            self._export_STEP_action.setEnabled(False)
             return
 
         # emit list of all selected ais objects (might be empty)

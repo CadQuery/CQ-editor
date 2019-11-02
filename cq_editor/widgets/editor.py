@@ -1,6 +1,7 @@
 from spyder.widgets.sourcecode.codeeditor import  CodeEditor
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer
 from PyQt5.QtWidgets import QAction, QFileDialog
+from PyQt5.QtGui import QFontDatabase
 
 import sys
 
@@ -40,6 +41,7 @@ class Editor(CodeEditor,ComponentMixin):
                           edge_line=False,
                           tab_mode=False,
                           show_blanks=True,
+                          font=QFontDatabase.systemFont(QFontDatabase.FixedFont),
                           language='Python')
 
         self._actions =  \

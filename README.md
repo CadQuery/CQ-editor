@@ -15,7 +15,7 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 * PythonOCC based
 * Graphical debugger for CadQuery scripts
   * Step through script and watch how your model changes
-* CadQery object stack inspector
+* CadQuery object stack inspector
   * Visual inspection of current workplane and selected items
   * Insight into evolution of the model
 * Export to various formats

@@ -19,18 +19,18 @@ jobs:
     name: Linux
     vmImage: 'ubuntu-16.04'
     py_maj: 3
-    py_min: 6
+    py_min: 7
 
 - template: conda-build.yml@templates
   parameters:
     name: macOS
     vmImage: 'macOS-10.13'
     py_maj: 3
-    py_min: 6
+    py_min: 7
 
 - template: conda-build.yml@templates
   parameters:
     name: Windows
     vmImage: 'vs2017-win2016'
     py_maj: 3
-    py_min: 6
+    py_min: 7

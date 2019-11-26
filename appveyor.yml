@@ -4,6 +4,7 @@ image:
     - Ubuntu
     - Ubuntu1804
     - Visual Studio 2015
+    - macOS
 
 environment:
     matrix:

@@ -11,6 +11,7 @@ from pyqtgraph.parametertree import Parameter, ParameterTree
 from logbook import info
 from spyder.utils.icon_manager import icon
 from path import Path
+from contextlib import ExitStack
 
 import cadquery as cq
 
@@ -103,7 +104,8 @@ class Debugger(QObject,ComponentMixin):
 
     preferences = Parameter.create(name='Preferences',children=[
         {'name': 'Reload CQ', 'type': 'bool', 'value': True},
-        {'name': 'Add current dir to path','type': 'bool', 'value': True}])
+        {'name': 'Add script dir to path','type': 'bool', 'value': True},
+        {'name': 'Change working dir to script dir','type': 'bool', 'value': True}])
 
 
     sigRendered = pyqtSignal(dict)
@@ -174,17 +176,14 @@ class Debugger(QObject,ComponentMixin):
 
     def _exec(self, code, locals_dict, globals_dict):
 
-        old_path = sys.path
-        if self.preferences['Add current dir to path']:
+        with ExitStack() as stack:
             p = Path(self.parent().components['editor'].filename).dirname()
-            sys.path.append(p)
-
-        try:
+            if self.preferences['Add script dir to path'] and p:
+                sys.path.append(p)
+                stack.callback(sys.path.remove, p)
+            if self.preferences['Change working dir to script dir'] and p:
+                stack.enter_context(p)
             exec(code, locals_dict, globals_dict)
-        except Exception:
-            raise
-        finally:
-            sys.path = old_path
 
     @pyqtSlot(bool)
     def render(self):

@@ -6,8 +6,7 @@ from PyQt5.QtWidgets import QApplication
 NAME = 'CadQuery GUI (PyQT)'
 
 #need to initialize QApp here, otherewise svg icons do not work on windows
-if sys.platform == "win32":
-    app = QApplication(sys.argv, applicationName=NAME)
+app = QApplication(sys.argv, applicationName=NAME) if sys.platform == "win32" else None
 
 from .main_window import MainWindow
 
@@ -15,8 +14,7 @@ def main():
     # if this is not a windows platform, initialize QApp here.
     # This also silences the warning from qt about initializing
     # pyqtgraph after QApplication
-    if sys.platform != "win32":
-        app = QApplication(sys.argv, applicationName=NAME)
+    app = QApplication(sys.argv, applicationName=NAME) if sys.platform != "win32" else app
 
     win = MainWindow()
 

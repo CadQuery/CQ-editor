@@ -24,6 +24,14 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+*.dmg
+
+# OS litter
+.DS_Store
+Desktop.ini
+._*
+Thumbs.db
+.Trashes
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

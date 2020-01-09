@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import os, sys
 from PyQt5.QtWidgets import (QWidget, QPushButton, QDialog, QTreeWidget,
                              QTreeWidgetItem, QVBoxLayout, QFileDialog,
                              QHBoxLayout, QFrame, QLabel, QApplication,
@@ -49,11 +49,9 @@ class OCCViewer(QWidget,ComponentMixin):
         super(OCCViewer,self).__init__(parent)
         ComponentMixin.__init__(self)
 
-        self.canvas = qtViewer3d()
+        self.canvas = qtViewer3d()     
         self.canvas.sig_topods_selected.connect(self.handle_selection)
-
         self.create_actions(self)
-
         self.layout_ = layout(self,
                              [self.canvas,],
                              top_widget=self,
@@ -158,6 +156,7 @@ class OCCViewer(QWidget,ComponentMixin):
     def display_many(self,ais_list,fit=None):
 
         context = self._get_context()
+        
         for ais in ais_list:
             context.Display(ais)
 
@@ -356,3 +355,4 @@ if __name__ == "__main__":
     viewer.display(box_ais)
 
     sys.exit(app.exec_())
+    

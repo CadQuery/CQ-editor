@@ -54,7 +54,7 @@ Alternatively, pyinstaller can be run directly from the repository root director
 $ pyinstaller --onedir --windowed --clean -y pyinstaller.spec
 ```
 
-The resulting application bundle `CQ-Editor.app` will be found in the `dist` directory.  Verify that it works by double-clicking the `CQ-Editor.app` file in the Finder or the standalone executable `dist/CQ-Editor/CQ-Editor`.  
+The resulting application bundle `CQ-Editor.app` will be found in the `dist` directory.  Verify that it works by either launching the `CQ-Editor.app` file in the Finder or double-clicking the standalone executable `dist/CQ-Editor/CQ-Editor`.  
 
 ## Building a DMG Installer
 

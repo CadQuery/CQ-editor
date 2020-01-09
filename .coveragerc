@@ -9,4 +9,3 @@ exclude_lines =
   if sys.platform == "win32":
   if sys.platform != "win32":
   if sys.platform != "darwin":
-  

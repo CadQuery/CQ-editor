@@ -6,3 +6,7 @@ source = src
 [report]
 exclude_lines =
   if __name__ == .__main__.:
+  if sys.platform == "win32":
+  if sys.platform != "win32":
+  if sys.platform != "darwin":
+  

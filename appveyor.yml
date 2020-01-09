@@ -15,8 +15,8 @@ environment:
 
 install:
     - sh: if [ $APPVEYOR_BUILD_WORKER_IMAGE != macOS ]; then sudo apt update; sudo apt -y --force-yes install libglu1-mesa xvfb libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev; fi
-    - sh: if [ $APPVEYOR_BUILD_WORKER_IMAGE != macOS ]; then curl -fsS -o miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh; fi
-    - sh: if [ $APPVEYOR_BUILD_WORKER_IMAGE  = macOS ]; then curl -fsS -o miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh; fi
+    - sh: if [ $APPVEYOR_BUILD_WORKER_IMAGE != macOS ]; then curl -o miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh; fi
+    - sh: if [ $APPVEYOR_BUILD_WORKER_IMAGE  = macOS ]; then curl -o miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh; fi
     - sh: bash miniconda.sh -b -p $HOME/miniconda
     - sh: source $HOME/miniconda/bin/activate
     - cmd: appveyor DownloadFile https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86_64.exe

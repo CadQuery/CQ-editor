@@ -1,4 +1,4 @@
-import sys, os
+import sys
 import argparse
 
 from PyQt5.QtWidgets import QApplication

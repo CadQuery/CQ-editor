@@ -41,7 +41,6 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.prepare_panes()
         self.registerComponent('viewer',self.viewer)
-
         self.prepare_toolbar()
         self.prepare_menubar()
 
@@ -62,7 +61,6 @@ class MainWindow(QMainWindow,MainMixin):
         self.restorePreferences()
         self.restoreWindow()
         self.restoreComponentState()
-        
 
     def closeEvent(self,event):
 

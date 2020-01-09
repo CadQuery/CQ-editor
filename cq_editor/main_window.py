@@ -49,7 +49,7 @@ class MainWindow(QMainWindow,MainMixin):
 
         # on macOS adding the axis lines this early causes a crash
         # since OpenGL does not get initialized in time. 
-        if sys.platform != "darwin":
+        if sys.platform != "darwin": # pragma: no cover
             self.components['object_tree'].addLines()
 
         self.prepare_console()

@@ -19,6 +19,6 @@ dependencies:
   - pip:
     - "git+https://github.com/CadQuery/cadquery"
     - PyQt5
-    - spyder
+    - spyder==3.3.4
     - pyobjc-framework-Quartz
     - dmgbuild

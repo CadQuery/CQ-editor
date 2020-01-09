@@ -19,11 +19,13 @@ def main():
         app = QApplication(sys.argv, applicationName=NAME)
 
     win = MainWindow()
+
     parser = argparse.ArgumentParser(description=NAME)
     parser.add_argument('filename',nargs='?',default=None)
-    args = parser.parse_args(app.arguments()[1:])
 
-    if args.filename is not None:
+    args = parser.parse_args(app.arguments()[1:])
+    print(args)
+    if args.filename:
         win.components['editor'].load_from_file(args.filename)
 
     win.show()

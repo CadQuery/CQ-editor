@@ -49,7 +49,7 @@ class OCCViewer(QWidget,ComponentMixin):
         super(OCCViewer,self).__init__(parent)
         ComponentMixin.__init__(self)
 
-        self.canvas = qtViewer3d()     
+        self.canvas = qtViewer3d()
         self.canvas.sig_topods_selected.connect(self.handle_selection)
         self.create_actions(self)
         self.layout_ = layout(self,
@@ -355,4 +355,3 @@ if __name__ == "__main__":
     viewer.display(box_ais)
 
     sys.exit(app.exec_())
-    

@@ -36,6 +36,10 @@ install:
 
 build: false
 
+before_test:
+    - ulimit -c unlimited -S
+    - sudo rm -f /cores/core.*
+
 test_script:
     - sh: export PYTHONPATH=$(pwd)
     - cmd: set PYTHONPATH=%cd%
@@ -45,6 +49,7 @@ on_success:
     - codecov
 
 on_failure:
+    - qtdiag
     - ls /cores/core.*
     - lldb --core `ls /cores/core.*` --batch --one-line "bt"
 

@@ -1,6 +1,7 @@
 shallow_clone: false
 
 image:
+    - macOS-mojave
     - macOS
     - Ubuntu
     - Ubuntu1804

@@ -201,6 +201,12 @@ class Debugger(QObject,ComponentMixin):
 
         def _show_object(obj,name=None, options={}):
 
+            obj = dict(obj=obj)
+            
+            if len(options) > 0:
+                for k,v in options.items():
+                    obj[k] = v
+
             if name:
                 cq_objects.update({name : obj})
             else:

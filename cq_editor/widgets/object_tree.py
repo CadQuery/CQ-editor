@@ -250,7 +250,7 @@ class ObjectTree(QWidget,ComponentMixin):
         ais_list = []
 
         #convert cq.Shape objects to cq.Workplane
-        tmp = ((k,v) if isinstance(v,cq.Workplane) else (k,to_workplane(v)) \
+        tmp = ((k,v['obj']) if isinstance(v['obj'],cq.Workplane) else (k,to_workplane(v['obj'])) \
                for k,v in objects.items())
         #remove Vector objects
         objects_f = \
@@ -267,6 +267,10 @@ class ObjectTree(QWidget,ComponentMixin):
             if preserve_props and name in old_params:
                 for p in old_params[name]:
                     child.properties[p.name()] = p.value()
+            if 'color' in objects[name]:
+                child.properties['Color'] = objects[name]['color']
+            if 'alpha' in objects[name]:
+                child.properties['Alpha'] = objects[name]['alpha']
             if child.properties['Visible']:
                 ais_list.append(ais)
             root.addChild(child)

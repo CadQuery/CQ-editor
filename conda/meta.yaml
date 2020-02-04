@@ -8,14 +8,14 @@ source:
 build:
   string: {{ 'py'+environ.get('PYTHON_VERSION')}}
   script: python setup.py install --single-version-externally-managed --record=record.txt
-
+  entry_points:
+    - cq-editor = cq_editor.__main__:main
+    - CQ-editor = cq_editor.__main__:main
 requirements:
   build:
     - python {{ environ.get('PYTHON_VERSION') }}
     - setuptools
-    entry_points:
-      - cq-editor = cq_editor.__main__:main
-      - CQ-editor = cq_editor.__main__:main
+
   run:
     - python {{ environ.get('PYTHON_VERSION') }}
     - cadquery=2.*
@@ -28,6 +28,6 @@ requirements:
     - logbook
     - qtconsole=4.4.4
     - requests
-    
+
 about:
 summary: GUI for CadQuery 2.0

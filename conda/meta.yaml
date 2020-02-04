@@ -13,6 +13,9 @@ requirements:
   build:
     - python {{ environ.get('PYTHON_VERSION') }}
     - setuptools
+    entry_points:
+      - cq-editor = cq_editor.__main__:main
+      - CQ-editor = cq_editor.__main__:main
   run:
     - python {{ environ.get('PYTHON_VERSION') }}
     - cadquery=2.*

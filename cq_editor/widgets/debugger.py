@@ -212,6 +212,10 @@ class Debugger(QObject,ComponentMixin):
         try:
             self._exec(cq_code, t.__dict__, t.__dict__)
 
+            #remove the special methods
+            t.__dict__.pop('show_object')
+            t.__dict__.pop('debug')
+                        
             #collect all CQ objects if no explicti show_object was called
             if len(cq_objects) == 0:
                 cq_objects = find_cq_objects(t.__dict__)

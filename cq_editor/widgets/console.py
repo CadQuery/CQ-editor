@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import pyqtSlot
 
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
@@ -35,6 +36,7 @@ class ConsoleWidget(RichJupyterWidget,ComponentMixin):
         
         self.push_vars(namespace)
 
+    @pyqtSlot(dict)
     def push_vars(self, variableDict):
         """
         Given a dictionary containing name / value pairs, push those variables

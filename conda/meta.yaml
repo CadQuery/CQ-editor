@@ -27,6 +27,7 @@ requirements:
     - path.py
     - logbook
     - qtconsole=4.4.4
+    - jupyter_client=5.3.4
     - requests
 
 about:

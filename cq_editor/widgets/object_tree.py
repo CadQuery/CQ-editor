@@ -16,7 +16,7 @@ from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
 from ..icons import icon
-from ..cq_utils import make_AIS, export, to_occ_color, to_workplane
+from ..cq_utils import make_AIS, export, to_occ_color, to_workplane, is_obj_empty
 from ..utils import splitter, layout, get_save_filename
 
 class TopTreeItem(QTreeWidgetItem):
@@ -249,18 +249,14 @@ class ObjectTree(QWidget,ComponentMixin):
 
         ais_list = []
 
-        #convert cq.Shape objects to cq.Workplane
-        tmp = ((k,v) if isinstance(v,cq.Workplane) else (k,to_workplane(v)) \
-               for k,v in objects.items())
-        #remove Vector objects
-        objects_f = \
-        {k:v for k,v in tmp if not isinstance(v.val(),(cq.Vector,))}
+        #remove empty objects
+        objects_f = {k:v for k,v in objects.items() if not is_obj_empty(v.shape)}
 
-        for name,shape in objects_f.items():
-            ais,shape_display = make_AIS(shape)
+        for name,obj in objects_f.items():
+            ais,shape_display = make_AIS(obj.shape,obj.options)
             ais.SetTransparency(alpha)
             child = ObjectTreeItem(name,
-                                   shape=shape,
+                                   shape=obj.shape,
                                    shape_display=shape_display,
                                    ais=ais,
                                    sig=self.sigObjectPropertiesChanged)
@@ -282,14 +278,15 @@ class ObjectTree(QWidget,ComponentMixin):
         root = self.CQ
 
         if isinstance(obj, cq.Workplane):
-            ais,_ = make_AIS(obj)
+            ais,shape_display = make_AIS(obj)
         else:
-            ais,_ = make_AIS(to_workplane(obj))
+            ais,shape_display = make_AIS(to_workplane(obj))
 
         ais.SetTransparency(alpha)
 
         root.addChild(ObjectTreeItem(name,
                                      shape=obj,
+                                     shape_display=shape_display,
                                      ais=ais,
                                      sig=self.sigObjectPropertiesChanged))
 

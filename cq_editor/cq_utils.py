@@ -2,6 +2,7 @@ import cadquery as cq
 
 from typing import List, Union
 from imp import reload
+from types import SimpleNamespace
 
 from OCC.Core.AIS import AIS_ColoredShape
 from OCC.Core.Quantity import \
@@ -9,7 +10,7 @@ from OCC.Core.Quantity import \
 
 def find_cq_objects(results : dict):
 
-    return {k:v for k,v in results.items() if isinstance(v,cq.Workplane)}
+    return {k:SimpleNamespace(shape=v,options={}) for k,v in results.items() if isinstance(v,cq.Workplane)}
 
 def to_compound(obj : Union[cq.Workplane, List[cq.Workplane]]):
 
@@ -29,7 +30,10 @@ def to_workplane(obj : cq.Shape):
 
     return rv
 
-def make_AIS(obj : cq.Workplane):
+def make_AIS(obj : Union[cq.Workplane, cq.Shape], options={}):
+    
+    if isinstance(obj, cq.Shape):
+        obj = to_workplane(obj)
 
     shape = to_compound(obj)
     ais = AIS_ColoredShape(shape.wrapped)
@@ -66,3 +70,13 @@ def reload_cq():
     reload(cq.selectors)
     reload(cq.cq)
     reload(cq)
+    
+    
+def is_obj_empty(obj : Union[cq.Workplane,cq.Shape]) -> bool:
+    
+    rv = False
+    
+    if isinstance(obj, cq.Workplane):
+        rv = True if isinstance(obj.val(), cq.Vector) else False
+        
+    return rv

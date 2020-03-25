@@ -1,12 +1,14 @@
 import cadquery as cq
 
-from typing import List, Union
+from typing import List, Union, Tuple
 from imp import reload
 from types import SimpleNamespace
 
 from OCC.Core.AIS import AIS_ColoredShape
 from OCC.Core.Quantity import \
     Quantity_TOC_RGB as TOC_RGB, Quantity_Color
+    
+from PyQt5.QtGui import QColor
 
 def find_cq_objects(results : dict):
 
@@ -37,6 +39,15 @@ def make_AIS(obj : Union[cq.Workplane, cq.Shape], options={}):
 
     shape = to_compound(obj)
     ais = AIS_ColoredShape(shape.wrapped)
+    
+    if 'alpha' in options:
+        ais.SetTransparency(options['alpha'])
+    if 'color' in options:
+        ais.SetColor(to_occ_color(options['color']))
+    if 'rgba' in options:
+        r,g,b,a = options['rgba']
+        ais.SetColor(to_occ_color((r,g,b)))
+        ais.SetTransparency(a)
 
     return ais,shape
 
@@ -53,11 +64,27 @@ def export(obj : Union[cq.Workplane, List[cq.Workplane]], type : str,
         comp.exportBrep(file)
 
 def to_occ_color(color):
+    
+    if not isinstance(color, QColor):
+        if isinstance(color, tuple):
+            if isinstance(color[0], int):
+                color = QColor(*color)
+            elif isinstance(color[0], float):
+                color = QColor.fromRgbF(*color)
+        else:
+            color = QColor(color)
 
     return Quantity_Color(color.redF(),
                           color.greenF(),
                           color.blueF(),
                           TOC_RGB)
+
+def get_occ_color(ais : AIS_ColoredShape):
+    
+    color = Quantity_Color()
+    ais.Color(color)
+    
+    return QColor.fromRgbF(color.Red(), color.Green(), color.Blue())
 
 def reload_cq():
     

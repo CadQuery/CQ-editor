@@ -6,17 +6,14 @@ from pyqtgraph.parametertree import Parameter, ParameterTree
 
 import cadquery as cq
 
-from OCC.Core.AIS import AIS_ColoredShape, AIS_Line
-from OCC.Core.Quantity import Quantity_NOC_RED as RED
-from OCC.Core.Quantity import Quantity_NOC_GREEN as GREEN
-from OCC.Core.Quantity import Quantity_NOC_BLUE1 as BLUE
+from OCC.Core.AIS import AIS_Line
 from OCC.Core.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
      Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
 from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
 from ..icons import icon
-from ..cq_utils import make_AIS, export, to_occ_color, to_workplane, is_obj_empty
+from ..cq_utils import make_AIS, export, to_occ_color, to_workplane, is_obj_empty, get_occ_color
 from ..utils import splitter, layout, get_save_filename
 
 class TopTreeItem(QTreeWidgetItem):
@@ -55,11 +52,9 @@ class ObjectTreeItem(QTreeWidgetItem):
                                            children=self.props)
 
         self.properties['Name'] = name
-        self.properties['Alpha'] = alpha
-        self.properties['Color'] = color
+        self.properties['Alpha'] = ais.Transparency()
+        self.properties['Color'] = get_occ_color(ais) if ais else color
         self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
-
-        self.ais.SetColor(to_occ_color(self.properties['Color']))
 
     def propertiesChanged(self,*args):
 
@@ -214,15 +209,15 @@ class ObjectTree(QWidget,ComponentMixin):
         ais_list = []
 
         for name,color,direction in zip(('X','Y','Z'),
-                                        ('ff0000','00ff00','0000ff'),
+                                        ('red','lawngreen','blue'),
                                         ((1,0,0),(0,1,0),(0,0,1))):
             line_placement = Geom_Line(gp_Ax1(gp_Pnt(*origin),
                                        gp_Dir(*direction)))
             line = AIS_Line(line_placement)
-
+            line.SetColor(to_occ_color(color))
+            
             self.Helpers.addChild(ObjectTreeItem(name,
-                                                 ais=line,
-                                                 color=color))
+                                                 ais=line))
 
             ais_list.append(line)
 
@@ -230,7 +225,7 @@ class ObjectTree(QWidget,ComponentMixin):
 
     @pyqtSlot(dict,bool)
     @pyqtSlot(dict)
-    def addObjects(self,objects,clean=False,root=None,alpha=0.):
+    def addObjects(self,objects,clean=False,root=None):
 
         if root is None:
             root = self.CQ
@@ -254,7 +249,7 @@ class ObjectTree(QWidget,ComponentMixin):
 
         for name,obj in objects_f.items():
             ais,shape_display = make_AIS(obj.shape,obj.options)
-            ais.SetTransparency(alpha)
+            
             child = ObjectTreeItem(name,
                                    shape=obj.shape,
                                    shape_display=shape_display,

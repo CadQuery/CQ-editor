@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication
 
 from cq_editor.__main__ import MainWindow
 from cq_editor.widgets.editor import Editor
-from cq_editor.cq_utils import export
+from cq_editor.cq_utils import export, get_occ_color
 
 code = \
 '''import cadquery as cq
@@ -857,3 +857,62 @@ def test_relative_references(main):
     p_code.remove_p()
     p_step.remove_p()
     p.rmdir_p()
+
+
+code_color = \
+'''
+import cadquery as cq
+result = cq.Workplane("XY" ).box(1, 1, 1)
+
+show_object(result, name ='1')
+show_object(result, name ='2', options=dict(alpha=0.5,color='red'))
+show_object(result, name ='3', options=dict(alpha=0.5,color='#ff0000'))
+show_object(result, name ='4', options=dict(alpha=0.5,color=(255,0,0)))
+show_object(result, name ='5', options=dict(alpha=0.5,color=(1.,0,0)))
+show_object(result, name ='6', options=dict(rgba=(1.,0,0,.5)))
+'''
+
+def test_render_colors(main_clean):
+
+    qtbot, win = main_clean
+
+    obj_tree = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+
+    # check default color
+    editor.set_text(code_color)
+    debugger._actions['Run'][0].triggered.emit()
+
+    def get_rgba(ais):
+        
+        alpha = ais.Transparency()
+        color = get_occ_color(ais)
+        
+        return color.redF(),color.redF(),color.redF(),alpha
+    
+    CQ = obj_tree.CQ
+    
+    r,g,b,a = get_rgba(CQ.child(0).ais)
+    assert( a == 0 )
+    assert( r != 1.0 )
+
+    r,g,b,a = get_rgba(CQ.child(1).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    r,g,b,a = get_rgba(CQ.child(2).ais)
+    assert( a == 0.5)
+    assert( r == 1.0 )
+
+    r,g,b,a = get_rgba(CQ.child(3).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    r,g,b,a = get_rgba(CQ.child(4).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    r,g,b,a = get_rgba(CQ.child(5).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )

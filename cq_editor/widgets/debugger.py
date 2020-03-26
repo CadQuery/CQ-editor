@@ -1,6 +1,7 @@
 import sys, imp
 from enum import Enum, auto
 from imp import reload
+from types import SimpleNamespace
 
 from PyQt5.QtWidgets import (QWidget, QTreeWidget, QTreeWidgetItem, QAction,
                              QLabel, QTableView)
@@ -201,9 +202,9 @@ class Debugger(QObject,ComponentMixin):
         def _show_object(obj,name=None, options={}):
 
             if name:
-                cq_objects.update({name : obj})
+                cq_objects.update({name : SimpleNamespace(shape=obj,options=options)})
             else:
-                cq_objects.update({str(id(obj)) : obj})
+                cq_objects.update({str(id(obj)) : SimpleNamespace(shape=obj,options=options)})
 
         t.__dict__['show_object'] = _show_object
         t.__dict__['debug'] = lambda x: info(str(x))

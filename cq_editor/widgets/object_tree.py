@@ -231,8 +231,8 @@ class ObjectTree(QWidget,ComponentMixin):
             root = self.CQ
 
         request_fit_view = True if root.childCount() == 0 else False
-
         preserve_props = self.preferences['Preserve properties on reload']
+        
         if preserve_props:
             old_params = {}
             for i in range(self.CQ.childCount()):
@@ -255,11 +255,14 @@ class ObjectTree(QWidget,ComponentMixin):
                                    shape_display=shape_display,
                                    ais=ais,
                                    sig=self.sigObjectPropertiesChanged)
+            
             if preserve_props and name in old_params:
                 for p in old_params[name]:
                     child.properties[p.name()] = p.value()
+            
             if child.properties['Visible']:
                 ais_list.append(ais)
+            
             root.addChild(child)
 
         if request_fit_view:
@@ -267,17 +270,12 @@ class ObjectTree(QWidget,ComponentMixin):
         else:
             self.sigObjectsAdded[list].emit(ais_list)
 
-    @pyqtSlot(object,str,float)
-    def addObject(self,obj,name='',alpha=.0,):
+    @pyqtSlot(object,str,object)
+    def addObject(self,obj,name='',options={}):
 
         root = self.CQ
 
-        if isinstance(obj, cq.Workplane):
-            ais,shape_display = make_AIS(obj)
-        else:
-            ais,shape_display = make_AIS(to_workplane(obj))
-
-        ais.SetTransparency(alpha)
+        ais,shape_display = make_AIS(obj, options)
 
         root.addChild(ObjectTreeItem(name,
                                      shape=obj,

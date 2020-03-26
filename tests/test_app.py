@@ -870,6 +870,7 @@ show_object(result, name ='3', options=dict(alpha=0.5,color='#ff0000'))
 show_object(result, name ='4', options=dict(alpha=0.5,color=(255,0,0)))
 show_object(result, name ='5', options=dict(alpha=0.5,color=(1.,0,0)))
 show_object(result, name ='6', options=dict(rgba=(1.,0,0,.5)))
+show_object(result, name ='7', options=dict(color=('ff','cc','dd')))
 '''
 
 def test_render_colors(main_clean):
@@ -879,8 +880,8 @@ def test_render_colors(main_clean):
     obj_tree = win.components['object_tree']
     editor = win.components['editor']
     debugger = win.components['debugger']
+    log = win.components['log']
 
-    # check default color
     editor.set_text(code_color)
     debugger._actions['Run'][0].triggered.emit()
 
@@ -893,26 +894,89 @@ def test_render_colors(main_clean):
     
     CQ = obj_tree.CQ
     
+    # object 1 (defualt color)
     r,g,b,a = get_rgba(CQ.child(0).ais)
     assert( a == 0 )
     assert( r != 1.0 )
-
+    
+    # object 2
     r,g,b,a = get_rgba(CQ.child(1).ais)
     assert( a == 0.5 )
     assert( r == 1.0 )
 
+    # object 3
     r,g,b,a = get_rgba(CQ.child(2).ais)
     assert( a == 0.5)
     assert( r == 1.0 )
 
+    # object 4
     r,g,b,a = get_rgba(CQ.child(3).ais)
     assert( a == 0.5 )
     assert( r == 1.0 )
 
+    # object 5
     r,g,b,a = get_rgba(CQ.child(4).ais)
     assert( a == 0.5 )
     assert( r == 1.0 )
 
+    # object 6
     r,g,b,a = get_rgba(CQ.child(5).ais)
     assert( a == 0.5 )
     assert( r == 1.0 )
+
+    # check if error occured
+    qtbot.wait(100)
+    assert('Unknown color format' in log.toPlainText().splitlines()[-1])
+    
+def test_render_colors_console(main_clean):
+
+    qtbot, win = main_clean
+
+    obj_tree = win.components['object_tree']
+    log = win.components['log']
+    console = win.components['console']
+
+    console.execute_command(code_color)
+
+    def get_rgba(ais):
+        
+        alpha = ais.Transparency()
+        color = get_occ_color(ais)
+        
+        return color.redF(),color.redF(),color.redF(),alpha
+    
+    CQ = obj_tree.CQ
+    
+    # object 1 (defualt color)
+    r,g,b,a = get_rgba(CQ.child(0).ais)
+    assert( a == 0 )
+    assert( r != 1.0 )
+    
+    # object 2
+    r,g,b,a = get_rgba(CQ.child(1).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    # object 3
+    r,g,b,a = get_rgba(CQ.child(2).ais)
+    assert( a == 0.5)
+    assert( r == 1.0 )
+
+    # object 4
+    r,g,b,a = get_rgba(CQ.child(3).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    # object 5
+    r,g,b,a = get_rgba(CQ.child(4).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    # object 6
+    r,g,b,a = get_rgba(CQ.child(5).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+    
+    # check if error occured
+    qtbot.wait(100)
+    assert('Unknown color format' in log.toPlainText().splitlines()[-1])

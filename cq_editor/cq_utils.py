@@ -63,7 +63,7 @@ def export(obj : Union[cq.Workplane, List[cq.Workplane]], type : str,
     elif type == 'brep':
         comp.exportBrep(file)
 
-def to_occ_color(color):
+def to_occ_color(color) -> Quantity_Color:
     
     if not isinstance(color, QColor):
         if isinstance(color, tuple):
@@ -71,6 +71,8 @@ def to_occ_color(color):
                 color = QColor(*color)
             elif isinstance(color[0], float):
                 color = QColor.fromRgbF(*color)
+            else:
+                raise ValueError('Unknown color format')
         else:
             color = QColor(color)
 
@@ -79,7 +81,7 @@ def to_occ_color(color):
                           color.blueF(),
                           TOC_RGB)
 
-def get_occ_color(ais : AIS_ColoredShape):
+def get_occ_color(ais : AIS_ColoredShape) -> QColor:
     
     color = Quantity_Color()
     ais.Color(color)

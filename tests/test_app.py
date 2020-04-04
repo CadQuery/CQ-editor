@@ -42,7 +42,7 @@ result = cq.Workplane("XY" )
 result = result.box(3, 3, 0.5)
 result = result.edges("|Z").fillet(0.125)
 
-debug('test')
+log('test')
 show_object(result,name='test')
 '''
 
@@ -335,16 +335,16 @@ def test_debug(main,mocker):
     assert(number_visible_items(viewer) == 3)
 
     #test step through
-    ev = event_loop([lambda: (assert_func(variables.model().rowCount() == 0),
+    ev = event_loop([lambda: (assert_func(variables.model().rowCount() == 4),
                               assert_func(number_visible_items(viewer) == 3),
                               step.triggered.emit()),
-                     lambda: (assert_func(variables.model().rowCount() == 1),
+                     lambda: (assert_func(variables.model().rowCount() == 4),
                               assert_func(number_visible_items(viewer) == 3),
                               step.triggered.emit()),
-                     lambda: (assert_func(variables.model().rowCount() == 2),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 3),
                               step.triggered.emit()),
-                     lambda: (assert_func(variables.model().rowCount() == 2),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit())])
 
@@ -352,7 +352,7 @@ def test_debug(main,mocker):
 
     debug.triggered.emit(True)
     assert(variables.model().rowCount() == 2)
-    assert(number_visible_items(viewer) == 3)
+    assert(number_visible_items(viewer) == 4)
 
     #test exit debug
     ev = event_loop([lambda: (step.triggered.emit(),),
@@ -369,7 +369,7 @@ def test_debug(main,mocker):
 
     #test breakpoint
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 2),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -380,7 +380,7 @@ def test_debug(main,mocker):
     debug.triggered.emit(True)
 
     assert(variables.model().rowCount() == 2)
-    assert(number_visible_items(viewer) == 3)
+    assert(number_visible_items(viewer) == 4)
 
     # restore the tracing function
     sys.settrace(trace_function)

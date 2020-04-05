@@ -223,6 +223,20 @@ class ObjectTree(QWidget,ComponentMixin):
 
         self.sigObjectsAdded.emit(ais_list)
 
+    def _current_properties(self):
+
+        current_params = {}
+        for i in range(self.CQ.childCount()):
+            child = self.CQ.child(i)
+            current_params[child.properties['Name']] = child.properties
+
+        return current_params
+
+    def _restore_properties(self,obj,properties):
+
+        for p in properties[obj.properties['Name']]:
+            obj.properties[p.name()] = p.value()
+
     @pyqtSlot(dict,bool)
     @pyqtSlot(dict)
     def addObjects(self,objects,clean=False,root=None):
@@ -234,10 +248,7 @@ class ObjectTree(QWidget,ComponentMixin):
         preserve_props = self.preferences['Preserve properties on reload']
         
         if preserve_props:
-            old_params = {}
-            for i in range(self.CQ.childCount()):
-                child = self.CQ.child(i)
-                old_params[child.properties['Name']] = child.properties
+            current_props = self._current_properties()
 
         if clean or self.preferences['Clear all before each run']:
             self.removeObjects()
@@ -256,9 +267,8 @@ class ObjectTree(QWidget,ComponentMixin):
                                    ais=ais,
                                    sig=self.sigObjectPropertiesChanged)
             
-            if preserve_props and name in old_params:
-                for p in old_params[name]:
-                    child.properties[p.name()] = p.value()
+            if preserve_props and name in current_props:
+                self._restore_properties(child,current_props)
             
             if child.properties['Visible']:
                 ais_list.append(ais)

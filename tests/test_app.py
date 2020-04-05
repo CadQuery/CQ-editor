@@ -55,6 +55,15 @@ result = result.edges("|Z").fillet(0.125)
 show_object(result.val())
 '''
 
+code_debug_Workplane = \
+'''import cadquery as cq
+result = cq.Workplane("XY" )
+result = result.box(3, 3, 0.5)
+result = result.edges("|Z").fillet(0.125)
+
+debug(result)
+'''
+
 code_multi = \
 '''import cadquery as cq
 result1 = cq.Workplane("XY" ).box(3, 3, 0.5)
@@ -84,6 +93,13 @@ def get_bottom_left(widget):
     pos.setY(pos.y()+widget.height())
 
     return pos
+
+def get_rgba(ais):
+        
+    alpha = ais.Transparency()
+    color = get_occ_color(ais)
+        
+    return color.redF(),color.redF(),color.redF(),alpha
 
 @pytest.fixture
 def main(qtbot,mocker):
@@ -378,6 +394,44 @@ def test_debug(main,mocker):
     editor.set_breakpoints([(4,None)])
 
     debug.triggered.emit(True)
+
+    assert(variables.model().rowCount() == 2)
+    assert(number_visible_items(viewer) == 4)
+    
+    #test breakpoint without using singals
+    ev = event_loop([lambda: (cont.triggered.emit(),),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
+                              assert_func(number_visible_items(viewer) == 4),
+                              cont.triggered.emit(),)])
+
+    patch_debugger(debugger,ev)
+
+    editor.set_breakpoints([(4,None)])
+
+    debugger.debug(True)
+
+    assert(variables.model().rowCount() == 2)
+    assert(number_visible_items(viewer) == 4)
+    
+    #test debug() without using singals
+    ev = event_loop([lambda: (cont.triggered.emit(),),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
+                              assert_func(number_visible_items(viewer) == 4),
+                              cont.triggered.emit(),)])
+
+    patch_debugger(debugger,ev)
+
+    editor.set_text(code_debug_Workplane)
+    editor.set_breakpoints([(4,None)])
+
+    debugger.debug(True)
+    
+    CQ = obj_tree.CQ
+    
+    # object 1 (defualt color)
+    r,g,b,a = get_rgba(CQ.child(0).ais)
+    assert( a == pytest.approx(0.2) )
+    assert( r == 1.0 )
 
     assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 4)
@@ -884,13 +938,6 @@ def test_render_colors(main_clean):
 
     editor.set_text(code_color)
     debugger._actions['Run'][0].triggered.emit()
-
-    def get_rgba(ais):
-        
-        alpha = ais.Transparency()
-        color = get_occ_color(ais)
-        
-        return color.redF(),color.redF(),color.redF(),alpha
     
     CQ = obj_tree.CQ
     

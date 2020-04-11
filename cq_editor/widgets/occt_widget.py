@@ -12,6 +12,9 @@ from OCP.V3d import V3d_Viewer
 from OCP.AIS import AIS_InteractiveContext, AIS_DisplayMode
 from OCP.Quantity import Quantity_Color
 
+
+ZOOM_STEP = 0.9
+
    
 class OCCTWidget(QWidget):
     
@@ -62,6 +65,41 @@ class OCCTWidget(QWidget):
         self.context.Display(box_ais,True)
         self.view.FitAll()
         self.view.ZFitAll()
+        
+    def wheelEvent(self, event):
+        
+        delta = event.angleDelta().y()
+        factor = ZOOM_STEP if delta<0 else 1/ZOOM_STEP
+        
+        self.view.SetZoom(factor)
+        
+    def mousePressEvent(self,event):
+        
+        pos = event.pos()
+        
+        if event.button() == Qt.LeftButton:
+            self.view.StartRotation(pos.x(), pos.y())
+        elif event.button() == Qt.RightButton:
+            self.view.StartZoomAtPoint(pos.x(), pos.y())
+        
+        self.old_pos = pos
+            
+    def mouseMoveEvent(self,event):
+        
+        pos = event.pos()
+        
+        if event.buttons() == Qt.LeftButton:
+            self.view.Rotation(pos.x(), pos.y())
+            
+        elif event.buttons() == Qt.MiddleButton:
+            self.view.Pan(pos.x() - self.old_pos.x(),
+                          self.old_pos.y() - pos.y(), theToStart=True)
+            
+        elif event.buttons() == Qt.RightButton:
+            self.view.ZoomAtPoint(self.old_pos.x(), pos.y(),
+                                  pos.x(), self.old_pos.y())
+        
+        self.old_pos = pos
 
     def paintEngine(self):
     
@@ -85,6 +123,8 @@ class OCCTWidget(QWidget):
         
         if not self._initialized:
             self._initialize()
+            
+        self._show_box()
 
     def resizeEvent(self, event):
         

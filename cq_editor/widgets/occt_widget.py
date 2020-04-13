@@ -32,7 +32,7 @@ class OCCTWidget(QWidget):
         #OCCT secific things
         self.display_connection = Aspect_DisplayConnection()
         self.graphics_driver = OpenGl_GraphicDriver(self.display_connection)
-
+        
         self.viewer = V3d_Viewer(self.graphics_driver)
         self.view = self.viewer.CreateView()
         self.context = AIS_InteractiveContext(self.viewer)
@@ -104,25 +104,16 @@ class OCCTWidget(QWidget):
     def paintEngine(self):
     
         return None
-
-    def render(self):
     
-        if not self._needs_update:
-            self._needs_update = True
-            QApplication.postEvent(self, QEvent(QEvent.UpdateRequest))
-
     def paintEvent(self, event):
         
-        if not self._initialized: self._initialize()
-        
-        self.render()
+        if self._initialized: self.view.Redraw()
 
     def showEvent(self, event):
     
         super(OCCTWidget,self).showEvent(event)
         
-        if not self._initialized:
-            self._initialize()
+        if not self._initialized: self._initialize()
             
         self._show_box()
 
@@ -131,23 +122,7 @@ class OCCTWidget(QWidget):
         super(OCCTWidget,self).resizeEvent(event)
         
         self.view.MustBeResized()
-
-    def event(self,event):
     
-        if event.type() == QEvent.UpdateRequest:
-            self._needs_update = False
-            self._render()
-            return True
-        else:
-            return super(OCCTWidget,self).event(event);    
-
-    def _render(self):
-        
-        if not self.isVisible() or not self._initialized:
-            return
-        
-        self.view.Redraw()
-
     def _initialize(self):
         
         wins = {

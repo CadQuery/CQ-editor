@@ -18,6 +18,8 @@ ZOOM_STEP = 0.9
    
 class OCCTWidget(QWidget):
     
+    sigObjectSelected = pyqtSignal(list)
+    
     def __init__(self,parent=None):
         
         super(OCCTWidget,self).__init__(parent)
@@ -58,14 +60,6 @@ class OCCTWidget(QWidget):
         ctx.SetDisplayMode(AIS_DisplayMode.AIS_Shaded, True)
         ctx.DefaultDrawer().SetFaceBoundaryDraw(True)
         
-    def _show_box(self):
-        
-        box = OCP.BRepPrimAPI.BRepPrimAPI_MakeBox(1,1,1).Shape()
-        box_ais = OCP.AIS.AIS_Shape(box)
-        self.context.Display(box_ais,True)
-        self.view.FitAll()
-        self.view.ZFitAll()
-        
     def wheelEvent(self, event):
         
         delta = event.angleDelta().y()
@@ -87,19 +81,41 @@ class OCCTWidget(QWidget):
     def mouseMoveEvent(self,event):
         
         pos = event.pos()
+        x,y = pos.x(),pos.y()
         
         if event.buttons() == Qt.LeftButton:
-            self.view.Rotation(pos.x(), pos.y())
+            self.view.Rotation(x,y)
             
         elif event.buttons() == Qt.MiddleButton:
-            self.view.Pan(pos.x() - self.old_pos.x(),
-                          self.old_pos.y() - pos.y(), theToStart=True)
+            self.view.Pan(x - self.old_pos.x(),
+                          self.old_pos.y() - y, theToStart=True)
             
         elif event.buttons() == Qt.RightButton:
-            self.view.ZoomAtPoint(self.old_pos.x(), pos.y(),
-                                  pos.x(), self.old_pos.y())
+            self.view.ZoomAtPoint(self.old_pos.x(), y,
+                                  x, self.old_pos.y())
         
         self.old_pos = pos
+        
+    def mouseReleaseEvent(self,event):
+        
+        if event.button() == Qt.LeftButton:
+            pos = event.pos()
+            x,y = pos.x(),pos.y()
+            
+            self.context.MoveTo(x,y,self.view,True)
+            
+            self._handle_selection()
+            
+    def _handle_selection(self):
+        
+        self.context.Select(True)
+        self.context.InitSelected()
+        
+        selected = []
+        if self.context.HasSelectedShape():
+            selected.append(self.context.SelectedShape())
+        
+        self.sigObjectSelected.emit(selected)
 
     def paintEngine(self):
     
@@ -114,9 +130,7 @@ class OCCTWidget(QWidget):
         super(OCCTWidget,self).showEvent(event)
         
         if not self._initialized: self._initialize()
-            
-        self._show_box()
-
+        
     def resizeEvent(self, event):
         
         super(OCCTWidget,self).resizeEvent(event)

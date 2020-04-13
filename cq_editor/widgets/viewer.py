@@ -233,12 +233,12 @@ class OCCViewer(QWidget,ComponentMixin):
     def shaded_view(self):
 
         c = self._get_context()
-        c.SetDisplayMode(AIS_Shaded)
+        c.SetDisplayMode(AIS_Shaded, True)
 
     def wireframe_view(self):
 
         c = self._get_context()
-        c.SetDisplayMode(AIS_WireFrame)
+        c.SetDisplayMode(AIS_WireFrame, True)
 
     def show_grid(self,
                   step=1.,

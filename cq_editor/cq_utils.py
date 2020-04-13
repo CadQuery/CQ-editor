@@ -4,8 +4,8 @@ from typing import List, Union, Tuple
 from imp import reload
 from types import SimpleNamespace
 
-from OCC.Core.AIS import AIS_ColoredShape
-from OCC.Core.Quantity import \
+from OCP.AIS import AIS_ColoredShape
+from OCP.Quantity import \
     Quantity_TOC_RGB as TOC_RGB, Quantity_Color
     
 from PyQt5.QtGui import QColor

@@ -7,23 +7,22 @@ from PyQt5.QtWidgets import (QWidget, QPushButton, QDialog, QTreeWidget,
 
 from PyQt5.QtCore import QSize, pyqtSlot, pyqtSignal, QMetaObject, Qt
 from PyQt5.QtGui import QIcon
-import OCC.Display.backend
-back = OCC.Display.backend.load_backend()
 
-from OCC.Display.qtDisplay import qtViewer3d
-from OCC.Core.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, \
+from OCP.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, \
     AIS_Axis, AIS_Line
-from OCC.Core.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular, Aspect_GFM_VER
-from OCC.Core.Quantity import Quantity_NOC_BLACK as BLACK, \
+from OCP.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular, Aspect_GFM_VER
+from OCP.Quantity import Quantity_NOC_BLACK as BLACK, \
     Quantity_TOC_RGB as TOC_RGB, Quantity_Color
-from OCC.Core.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
+from OCP.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
      Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
-from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
+from OCP.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..utils import layout, get_save_filename
 from ..mixins import ComponentMixin
 from ..icons import icon
-from ..cq_utils import to_occ_color
+from ..cq_utils import to_occ_color, make_AIS
+
+from .occt_widget import OCCTWidget
 
 from pyqtgraph.parametertree import Parameter
 import qtawesome as qta
@@ -49,8 +48,8 @@ class OCCViewer(QWidget,ComponentMixin):
         super(OCCViewer,self).__init__(parent)
         ComponentMixin.__init__(self)
 
-        self.canvas = qtViewer3d()
-        self.canvas.sig_topods_selected.connect(self.handle_selection)
+        self.canvas = OCCTWidget()
+        self.canvas.sigObjectSelected.connect(self.handle_selection)
 
         self.create_actions(self)
 
@@ -68,7 +67,7 @@ class OCCViewer(QWidget,ComponentMixin):
 
         if not self.preferences['Use gradient']:
             color2 = color1
-        self.canvas._display.View.SetBgGradientColors(color1,color2,True)
+        self.canvas.view.SetBgGradientColors(color1,color2,theToUpdate=True)
         
         self.canvas.update()
 
@@ -129,27 +128,26 @@ class OCCViewer(QWidget,ComponentMixin):
 
         self.displayed_shapes = []
         self.displayed_ais = []
-        self.canvas._display.EraseAll()
+        self.canvas.context.EraseAll(True)
         context = self._get_context()
         context.PurgeDisplay()
         context.RemoveAll()
 
     def _display(self,shape):
 
-        ais = self.canvas._display.DisplayShape(shape)
+        ais = make_AIS(shape)
+        self.canvas.context.Display(shape,True)
 
         self.displayed_shapes.append(shape)
         self.displayed_ais.append(ais)
 
-        self.canvas._display.Repaint()
+        #self.canvas._display.Repaint()
 
     @pyqtSlot(object)
     def display(self,ais):
 
         context = self._get_context()
-        context.Display(ais)
-
-        self.canvas._display.Repaint()
+        context.Display(ais,True)
 
         if self.preferences['Fit automatically']: self.fit()
 
@@ -159,9 +157,7 @@ class OCCViewer(QWidget,ComponentMixin):
 
         context = self._get_context()
         for ais in ais_list:
-            context.Display(ais)
-
-        self.canvas._display.Repaint()
+            context.Display(ais,True)
 
         if self.preferences['Fit automatically'] and fit is None:
             self.fit()
@@ -173,15 +169,15 @@ class OCCViewer(QWidget,ComponentMixin):
 
         ctx = self._get_context()
         if item.checkState(0):
-            ctx.Display(item.ais)
+            ctx.Display(item.ais,True)
         else:
-            ctx.Erase(item.ais)
+            ctx.Erase(item.ais,True)
 
     @pyqtSlot(list)
     def remove_items(self,ais_items):
 
         ctx = self._get_context()
-        for ais in ais_items: ctx.Erase(ais)
+        for ais in ais_items: ctx.Erase(ais,True)
 
     @pyqtSlot()
     def redraw(self):
@@ -190,7 +186,7 @@ class OCCViewer(QWidget,ComponentMixin):
 
     def fit(self):
 
-        self.canvas._display.FitAll()
+        self.canvas.view.FitAll()
 
     def iso_view(self):
 
@@ -308,15 +304,15 @@ class OCCViewer(QWidget,ComponentMixin):
 
     def _get_view(self):
 
-        return self.canvas._display.GetView()
+        return self.canvas.view
 
     def _get_viewer(self):
 
-        return self.canvas._display.GetViewer()
+        return self.canvas.viewer
 
     def _get_context(self):
 
-        return self.canvas._display.GetContext()
+        return self.canvas.context
 
     @pyqtSlot(list)
     def handle_selection(self,obj):
@@ -338,7 +334,7 @@ class OCCViewer(QWidget,ComponentMixin):
 if __name__ == "__main__":
 
     import sys
-    from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox
+    from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
 
     app = QApplication(sys.argv)
     viewer = OCCViewer()

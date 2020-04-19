@@ -37,12 +37,18 @@ class OCCTWidget(QWidget):
         
         self.viewer = V3d_Viewer(self.graphics_driver)
         self.view = self.viewer.CreateView()
+        self.rendering_params = self.view.ChangeRenderingParams()
         self.context = AIS_InteractiveContext(self.viewer)
         
         #Trihedorn, lights, etc
         self.prepare_display()
         
     def prepare_display(self):
+        
+        params = self.rendering_params
+        
+        params.IsAntialiasingEnabled=True
+        params.NbMsaaSamples=8
         
         view = self.view
         
@@ -123,13 +129,14 @@ class OCCTWidget(QWidget):
     
     def paintEvent(self, event):
         
-        if self._initialized: self.view.Redraw()
+        if not self._initialized:
+            self._initialize()
+        else:
+            self.view.Redraw()
 
     def showEvent(self, event):
     
         super(OCCTWidget,self).showEvent(event)
-        
-        if not self._initialized: self._initialize()
         
     def resizeEvent(self, event):
         
@@ -146,6 +153,7 @@ class OCCTWidget(QWidget):
         }
         
         self.view.SetWindow(wins[platform](self.winId()))
+        
         self._initialized = True
         
     def _get_window_win(self,wid):

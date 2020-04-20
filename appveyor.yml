@@ -30,14 +30,15 @@ install:
     - cmd: activate cqgui
     - conda list
     - conda install -c conda-forge pytest=5.2.0 pluggy pytest-qt
-    - pip install pytest-xvfb pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay==0.2.1
+    - pip install pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay==0.2.1
 
 build: false
 
 test_script:
     - sh: export PYTHONPATH=$(pwd)
     - cmd: set PYTHONPATH=%cd%
-    - pytest -v --cov=cq_editor
+    - sh: xvfb-run pytest -v --cov=cq_editor
+    - cmd: pytest -v --cov=cq_editor
 
 on_success:
     - codecov

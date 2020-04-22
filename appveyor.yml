@@ -37,7 +37,7 @@ build: false
 test_script:
     - sh: export PYTHONPATH=$(pwd)
     - cmd: set PYTHONPATH=%cd%
-    - sh: xvfb-run pytest -v --cov=cq_editor
+    - sh: xvfb-run -s '-screen 0 1920x1080x24 +iglx' pytest -v --cov=cq_editor
     - cmd: pytest -v --cov=cq_editor
 
 on_success:

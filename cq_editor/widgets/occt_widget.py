@@ -147,7 +147,7 @@ class OCCTWidget(QWidget):
         wins = {
             'darwin' : self._get_window_osx,
             'linux'  : self._get_window_linux,
-            'windows': self._get_window_win           
+            'win32': self._get_window_win           
         }
         
         self.view.SetWindow(wins[platform](self.winId()))

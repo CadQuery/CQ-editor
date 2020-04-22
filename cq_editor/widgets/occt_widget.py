@@ -37,7 +37,6 @@ class OCCTWidget(QWidget):
         
         self.viewer = V3d_Viewer(self.graphics_driver)
         self.view = self.viewer.CreateView()
-        self.rendering_params = self.view.ChangeRenderingParams()
         self.context = AIS_InteractiveContext(self.viewer)
         
         #Trihedorn, lights, etc
@@ -45,12 +44,11 @@ class OCCTWidget(QWidget):
         
     def prepare_display(self):
         
-        params = self.rendering_params
-        
-        params.IsAntialiasingEnabled=True
-        params.NbMsaaSamples=8
-        
         view = self.view
+        
+        params = view.ChangeRenderingParams()
+        params.NbMsaaSamples = 8
+        params.IsAntialiasingEnabled = True
         
         view.TriedronDisplay(
             Aspect_TypeOfTriedronPosition.Aspect_TOTP_RIGHT_LOWER,

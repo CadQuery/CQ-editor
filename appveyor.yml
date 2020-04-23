@@ -51,6 +51,7 @@ on_success:
     - codecov
 
 on_failure:
+    - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
     - qtdiag
     - ls /cores/core.*
     - lldb --core `ls /cores/core.*` --batch --one-line "bt"

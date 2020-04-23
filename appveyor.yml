@@ -13,15 +13,14 @@ environment:
     CODECOV_TOKEN:
         secure: ZggK9wgDeFdTp0pu0MEV+SY4i/i1Ls0xrEC2MxSQOQ0JQV+TkpzJJzI4au7L8TpD
     MINICONDA_DIRNAME: C:\FreshMiniconda
-    APPVEYOR_SSH_KEY: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/VJHUak7N9WcXtVBsgbg9uGFidBR8ntv8+JJeQC7TT9XVu/t9NYAODeWglM82usPeK5enzvpkHMfblUSVW0A78IK9HV9GbSl8fs+PdS6EdBvQvzI7corjwzpBvnMek8sX7dDpqNM/2uPzwG6U9aGqjzxB2h59tMatxhaWlrjn0UKRYxJd7OsjCfPSd1ANsCikswUG14gtw+KSVElegMgYgqj3DIZzK4XME+4glNG1/XDJc8IAmW9xp/IuiJgfXVqUmKcBeREdKBWRLmSa38riMAmSejOzZ9WOTdKRxf19OLENYXp/pgcVTK7KtYrS6hDaTywBvupgYaW6JK0Cjh0h adam@adam-desktop
 
 install:
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then sudo apt update; sudo apt -y --force-yes install libglu1-mesa xvfb libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev; fi
-    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then curl -o miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh; fi
-    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then curl -o miniconda.sh https://repo.continuum.io/miniconda/Miniconda3-4.7.10-MacOSX-x86_64.sh; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then curl -o miniconda.sh curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then curl -o miniconda.sh curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh; fi
     - sh: bash miniconda.sh -b -p $HOME/miniconda
     - sh: source $HOME/miniconda/bin/activate
-    - cmd: appveyor DownloadFile https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86_64.exe
+    - cmd: appveyor DownloadFile https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
     - cmd: Miniconda3-latest-Windows-x86_64.exe /S /InstallationType=JustMe /D=%MINICONDA_DIRNAME%
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
     - cmd: activate
@@ -52,12 +51,11 @@ on_success:
     - codecov
 
 #on_failure:
-#    - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
 #    - qtdiag
 #    - ls /cores/core.*
 #    - lldb --core `ls /cores/core.*` --batch --one-line "bt"
 
 on_finish:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-   - sh: export APPVEYOR_SSH_BLOCK=true
+#  - sh: export APPVEYOR_SSH_BLOCK=true
    - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -

@@ -2,6 +2,7 @@ from spyder.widgets.sourcecode.codeeditor import  CodeEditor
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer
 from PyQt5.QtWidgets import QAction, QFileDialog
 from PyQt5.QtGui import QFontDatabase
+from path import Path
 
 import sys
 
@@ -119,7 +120,8 @@ class Editor(CodeEditor,ComponentMixin):
 
     def open(self):
 
-        fname = get_open_filename(self.EXTENSIONS)
+        curr_dir = Path(self.filename).abspath().dirname()
+        fname = get_open_filename(self.EXTENSIONS, curr_dir)
         if fname is not '':
             self.load_from_file(fname)
 

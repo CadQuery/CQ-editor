@@ -1,4 +1,4 @@
-import os.path as path
+from path import Path
 import os, sys
 
 from multiprocessing import Process
@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication
 
 from cq_editor.__main__ import MainWindow
 from cq_editor.widgets.editor import Editor
+from cq_editor.cq_utils import export, get_occ_color
 
 code = \
 '''import cadquery as cq
@@ -41,7 +42,7 @@ result = cq.Workplane("XY" )
 result = result.box(3, 3, 0.5)
 result = result.edges("|Z").fillet(0.125)
 
-debug('test')
+log('test')
 show_object(result,name='test')
 '''
 
@@ -52,6 +53,15 @@ result = result.box(3, 3, 0.5)
 result = result.edges("|Z").fillet(0.125)
 
 show_object(result.val())
+'''
+
+code_debug_Workplane = \
+'''import cadquery as cq
+result = cq.Workplane("XY" )
+result = result.box(3, 3, 0.5)
+result = result.edges("|Z").fillet(0.125)
+
+debug(result)
 '''
 
 code_multi = \
@@ -83,6 +93,13 @@ def get_bottom_left(widget):
     pos.setY(pos.y()+widget.height())
 
     return pos
+
+def get_rgba(ais):
+        
+    alpha = ais.Transparency()
+    color = get_occ_color(ais)
+        
+    return color.redF(),color.redF(),color.redF(),alpha
 
 @pytest.fixture
 def main(qtbot,mocker):
@@ -225,12 +242,12 @@ def test_export(main,mocker):
     #export STL
     mocker.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.stl',''))
     obj_tree_comp._export_STL_action.triggered.emit()
-    assert(path.isfile('out.stl'))
+    assert(os.path.isfile('out.stl'))
 
     #export STEP
     mocker.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.step',''))
     obj_tree_comp._export_STEP_action.triggered.emit()
-    assert(path.isfile('out.step'))
+    assert(os.path.isfile('out.step'))
 
     #clean
     os.remove('out.step')
@@ -238,7 +255,7 @@ def test_export(main,mocker):
 
 def number_visible_items(viewer):
 
-    from OCC.AIS import AIS_ListOfInteractive
+    from OCP.AIS import AIS_ListOfInteractive
     l = AIS_ListOfInteractive()
 
     viewer_ctx = viewer._get_context()
@@ -334,16 +351,16 @@ def test_debug(main,mocker):
     assert(number_visible_items(viewer) == 3)
 
     #test step through
-    ev = event_loop([lambda: (assert_func(variables.model().rowCount() == 0),
+    ev = event_loop([lambda: (assert_func(variables.model().rowCount() == 4),
                               assert_func(number_visible_items(viewer) == 3),
                               step.triggered.emit()),
-                     lambda: (assert_func(variables.model().rowCount() == 1),
+                     lambda: (assert_func(variables.model().rowCount() == 4),
                               assert_func(number_visible_items(viewer) == 3),
                               step.triggered.emit()),
-                     lambda: (assert_func(variables.model().rowCount() == 2),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 3),
                               step.triggered.emit()),
-                     lambda: (assert_func(variables.model().rowCount() == 2),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit())])
 
@@ -351,7 +368,7 @@ def test_debug(main,mocker):
 
     debug.triggered.emit(True)
     assert(variables.model().rowCount() == 2)
-    assert(number_visible_items(viewer) == 3)
+    assert(number_visible_items(viewer) == 4)
 
     #test exit debug
     ev = event_loop([lambda: (step.triggered.emit(),),
@@ -368,7 +385,7 @@ def test_debug(main,mocker):
 
     #test breakpoint
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 2),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -379,7 +396,45 @@ def test_debug(main,mocker):
     debug.triggered.emit(True)
 
     assert(variables.model().rowCount() == 2)
-    assert(number_visible_items(viewer) == 3)
+    assert(number_visible_items(viewer) == 4)
+    
+    #test breakpoint without using singals
+    ev = event_loop([lambda: (cont.triggered.emit(),),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
+                              assert_func(number_visible_items(viewer) == 4),
+                              cont.triggered.emit(),)])
+
+    patch_debugger(debugger,ev)
+
+    editor.set_breakpoints([(4,None)])
+
+    debugger.debug(True)
+
+    assert(variables.model().rowCount() == 2)
+    assert(number_visible_items(viewer) == 4)
+    
+    #test debug() without using singals
+    ev = event_loop([lambda: (cont.triggered.emit(),),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
+                              assert_func(number_visible_items(viewer) == 4),
+                              cont.triggered.emit(),)])
+
+    patch_debugger(debugger,ev)
+
+    editor.set_text(code_debug_Workplane)
+    editor.set_breakpoints([(4,None)])
+
+    debugger.debug(True)
+    
+    CQ = obj_tree.CQ
+    
+    # object 1 (defualt color)
+    r,g,b,a = get_rgba(CQ.child(0).ais)
+    assert( a == pytest.approx(0.2) )
+    assert( r == 1.0 )
+
+    assert(variables.model().rowCount() == 2)
+    assert(number_visible_items(viewer) == 4)
 
     # restore the tracing function
     sys.settrace(trace_function)
@@ -637,7 +692,7 @@ def test_auto_fit_view(main_clean):
     viewer = win.components['viewer']
     object_tree = win.components['object_tree']
 
-    view = viewer.canvas._display.GetView()
+    view = viewer.canvas.view
     viewer.preferences['Fit automatically'] = False
     eye0,proj0,scale0 = view.Eye(),view.Proj(),view.Scale()
     # check if camera position is adjusted automatically when rendering for the
@@ -735,6 +790,7 @@ def test_selection(main_multi,mocker):
     ctx = viewer._get_context()
     ctx.InitSelected()
     shapes = []
+    
     while ctx.MoreSelected():
         shapes.append(ctx.SelectedShape())
         ctx.NextSelected()
@@ -823,3 +879,152 @@ def test_resize(main):
     editor.show()
     qtbot.wait(50)
 
+code_simple_step = \
+'''import cadquery as cq
+imported = cq.importers.importStep('shape.step')
+'''
+
+def test_relative_references(main):
+
+    # create code with a relative reference in a subdirectory
+    p = Path('test_relative_references')
+    p.mkdir_p()
+    p_code = p.joinpath('code.py')
+    p_code.write_text(code_simple_step)
+    # create the referenced step file
+    shape = cq.Workplane("XY").box(1, 1, 1)
+    p_step = p.joinpath('shape.step')
+    export(shape, "step", p_step)
+    # open code
+    qtbot, win = main
+    editor = win.components['editor']
+    editor.load_from_file(p_code)
+    # render
+    debugger = win.components['debugger']
+    debugger._actions['Run'][0].triggered.emit()
+    # assert no errors
+    traceback_view = win.components['traceback_viewer']
+    assert(traceback_view.current_exception.text() == '')
+    # assert one object has been rendered
+    obj_tree_comp = win.components['object_tree']
+    assert(obj_tree_comp.CQ.childCount() == 1)
+    # clean up
+    p_code.remove_p()
+    p_step.remove_p()
+    p.rmdir_p()
+
+
+code_color = \
+'''
+import cadquery as cq
+result = cq.Workplane("XY" ).box(1, 1, 1)
+
+show_object(result, name ='1')
+show_object(result, name ='2', options=dict(alpha=0.5,color='red'))
+show_object(result, name ='3', options=dict(alpha=0.5,color='#ff0000'))
+show_object(result, name ='4', options=dict(alpha=0.5,color=(255,0,0)))
+show_object(result, name ='5', options=dict(alpha=0.5,color=(1.,0,0)))
+show_object(result, name ='6', options=dict(rgba=(1.,0,0,.5)))
+show_object(result, name ='7', options=dict(color=('ff','cc','dd')))
+'''
+
+def test_render_colors(main_clean):
+
+    qtbot, win = main_clean
+
+    obj_tree = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    log = win.components['log']
+
+    editor.set_text(code_color)
+    debugger._actions['Run'][0].triggered.emit()
+    
+    CQ = obj_tree.CQ
+    
+    # object 1 (defualt color)
+    r,g,b,a = get_rgba(CQ.child(0).ais)
+    assert( a == 0 )
+    assert( r != 1.0 )
+    
+    # object 2
+    r,g,b,a = get_rgba(CQ.child(1).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    # object 3
+    r,g,b,a = get_rgba(CQ.child(2).ais)
+    assert( a == 0.5)
+    assert( r == 1.0 )
+
+    # object 4
+    r,g,b,a = get_rgba(CQ.child(3).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    # object 5
+    r,g,b,a = get_rgba(CQ.child(4).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    # object 6
+    r,g,b,a = get_rgba(CQ.child(5).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    # check if error occured
+    qtbot.wait(100)
+    assert('Unknown color format' in log.toPlainText().splitlines()[-1])
+    
+def test_render_colors_console(main_clean):
+
+    qtbot, win = main_clean
+
+    obj_tree = win.components['object_tree']
+    log = win.components['log']
+    console = win.components['console']
+
+    console.execute_command(code_color)
+
+    def get_rgba(ais):
+        
+        alpha = ais.Transparency()
+        color = get_occ_color(ais)
+        
+        return color.redF(),color.redF(),color.redF(),alpha
+    
+    CQ = obj_tree.CQ
+    
+    # object 1 (defualt color)
+    r,g,b,a = get_rgba(CQ.child(0).ais)
+    assert( a == 0 )
+    assert( r != 1.0 )
+    
+    # object 2
+    r,g,b,a = get_rgba(CQ.child(1).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    # object 3
+    r,g,b,a = get_rgba(CQ.child(2).ais)
+    assert( a == 0.5)
+    assert( r == 1.0 )
+
+    # object 4
+    r,g,b,a = get_rgba(CQ.child(3).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    # object 5
+    r,g,b,a = get_rgba(CQ.child(4).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+
+    # object 6
+    r,g,b,a = get_rgba(CQ.child(5).ais)
+    assert( a == 0.5 )
+    assert( r == 1.0 )
+    
+    # check if error occured
+    qtbot.wait(100)
+    assert('Unknown color format' in log.toPlainText().splitlines()[-1])

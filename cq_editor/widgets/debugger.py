@@ -1,6 +1,7 @@
 import sys, imp
 from enum import Enum, auto
 from imp import reload
+from types import SimpleNamespace
 
 from PyQt5.QtWidgets import (QWidget, QTreeWidget, QTreeWidgetItem, QAction,
                              QLabel, QTableView)
@@ -11,6 +12,7 @@ from pyqtgraph.parametertree import Parameter, ParameterTree
 from logbook import info
 from spyder.utils.icon_manager import icon
 from path import Path
+from contextlib import ExitStack
 
 import cadquery as cq
 
@@ -103,7 +105,8 @@ class Debugger(QObject,ComponentMixin):
 
     preferences = Parameter.create(name='Preferences',children=[
         {'name': 'Reload CQ', 'type': 'bool', 'value': True},
-        {'name': 'Add current dir to path','type': 'bool', 'value': True}])
+        {'name': 'Add script dir to path','type': 'bool', 'value': True},
+        {'name': 'Change working dir to script dir','type': 'bool', 'value': True}])
 
 
     sigRendered = pyqtSignal(dict)
@@ -174,17 +177,40 @@ class Debugger(QObject,ComponentMixin):
 
     def _exec(self, code, locals_dict, globals_dict):
 
-        old_path = sys.path
-        if self.preferences['Add current dir to path']:
+        with ExitStack() as stack:
             p = Path(self.parent().components['editor'].filename).dirname()
-            sys.path.append(p)
-
-        try:
+            if self.preferences['Add script dir to path'] and p:
+                sys.path.append(p)
+                stack.callback(sys.path.remove, p)
+            if self.preferences['Change working dir to script dir'] and p:
+                stack.enter_context(p)
             exec(code, locals_dict, globals_dict)
-        except Exception:
-            raise
-        finally:
-            sys.path = old_path
+            
+    def _inject_locals(self,module):
+        
+        cq_objects = {}
+        
+        def _show_object(obj,name=None, options={}):
+
+            if name:
+                cq_objects.update({name : SimpleNamespace(shape=obj,options=options)})
+            else:
+                cq_objects.update({str(id(obj)) : SimpleNamespace(shape=obj,options=options)})
+                
+        def _debug(obj,name=None):
+            
+            _show_object(obj,name,options=dict(color='red',alpha=0.2))
+
+        module.__dict__['show_object'] = _show_object
+        module.__dict__['debug'] = _debug
+        module.__dict__['log'] = lambda x: info(str(x))
+        module.__dict__['cq'] = cq
+        
+        return cq_objects, set(module.__dict__)-{'cq'}
+    
+    def _cleanup_locals(self,module,injected_names):
+        
+        for name in injected_names: module.__dict__.pop(name)
 
     @pyqtSlot(bool)
     def render(self):
@@ -193,33 +219,25 @@ class Debugger(QObject,ComponentMixin):
             reload_cq()
 
         cq_script = self.get_current_script()
-        cq_code,t = self.compile_code(cq_script)
+        cq_code,module = self.compile_code(cq_script)
 
         if cq_code is None: return
-
-        cq_objects = {}
-
-        def _show_object(obj,name=None, options={}):
-
-            if name:
-                cq_objects.update({name : obj})
-            else:
-                cq_objects.update({str(id(obj)) : obj})
-
-        t.__dict__['show_object'] = _show_object
-        t.__dict__['debug'] = lambda x: info(str(x))
-        t.__dict__['cq'] = cq
+        
+        cq_objects,injected_names = self._inject_locals(module)
 
         try:
-            self._exec(cq_code, t.__dict__, t.__dict__)
+            self._exec(cq_code, module.__dict__, module.__dict__)
 
-            #collect all CQ objects if no explicti show_object was called
+            #remove the special methods
+            self._cleanup_locals(module,injected_names)
+                        
+            #collect all CQ objects if no explicit show_object was called
             if len(cq_objects) == 0:
-                cq_objects = find_cq_objects(t.__dict__)
+                cq_objects = find_cq_objects(module.__dict__)
             self.sigRendered.emit(cq_objects)
             self.sigTraceback.emit(None,
                                    cq_script)
-            self.sigLocals.emit(t.__dict__)
+            self.sigLocals.emit(module.__dict__)
         except Exception:
             self.sigTraceback.emit(sys.exc_info(),
                                    cq_script)
@@ -237,6 +255,8 @@ class Debugger(QObject,ComponentMixin):
                 self.sigDebugging.emit(False)
                 self._actions['Run'][1].setChecked(False)
                 return
+            
+            cq_objects,injected_names = self._inject_locals(module)
 
             self.breakpoints = [ el[0] for el in self.get_breakpoints()]
 
@@ -253,6 +273,13 @@ class Debugger(QObject,ComponentMixin):
                 sys.settrace(None)
                 self.sigDebugging.emit(False)
                 self._actions['Run'][1].setChecked(False)
+                
+                if len(cq_objects) == 0:
+                    cq_objects = find_cq_objects(module.__dict__)
+                self.sigRendered.emit(cq_objects)
+                
+                self._cleanup_locals(module,injected_names)
+                self.sigLocals.emit(module.__dict__)
         else:
             sys.settrace(None)
             self.inner_event_loop.exit(0)

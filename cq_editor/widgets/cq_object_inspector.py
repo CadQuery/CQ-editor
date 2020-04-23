@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAction
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
-from OCC.Core.AIS import AIS_ColoredShape
-from OCC.Core.gp import gp_Ax3
+from OCP.AIS import AIS_ColoredShape
+from OCP.gp import gp_Ax3
 
 from cadquery import Vector
 

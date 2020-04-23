@@ -98,9 +98,9 @@ def get_save_filename(suffix):
     
     return rv
 
-def get_open_filename(suffix):
+def get_open_filename(suffix, curr_dir):
     
-    rv,_ = QFileDialog.getOpenFileName(filter='*.{}'.format(suffix))    
+    rv,_ = QFileDialog.getOpenFileName(directory=curr_dir, filter='*.{}'.format(suffix))
     if rv is not '' and not rv.endswith(suffix): rv += '.'+suffix
     
     return rv

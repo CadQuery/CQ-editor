@@ -1,11 +1,7 @@
 import sys
-import argparse
 
-from PyQt5.QtGui import QColor, QCursor, QIcon, QPainter, QPalette, QPen, QSurfaceFormat
-from PyQt5.QtWidgets import (QDesktopWidget, QFileDialog, QFontDialog,
-                             QGraphicsDropShadowEffect, QLabel, QMainWindow,
-                             QMenu, QMessageBox, QShortcut, QSystemTrayIcon,
-                             QToolBar, QWidget, QDockWidget, QAction)
+from PyQt5.QtWidgets import (QLabel, QMainWindow, QMessageBox, QToolBar,
+                             QDockWidget, QAction)
 
 import cadquery as cq
 
@@ -214,6 +210,8 @@ class MainWindow(QMainWindow,MainMixin):
             .connect(self.components['traceback_viewer'].addTraceback)
         self.components['debugger'].sigLocals\
             .connect(self.components['variables_viewer'].update_frame)
+        self.components['debugger'].sigLocals\
+            .connect(self.components['console'].push_vars)
 
         self.components['object_tree'].sigObjectsAdded[list]\
             .connect(self.components['viewer'].display_many)

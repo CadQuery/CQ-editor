@@ -6,17 +6,14 @@ from pyqtgraph.parametertree import Parameter, ParameterTree
 
 import cadquery as cq
 
-from OCC.Core.AIS import AIS_ColoredShape, AIS_Line
-from OCC.Core.Quantity import Quantity_NOC_RED as RED
-from OCC.Core.Quantity import Quantity_NOC_GREEN as GREEN
-from OCC.Core.Quantity import Quantity_NOC_BLUE1 as BLUE
-from OCC.Core.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
+from OCP.AIS import AIS_Line
+from OCP.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
      Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
-from OCC.Core.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
+from OCP.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
 from ..icons import icon
-from ..cq_utils import make_AIS, export, to_occ_color, to_workplane
+from ..cq_utils import make_AIS, export, to_occ_color, to_workplane, is_obj_empty, get_occ_color
 from ..utils import splitter, layout, get_save_filename
 
 class TopTreeItem(QTreeWidgetItem):
@@ -55,11 +52,9 @@ class ObjectTreeItem(QTreeWidgetItem):
                                            children=self.props)
 
         self.properties['Name'] = name
-        self.properties['Alpha'] = alpha
-        self.properties['Color'] = color
+        self.properties['Alpha'] = ais.Transparency()
+        self.properties['Color'] = get_occ_color(ais) if ais else color
         self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
-
-        self.ais.SetColor(to_occ_color(self.properties['Color']))
 
     def propertiesChanged(self,*args):
 
@@ -214,61 +209,70 @@ class ObjectTree(QWidget,ComponentMixin):
         ais_list = []
 
         for name,color,direction in zip(('X','Y','Z'),
-                                        ('ff0000','00ff00','0000ff'),
+                                        ('red','lawngreen','blue'),
                                         ((1,0,0),(0,1,0),(0,0,1))):
             line_placement = Geom_Line(gp_Ax1(gp_Pnt(*origin),
                                        gp_Dir(*direction)))
             line = AIS_Line(line_placement)
-
+            line.SetColor(to_occ_color(color))
+            
             self.Helpers.addChild(ObjectTreeItem(name,
-                                                 ais=line,
-                                                 color=color))
+                                                 ais=line))
 
             ais_list.append(line)
 
         self.sigObjectsAdded.emit(ais_list)
 
+    def _current_properties(self):
+
+        current_params = {}
+        for i in range(self.CQ.childCount()):
+            child = self.CQ.child(i)
+            current_params[child.properties['Name']] = child.properties
+
+        return current_params
+
+    def _restore_properties(self,obj,properties):
+
+        for p in properties[obj.properties['Name']]:
+            obj.properties[p.name()] = p.value()
+
     @pyqtSlot(dict,bool)
     @pyqtSlot(dict)
-    def addObjects(self,objects,clean=False,root=None,alpha=0.):
+    def addObjects(self,objects,clean=False,root=None):
 
         if root is None:
             root = self.CQ
 
         request_fit_view = True if root.childCount() == 0 else False
-
         preserve_props = self.preferences['Preserve properties on reload']
+        
         if preserve_props:
-            old_params = {}
-            for i in range(self.CQ.childCount()):
-                child = self.CQ.child(i)
-                old_params[child.properties['Name']] = child.properties
+            current_props = self._current_properties()
 
         if clean or self.preferences['Clear all before each run']:
             self.removeObjects()
 
         ais_list = []
 
-        #convert cq.Shape objects to cq.Workplane
-        tmp = ((k,v) if isinstance(v,cq.Workplane) else (k,to_workplane(v)) \
-               for k,v in objects.items())
-        #remove Vector objects
-        objects_f = \
-        {k:v for k,v in tmp if not isinstance(v.val(),(cq.Vector,))}
+        #remove empty objects
+        objects_f = {k:v for k,v in objects.items() if not is_obj_empty(v.shape)}
 
-        for name,shape in objects_f.items():
-            ais,shape_display = make_AIS(shape)
-            ais.SetTransparency(alpha)
+        for name,obj in objects_f.items():
+            ais,shape_display = make_AIS(obj.shape,obj.options)
+            
             child = ObjectTreeItem(name,
-                                   shape=shape,
+                                   shape=obj.shape,
                                    shape_display=shape_display,
                                    ais=ais,
                                    sig=self.sigObjectPropertiesChanged)
-            if preserve_props and name in old_params:
-                for p in old_params[name]:
-                    child.properties[p.name()] = p.value()
+            
+            if preserve_props and name in current_props:
+                self._restore_properties(child,current_props)
+            
             if child.properties['Visible']:
                 ais_list.append(ais)
+            
             root.addChild(child)
 
         if request_fit_view:
@@ -276,20 +280,16 @@ class ObjectTree(QWidget,ComponentMixin):
         else:
             self.sigObjectsAdded[list].emit(ais_list)
 
-    @pyqtSlot(object,str,float)
-    def addObject(self,obj,name='',alpha=.0,):
+    @pyqtSlot(object,str,object)
+    def addObject(self,obj,name='',options={}):
 
         root = self.CQ
 
-        if isinstance(obj, cq.Workplane):
-            ais,_ = make_AIS(obj)
-        else:
-            ais,_ = make_AIS(to_workplane(obj))
-
-        ais.SetTransparency(alpha)
+        ais,shape_display = make_AIS(obj, options)
 
         root.addChild(ObjectTreeItem(name,
                                      shape=obj,
+                                     shape_display=shape_display,
                                      ais=ais,
                                      sig=self.sigObjectPropertiesChanged))
 

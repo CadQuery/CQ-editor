@@ -9,11 +9,12 @@ dependencies:
   - pyqtgraph=0.10.0
   - python=3.7
   - spyder=3.3.4
-  - pythonocc-core=0.18.2
+  - ocp=7.4
   - path.py
   - logbook
   - qtconsole=4.4.4
+  - jupyter_client=5.3.4
   - requests
   - pip
   - pip:
-    - "git+https://github.com/CadQuery/cadquery"
+    - "https://github.com/CadQuery/cadquery/archive/OCP.zip"

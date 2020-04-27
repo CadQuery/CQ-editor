@@ -168,4 +168,6 @@ class OCCTWidget(QWidget):
     
     def _get_window_osx(self,wid):
         
-        raise NotImplementedError()
+        from OCP.Cocoa import Cocoa_Window
+        
+        return Cocoa_Window(wid.ascapsule())

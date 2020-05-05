@@ -1,7 +1,6 @@
 import sys
 
-from PyQt5.QtWidgets import (QLabel, QMainWindow, QMessageBox, QToolBar,
-                             QDockWidget, QAction)
+from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
 
 import cadquery as cq
 
@@ -15,7 +14,7 @@ from .widgets.cq_object_inspector import CQObjectInspector
 from .widgets.log import LogViewer
 
 from . import __version__
-from .utils import dock, add_actions, open_url, about_dialog, check_gtihub_for_updates
+from .utils import dock, add_actions, open_url, about_dialog, check_gtihub_for_updates, confirm
 from .mixins import MainMixin
 from .icons import icon
 from .preferences import PreferencesWidget
@@ -64,10 +63,9 @@ class MainWindow(QMainWindow,MainMixin):
 
         if self.components['editor'].document().isModified():
 
-            rv = QMessageBox.question(self, 'Confirm close',
-                                      'Close without saving?',
-                                      QMessageBox.Yes, QMessageBox.No)
-            if rv == QMessageBox.Yes:
+            rv = confirm(self, 'Confirm close', 'Close without saving?')
+            
+            if rv:
                 event.accept()
                 super(MainWindow,self).closeEvent(event)
             else:

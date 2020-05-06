@@ -493,10 +493,11 @@ def editor(qtbot):
 
     return qtbot, win
 
-def test_editor(monkeypatch,editor):
+def conv_line_ends(text):
+    
+    return '\n'.join(text.splitlines())
 
-    def conv_line_ends(text):
-        return '\n'.join(text.splitlines())
+def test_editor(monkeypatch,editor):
 
     qtbot, editor = editor
 
@@ -1050,7 +1051,7 @@ def test_confirm_new(monkeypatch,editor):
     
     editor.new()
     assert(editor.modified == True)
-    assert(editor.get_text_with_eol() == code)
+    assert(conv_line_ends(editor.get_text_with_eol()) == code)
     
     monkeypatch.setattr(QMessageBox, 'question',
                         staticmethod(ok))

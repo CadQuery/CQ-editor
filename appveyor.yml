@@ -30,7 +30,7 @@ install:
     - cmd: activate cqgui
     - conda list
     - conda install -c conda-forge pytest=5.2.0 pluggy pytest-qt
-    - pip install pytest-xvfb pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay==0.2.1
+    - pip install pytest-xvfb pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay==0.2.1 EasyProcess==0.2.10
 
 build: false
 

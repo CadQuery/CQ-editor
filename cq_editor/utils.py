@@ -5,7 +5,7 @@ from pkg_resources import parse_version
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtCore import QUrl
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 DOCK_POSITIONS = {'right'   : QtCore.Qt.RightDockWidgetArea,
                   'left'    : QtCore.Qt.LeftDockWidgetArea,
@@ -94,14 +94,14 @@ def about_dialog(parent,title,text):
 def get_save_filename(suffix):
     
     rv,_ = QFileDialog.getSaveFileName(filter='*.{}'.format(suffix))
-    if rv is not '' and not rv.endswith(suffix): rv += '.'+suffix
+    if rv != '' and not rv.endswith(suffix): rv += '.'+suffix
     
     return rv
 
 def get_open_filename(suffix, curr_dir):
     
     rv,_ = QFileDialog.getOpenFileName(directory=curr_dir, filter='*.{}'.format(suffix))
-    if rv is not '' and not rv.endswith(suffix): rv += '.'+suffix
+    if rv != '' and not rv.endswith(suffix): rv += '.'+suffix
     
     return rv
 
@@ -127,10 +127,8 @@ def check_gtihub_for_updates(parent,
         
     QtWidgets.QMessageBox.about(parent,title,text)
     
+def confirm(parent,title,msg):
     
+    rv = QMessageBox.question(parent, title, msg, QMessageBox.Yes, QMessageBox.No)
     
-    
-    
-    
-        
-        
+    return True if rv == QMessageBox.Yes else False

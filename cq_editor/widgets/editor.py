@@ -9,7 +9,7 @@ import sys
 from pyqtgraph.parametertree import Parameter
 
 from ..mixins import ComponentMixin
-from ..utils import get_save_filename, get_open_filename
+from ..utils import get_save_filename, get_open_filename, confirm
 
 from ..icons import icon
 
@@ -112,17 +112,30 @@ class Editor(CodeEditor,ComponentMixin):
         self.findChild(QAction, 'autoreload') \
             .setChecked(self.preferences['Autoreload'])
 
+    def confirm_discard(self):
+
+        if self.modified:
+            rv =  confirm(self,'Please confirm','Current document is not saved - do you want to continue?')
+        else:
+            rv = True
+
+        return rv
+
     def new(self):
+
+        if not self.confirm_discard(): return
 
         self.set_text('')
         self.filename = ''
         self.reset_modified()
 
     def open(self):
+        
+        if not self.confirm_discard(): return
 
         curr_dir = Path(self.filename).abspath().dirname()
         fname = get_open_filename(self.EXTENSIONS, curr_dir)
-        if fname is not '':
+        if fname != '':
             self.load_from_file(fname)
 
     def load_from_file(self,fname):
@@ -133,7 +146,7 @@ class Editor(CodeEditor,ComponentMixin):
 
     def save(self):
 
-        if self._filename is not '':
+        if self._filename != '':
 
             if self.preferences['Autoreload']:
                 self._file_watcher.removePath(self.filename)
@@ -150,10 +163,11 @@ class Editor(CodeEditor,ComponentMixin):
 
         else:
             self.save_as()
+
     def save_as(self):
 
         fname = get_save_filename(self.EXTENSIONS)
-        if fname is not '':
+        if fname != '':
             with open(fname,'w') as f:
                 f.write(self.toPlainText())
                 self.filename = fname
@@ -194,17 +208,22 @@ class Editor(CodeEditor,ComponentMixin):
     def reset_modified(self):
 
         self.document().setModified(False)
+        
+    @property
+    def modified(self):
+        
+        return self.document().isModified()
 
     def saveComponentState(self,store):
 
-        if self.filename is not '':
+        if self.filename != '':
             store.setValue(self.name+'/state',self.filename)
 
     def restoreComponentState(self,store):
 
         filename = store.value(self.name+'/state',self.filename)
 
-        if filename and filename is not '':
+        if filename and filename != '':
             try:
                 self.load_from_file(filename)
             except IOError:

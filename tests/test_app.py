@@ -1,4 +1,4 @@
-from path import Path
+from pathlib import Path
 import os, sys
 
 from multiprocessing import Process

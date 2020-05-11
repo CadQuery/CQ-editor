@@ -195,7 +195,7 @@ class OCCViewer(QWidget,ComponentMixin):
     def iso_view(self):
 
         v = self._get_view()
-        v.SetProj(1,1,1)
+        v.SetProj(1,-1,1)
         v.SetTwist(0)
 
     def bottom_view(self):

@@ -18,7 +18,7 @@ import cadquery as cq
 
 from ..mixins import ComponentMixin
 from ..utils import layout
-from ..cq_utils import find_cq_objects, reload_cq
+from ..cq_utils import find_cq_objects, reload_cq, to_workplane, to_compound
 
 DUMMY_FILE = '<string>'
 
@@ -191,7 +191,9 @@ class Debugger(QObject,ComponentMixin):
         cq_objects = {}
         
         def _show_object(obj,name=None, options={}):
-
+          
+            if isinstance(obj, list):
+                obj = to_workplane(to_compound(obj))
             if name:
                 cq_objects.update({name : SimpleNamespace(shape=obj,options=options)})
             else:

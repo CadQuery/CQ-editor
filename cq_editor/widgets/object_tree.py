@@ -286,7 +286,7 @@ class ObjectTree(QWidget,ComponentMixin):
         root = self.CQ
 
         ais,shape_display = make_AIS(obj, options)
-
+        obj = to_workplane(shape_display) if isinstance(obj, list) else obj
         root.addChild(ObjectTreeItem(name,
                                      shape=obj,
                                      shape_display=shape_display,

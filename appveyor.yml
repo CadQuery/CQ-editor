@@ -37,8 +37,8 @@ install:
 build: false
 
 before_test:
-    - ulimit -c unlimited -S
-    - sudo rm -f /cores/core.*
+    - sh: ulimit -c unlimited -S
+    - sh: sudo rm -f /cores/core.*
 
 test_script:
     - sh: export PYTHONPATH=$(pwd)

@@ -18,4 +18,4 @@ dependencies:
   - nomkl
   - pip
   - pip:
-    - "git+https://github.com/CadQuery/cadquery"
+    - "git+https://github.com/CadQuery/cadquery@2.0"

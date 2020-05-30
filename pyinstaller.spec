@@ -6,7 +6,7 @@ from path import Path
 block_cipher = None
 
 spyder_data = Path(site.getsitepackages()[-1]) / 'spyder'
-parso_grammar = Path(site.getsitepackages()[-1]) / 'parso/python/grammar36.txt'
+parso_grammar = (Path(site.getsitepackages()[-1]) / 'parso/python').glob('grammar*')
 
 if sys.platform == 'linux':
     oce_dir = Path(sys.prefix) / 'share' / 'oce-0.18'
@@ -16,9 +16,9 @@ else:
 a = Analysis(['run.py'],
              pathex=['/home/adam/cq/CQ-editor'],
              binaries=[],
-             datas=[(spyder_data ,'spyder'),
-                    (parso_grammar, 'parso/python'),
-                    (oce_dir , 'oce')],
+             datas=[(spyder_data, 'spyder'),
+                    (oce_dir, 'oce')] +
+                    [(p, 'parso/python') for p in parso_grammar],
              hiddenimports=['ipykernel.datapub'],
              hookspath=[],
              runtime_hooks=['pyinstaller/pyi_rth_occ.py',
@@ -42,7 +42,7 @@ exe = EXE(pyz,
           upx=True,
           console=True,
           icon='icons/cadquery_logo_dark.ico')
-          
+
 exclude = ('libGL','libEGL','libbsd')
 a.binaries = TOC([x for x in a.binaries if not x[0].startswith(exclude)])
 

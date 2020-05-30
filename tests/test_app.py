@@ -493,10 +493,11 @@ def editor(qtbot):
 
     return qtbot, win
 
-def test_editor(monkeypatch,editor):
+def conv_line_ends(text):
+    
+    return '\n'.join(text.splitlines())
 
-    def conv_line_ends(text):
-        return '\n'.join(text.splitlines())
+def test_editor(monkeypatch,editor):
 
     qtbot, editor = editor
 
@@ -1028,3 +1029,34 @@ def test_render_colors_console(main_clean):
     # check if error occured
     qtbot.wait(100)
     assert('Unknown color format' in log.toPlainText().splitlines()[-1])
+    
+def test_confirm_new(monkeypatch,editor):
+
+    qtbot, editor = editor
+
+    #check that initial state is as expected
+    assert(editor.modified == False)
+
+    editor.document().setPlainText(code)
+    assert(editor.modified == True)
+    
+    #monkeypatch the confirmation dialog and run both scenarios
+    def cancel(*args, **kwargs):
+        return QMessageBox.No
+
+    def ok(*args, **kwargs):
+        return QMessageBox.Yes
+
+    monkeypatch.setattr(QMessageBox, 'question',
+                        staticmethod(cancel))
+    
+    editor.new()
+    assert(editor.modified == True)
+    assert(conv_line_ends(editor.get_text_with_eol()) == code)
+    
+    monkeypatch.setattr(QMessageBox, 'question',
+                        staticmethod(ok))
+    
+    editor.new()
+    assert(editor.modified == False)
+    assert(editor.get_text_with_eol() == '')

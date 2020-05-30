@@ -255,7 +255,7 @@ def test_export(main,mocker):
 
 def number_visible_items(viewer):
 
-    from OCC.AIS import AIS_ListOfInteractive
+    from OCP.AIS import AIS_ListOfInteractive
     l = AIS_ListOfInteractive()
 
     viewer_ctx = viewer._get_context()
@@ -693,7 +693,7 @@ def test_auto_fit_view(main_clean):
     viewer = win.components['viewer']
     object_tree = win.components['object_tree']
 
-    view = viewer.canvas._display.GetView()
+    view = viewer.canvas.view
     viewer.preferences['Fit automatically'] = False
     eye0,proj0,scale0 = view.Eye(),view.Proj(),view.Scale()
     # check if camera position is adjusted automatically when rendering for the
@@ -791,6 +791,7 @@ def test_selection(main_multi,mocker):
     ctx = viewer._get_context()
     ctx.InitSelected()
     shapes = []
+    
     while ctx.MoreSelected():
         shapes.append(ctx.SelectedShape())
         ctx.NextSelected()

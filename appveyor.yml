@@ -1,9 +1,11 @@
 shallow_clone: false
 
 image:
+#    - macOS-mojave
+#    - macOS
     - Ubuntu
     - Ubuntu1804
-    - Visual Studio 2015
+    - Visual Studio 2015    
 
 environment:
     matrix:
@@ -13,12 +15,12 @@ environment:
     MINICONDA_DIRNAME: C:\FreshMiniconda
 
 install:
-    - sh: sudo apt update
-    - sh: sudo apt -y --force-yes install libglu1-mesa xvfb libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev
-    - sh: wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then sudo apt update; sudo apt -y --force-yes install libglu1-mesa xvfb libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then curl -o miniconda.sh curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then curl -o miniconda.sh curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-4.7.10-MacOSX-x86_64.sh; fi
     - sh: bash miniconda.sh -b -p $HOME/miniconda
     - sh: source $HOME/miniconda/bin/activate
-    - cmd: appveyor DownloadFile https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86_64.exe
+    - cmd: appveyor DownloadFile https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
     - cmd: Miniconda3-latest-Windows-x86_64.exe /S /InstallationType=JustMe /D=%MINICONDA_DIRNAME%
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
     - cmd: activate
@@ -30,18 +32,30 @@ install:
     - cmd: activate cqgui
     - conda list
     - conda install -c conda-forge pytest=5.2.0 pluggy pytest-qt
-    - pip install pytest-xvfb pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay==0.2.1 EasyProcess==0.2.10
+    - pip install pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay==0.2.1
 
 build: false
+
+before_test:
+    - sh: ulimit -c unlimited -S
+    - sh: sudo rm -f /cores/core.*
 
 test_script:
     - sh: export PYTHONPATH=$(pwd)
     - cmd: set PYTHONPATH=%cd%
-    - pytest -s --cov=cq_editor
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then xvfb-run -s '-screen 0 1920x1080x24 +iglx' pytest -v --cov=cq_editor; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then pytest -v --cov=cq_editor; fi
+    - cmd: pytest -v --cov=cq_editor
 
 on_success:
     - codecov
 
-#on_finish:
+#on_failure:
+#    - qtdiag
+#    - ls /cores/core.*
+#    - lldb --core `ls /cores/core.*` --batch --one-line "bt"
+
+on_finish:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
-#  - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
+#  - sh: export APPVEYOR_SSH_BLOCK=true
+#   - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -

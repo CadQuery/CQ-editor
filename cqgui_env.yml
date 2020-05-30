@@ -9,7 +9,7 @@ dependencies:
   - pyqtgraph=0.10.0
   - python=3.7
   - spyder=3.3.4
-  - pythonocc-core=0.18.2
+  - ocp=7.4
   - path.py
   - logbook
   - qtconsole=4.4.4
@@ -18,4 +18,4 @@ dependencies:
   - nomkl
   - pip
   - pip:
-    - "git+https://github.com/CadQuery/cadquery@2.0"
+    - "https://github.com/CadQuery/cadquery/archive/master.zip"

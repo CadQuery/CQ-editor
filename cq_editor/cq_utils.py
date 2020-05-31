@@ -4,6 +4,7 @@ from typing import List, Union, Tuple
 from imp import reload
 from types import SimpleNamespace
 
+from OCP.TopoDS import TopoDS_Shape
 from OCP.AIS import AIS_ColoredShape
 from OCP.Quantity import \
     Quantity_TOC_RGB as TOC_RGB, Quantity_Color
@@ -36,6 +37,8 @@ def make_AIS(obj : Union[cq.Workplane, cq.Shape], options={}):
     
     if isinstance(obj, cq.Shape):
         obj = to_workplane(obj)
+    elif isinstance(obj, TopoDS_Shape):
+        obj = to_workplane(cq.Shape.cast(obj))
 
     shape = to_compound(obj)
     ais = AIS_ColoredShape(shape.wrapped)

@@ -115,8 +115,9 @@ class CQObjectInspector(QTreeWidget,ComponentMixin):
     def setObject(self,cq_obj):
         
         self.root.takeChildren()
-
-        while cq_obj.parent:
+        
+        # iterate through parent objects if they exist
+        while getattr(cq_obj, 'parent', None):
             current_frame = CQStackItem(str(cq_obj.plane.origin),workplane=cq_obj)
             self.root.addChild(current_frame)
             

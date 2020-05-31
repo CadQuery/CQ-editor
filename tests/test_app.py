@@ -1060,3 +1060,36 @@ def test_confirm_new(monkeypatch,editor):
     editor.new()
     assert(editor.modified == False)
     assert(editor.get_text_with_eol() == '')
+    
+code_show_topods = \
+'''
+import cadquery as cq
+result = cq.Workplane("XY" ).box(1, 1, 1)
+
+show_object(result.val().wrapped)
+'''
+
+def test_render_topods(main):
+
+    qtbot, win = main
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+
+    # check that object was rendered
+    assert(obj_tree_comp.CQ.childCount() == 1)
+
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_show_topods)
+    debugger._actions['Run'][0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 1)
+    
+    # test rendering topods object via console
+    console.execute('show(result.val().wrapped)')
+    assert(obj_tree_comp.CQ.childCount() == 2)

@@ -16,6 +16,7 @@ dependencies:
   - jupyter_client=5.3.4
   - requests
   - nomkl
+  - ezdxf
   - pip
   - pip:
     - "https://github.com/CadQuery/cadquery/archive/master.zip"

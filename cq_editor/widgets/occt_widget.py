@@ -143,15 +143,15 @@ class OCCTWidget(QWidget):
         self.view.MustBeResized()
     
     def _initialize(self):
-        
+
         wins = {
             'darwin' : self._get_window_osx,
             'linux'  : self._get_window_linux,
             'win32': self._get_window_win           
         }
-        
-        self.view.SetWindow(wins[platform](self.winId()))
-        
+
+        self.view.SetWindow(wins.get(platform,self._get_window_linux)(self.winId()))
+
         self._initialized = True
         
     def _get_window_win(self,wid):

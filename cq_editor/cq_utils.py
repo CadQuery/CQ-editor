@@ -15,14 +15,20 @@ def find_cq_objects(results : dict):
 
     return {k:SimpleNamespace(shape=v,options={}) for k,v in results.items() if isinstance(v,cq.Workplane)}
 
-def to_compound(obj : Union[cq.Workplane, List[cq.Workplane]]):
+def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape]]):
 
     vals = []
 
     if isinstance(obj,cq.Workplane):
         vals.extend(obj.vals())
-    else:
+    elif isinstance(obj,cq.Shape):
+        vals.append(obj)
+    elif isinstance(obj,list) and isinstance(obj[0],cq.Workplane):
         for o in obj: vals.extend(o.vals())
+    elif isinstance(obj,list) and isinstance(obj[0],cq.Shape):
+        vals.extend(obj)
+    else:
+        raise ValueError(f'Invalid type {type(obj)}')
 
     return cq.Compound.makeCompound(vals)
 

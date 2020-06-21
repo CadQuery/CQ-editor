@@ -8,7 +8,7 @@ import pytestqt
 import cadquery as cq
 
 from PyQt5.QtCore import Qt, QSettings
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from cq_editor.__main__ import MainWindow
 from cq_editor.widgets.editor import Editor
@@ -754,8 +754,6 @@ def test_selection(main_multi,mocker):
 
     viewer = win.components['viewer']
     object_tree = win.components['object_tree']
-    editor = win.components['editor']
-    debugger = win.components['debugger']
 
     CQ = object_tree.CQ
     obj1 = CQ.child(0)
@@ -1090,6 +1088,49 @@ def test_render_topods(main):
     debugger._actions['Run'][0].triggered.emit()
     assert(obj_tree_comp.CQ.childCount() == 1)
     
-    # test rendering topods object via console
+    # test rendering of topods object via console
     console.execute('show(result.val().wrapped)')
     assert(obj_tree_comp.CQ.childCount() == 2)
+    
+    # test rendering of list of topods object via console
+    console.execute('show([result.val().wrapped,result.val().wrapped])')
+    assert(obj_tree_comp.CQ.childCount() == 3)
+    
+    
+code_show_shape_list = \
+'''
+import cadquery as cq
+result1 = cq.Workplane("XY" ).box(1, 1, 1).val()
+result2 = cq.Workplane("XY",origin=(0,1,1)).box(1, 1, 1).val()
+
+show_object(result1)
+show_object([result1,result2])
+'''
+
+def test_render_shape_list(main):
+
+    qtbot, win = main
+    
+    log = win.components['log']
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_show_shape_list)
+    debugger._actions['Run'][0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 2)
+    
+    # test rendering of Shape via console
+    console.execute('show(result1)')
+    console.execute('show([result1,result2])')
+    assert(obj_tree_comp.CQ.childCount() == 4)
+
+    # smoke test exception in show
+    console.execute('show("a")')

@@ -8,7 +8,7 @@ import pytestqt
 import cadquery as cq
 
 from PyQt5.QtCore import Qt, QSettings
-from PyQt5.QtWidgets import QFileDialog, QMessageBox, QApplication
+from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from cq_editor.__main__ import MainWindow
 from cq_editor.widgets.editor import Editor
@@ -754,8 +754,6 @@ def test_selection(main_multi,mocker):
 
     viewer = win.components['viewer']
     object_tree = win.components['object_tree']
-    editor = win.components['editor']
-    debugger = win.components['debugger']
 
     CQ = object_tree.CQ
     obj1 = CQ.child(0)
@@ -1090,9 +1088,14 @@ def test_render_topods(main):
     debugger._actions['Run'][0].triggered.emit()
     assert(obj_tree_comp.CQ.childCount() == 1)
     
-    # test rendering topods object via console
+    # test rendering of topods object via console
     console.execute('show(result.val().wrapped)')
     assert(obj_tree_comp.CQ.childCount() == 2)
+    
+    # test rendering of list of topods object via console
+    console.execute('show([result.val().wrapped,result.val().wrapped])')
+    assert(obj_tree_comp.CQ.childCount() == 3)
+    
     
 code_show_shape_list = \
 '''
@@ -1126,3 +1129,7 @@ def test_render_shape_list(main):
     console.execute('show(result1)')
     console.execute('show([result1,result2])')
     assert(obj_tree_comp.CQ.childCount() == 4)
+
+    # test exception in show
+    with pytest.raises(ValueError):
+        console.execute('show("a")')

@@ -1110,6 +1110,8 @@ show_object([result1,result2])
 def test_render_shape_list(main):
 
     qtbot, win = main
+    
+    log = win.components['log']
 
     obj_tree_comp = win.components['object_tree']
     editor = win.components['editor']
@@ -1131,5 +1133,5 @@ def test_render_shape_list(main):
     assert(obj_tree_comp.CQ.childCount() == 4)
 
     # test exception in show
-    with pytest.raises(ValueError):
-        console.execute('show("a")')
+    console.execute('show("a")')
+    assert('ValueError' in log.toPlainText().splitlines()[-1])

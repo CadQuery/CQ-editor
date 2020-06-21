@@ -27,6 +27,10 @@ def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.
         for o in obj: vals.extend(o.vals())
     elif isinstance(obj,list) and isinstance(obj[0],cq.Shape):
         vals.extend(obj)
+    elif isinstance(obj, TopoDS_Shape):
+        vals.append(cq.Shape.cast(obj))        
+    elif isinstance(obj,list) and isinstance(obj[0],TopoDS_Shape):
+        vals.extend(cq.Shape.cast(o) for o in obj)
     else:
         raise ValueError(f'Invalid type {type(obj)}')
 
@@ -40,11 +44,6 @@ def to_workplane(obj : cq.Shape):
     return rv
 
 def make_AIS(obj : Union[cq.Workplane, cq.Shape], options={}):
-    
-    if isinstance(obj, cq.Shape):
-        obj = to_workplane(obj)
-    elif isinstance(obj, TopoDS_Shape):
-        obj = to_workplane(cq.Shape.cast(obj))
 
     shape = to_compound(obj)
     ais = AIS_ColoredShape(shape.wrapped)

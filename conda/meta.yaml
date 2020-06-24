@@ -18,7 +18,7 @@ requirements:
 
   run:
     - python {{ environ.get('PYTHON_VERSION') }}
-    - cadquery=2.*
+    - cadquery=master
     - ocp
     - logbook
     - pyqt=5.9.2

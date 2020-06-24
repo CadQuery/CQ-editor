@@ -35,12 +35,41 @@ conda install -c cadquery -c conda-forge cq-editor
 ```
 and then simply type `cq-editor` to run it.
 
-Alternatively clone this git repository and set up the following conda environment:
+## Installation of CQ-editor master
+
+There are at least two reasons for running master.
+
+### Testing latest version of CQ-editor
+
+If you are interested in testing the CQ-editor master branch
+this would be an approriate choice:
 ```
-conda env create -f cqgui_env.yml -n cqgui
-conda activate cqgui
+conda install -c cadquery -c conda-forge cq-editor=master
+```
+Then type `cq-editor` to run it:
+
+### Contributing to CQ-editor
+
+This is the option to use if you're considering
+contributing pull requests:
+
+First fork this [repo](https://github.com/CadQuery/CQ-editor),
+then execute the following commands replacing EnvName,
+AccountName, PythonSitePackagePrefix and PYTHONPATH
+with appropriate values:
+```
+export EnvName=cqgui-master-fork
+export AccountName=YOUR_ACCOUNT_NAME
+export PythonSitePackagePrefix=/opt/anaconda/envs/$EnvName
+export PYTHONPATH=$PythonSitePackagePrefix/lib/python3.7/site-package
+
+git clone https://github.com/$AccountName/CQ-editor
+cd CQ-editor
+conda env create -f cqgui_env.yml -n $EnvName
+conda activate $EnvName
 python run.py
 ```
+You'll probably want to add PYTHONPATH to your `.bashrc` or equivalent.
 
 On some linux distributions (e.g. `Ubuntu 18.04`) it might be necessary to install additonal packages:
 ```
@@ -50,3 +79,4 @@ On Fedora 29 the packages can be installed as follows:
 ```
 dnf install -y mesa-libGLU mesa-libGL mesa-libGLU-devel
 ```
+

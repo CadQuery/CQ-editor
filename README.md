@@ -31,9 +31,9 @@ The easiest way to try it out is using provided self-contained archives:
 
 Alternatively one can use conda:
 ```
-conda install -c cadquery -c conda-forge cq-editor
+conda install -c cadquery -c conda-forge cq-editor=master
 ```
-and then simply type `cq-editor` to run it.
+and then simply type `cq-editor` to run it. This installs the latest version built directly from the HEAD of this repository.
 
 Alternatively clone this git repository and set up the following conda environment:
 ```

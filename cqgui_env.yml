@@ -17,6 +17,7 @@ dependencies:
   - requests
   - nomkl
   - ezdxf
+  - typing_extensions
   - pip
   - pip:
     - "https://github.com/CadQuery/cadquery/archive/master.zip"

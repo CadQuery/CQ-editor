@@ -78,12 +78,6 @@ class CQRootItem(TopTreeItem):
         super(CQRootItem,self).__init__(['CQ models'],*args,**kwargs)
 
 
-class ImportRootItem(TopTreeItem):
-
-    def __init__(self,*args,**kwargs):
-
-        super(ImportRootItem,self).__init__(['Imports'],*args,**kwargs)
-
 class HelpersRootItem(TopTreeItem):
 
     def __init__(self,*args,**kwargs):
@@ -128,12 +122,10 @@ class ObjectTree(QWidget,ComponentMixin):
         tree.itemChanged.connect(self.handleChecked)
 
         self.CQ = CQRootItem()
-        self.Imports = ImportRootItem()
         self.Helpers = HelpersRootItem()
 
         root = tree.invisibleRootItem()
         root.addChild(self.CQ)
-        root.addChild(self.Imports)
         root.addChild(self.Helpers)
         
         tree.expandToDepth(1)

@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QTreeWidget, QTreeWidgetItem, 
                              QStackedWidget, QDialog)
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, Qt
 
 from pyqtgraph.parametertree import ParameterTree
 
@@ -18,7 +18,10 @@ class PreferencesWidget(QDialog):
     
     def __init__(self,parent,components):
         
-        super(PreferencesWidget,self).__init__(parent,windowTitle='Preferences')
+        super(PreferencesWidget,self).__init__(
+                parent,
+                Qt.Window | Qt.CustomizeWindowHint | Qt.WindowCloseButtonHint,
+                windowTitle='Preferences')
         
         self.stacked = QStackedWidget(self)
         self.preferences_tree = QTreeWidget(self,
@@ -39,7 +42,7 @@ class PreferencesWidget(QDialog):
         layout(self,(self.splitter,),self)
         
         self.preferences_tree.currentItemChanged.connect(self.handleSelection)
-        
+
     def add(self,name,component):
         
         if component.preferences:
@@ -56,4 +59,4 @@ class PreferencesWidget(QDialog):
         
         if item:
             self.stacked.setCurrentWidget(item.widget)
-    
+

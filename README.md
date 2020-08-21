@@ -51,3 +51,11 @@ On Fedora 29 the packages can be installed as follows:
 ```
 dnf install -y mesa-libGLU mesa-libGL mesa-libGLU-devel
 ```
+
+## Showing Objects
+
+By default, CQ-editor will display a 3D representation of all `Workplane` objects in a script with a default color and alpha (transparency). To have more control over what is shown, and what the color and alpha settings are, the `show_object` method can be used. `show_object` tells CQ-editor to explicity display an object, and accepts the `options` parameter. The `options` parameter is a dictionary of rendering options named `alpha` and `color`. `alpha` is scaled between 0.0 and 1.0, with 0.0 being completely opaque and 1.0 being completely transparent. The color is set using R (red), G (green) and B (blue) values, and each one is scaled from 0 to 255. Either option or both can be omitted.
+
+```python
+show_object(result, options={"alpha":0.5, "color": (64, 164, 223)})
+```

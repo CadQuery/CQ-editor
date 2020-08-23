@@ -65,7 +65,7 @@ def export(obj : Union[cq.Workplane, List[cq.Workplane]], type : str,
     comp = to_compound(obj)
 
     if type == 'stl':
-        comp.exportStl(file,precision=precision)
+        comp.exportStl(file, tolerance=precision)
     elif type == 'step':
         comp.exportStep(file)
     elif type == 'brep':

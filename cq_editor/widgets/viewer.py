@@ -291,13 +291,6 @@ class OCCViewer(QWidget,ComponentMixin):
         ax = AIS_Axis(ax_placement)
         self._display_ais(ax)
 
-    def show_line(self,origin = (0,0,0), direction=(0,0,1)):
-
-        line_placement = Geom_Line(gp_Ax1(gp_Pnt(*origin),
-                                   gp_Dir(*direction)))
-        line = AIS_Line(line_placement)
-        self._display_ais(line)
-
     def save_screenshot(self):
 
         fname = get_save_filename(self.IMAGE_EXTENSIONS)
@@ -345,7 +338,6 @@ if __name__ == "__main__":
 
     app = QApplication(sys.argv)
     viewer = OCCViewer()
-    viewer.show_line()
 
     dlg = QDialog()
     dlg.setFixedHeight(400)

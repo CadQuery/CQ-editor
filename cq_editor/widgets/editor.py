@@ -16,6 +16,7 @@ from ..icons import icon
 class Editor(CodeEditor,ComponentMixin):
 
     name = 'Code Editor'
+    _watched_file = None
 
     # This signal is emitted whenever the currently-open file changes and
     # autoreload is enabled.

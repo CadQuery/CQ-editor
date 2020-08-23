@@ -1,4 +1,7 @@
-from spyder.widgets.sourcecode.codeeditor import  CodeEditor
+try:
+    from spyder.widgets.sourcecode.codeeditor import  CodeEditor
+except ImportError:
+    from spyder.plugins.editor.widgets.codeeditor import CodeEditor
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer
 from PyQt5.QtWidgets import QAction, QFileDialog
 from PyQt5.QtGui import QFontDatabase

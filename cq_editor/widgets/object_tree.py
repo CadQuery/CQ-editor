@@ -1,19 +1,15 @@
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QFileDialog, \
-    QAction, QMenu, QWidget, QAbstractItemView
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAction, QMenu, QWidget, QAbstractItemView
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
 from pyqtgraph.parametertree import Parameter, ParameterTree
 
-import cadquery as cq
-
 from OCP.AIS import AIS_Line
-from OCP.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
-     Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
-from OCP.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
+from OCP.Geom import Geom_Line
+from OCP.gp import gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
 from ..icons import icon
-from ..cq_utils import make_AIS, export, to_occ_color, to_workplane, is_obj_empty, get_occ_color
+from ..cq_utils import make_AIS, export, to_occ_color, is_obj_empty, get_occ_color
 from ..utils import splitter, layout, get_save_filename
 
 class TopTreeItem(QTreeWidgetItem):
@@ -332,7 +328,7 @@ class ObjectTree(QWidget,ComponentMixin):
             shapes = [item.shape for item in items if item.parent() is self.CQ]
 
         fname = get_save_filename(export_type)
-        if fname is not '':
+        if fname != '':
              export(shapes,export_type,fname,precision)
 
     @pyqtSlot()
@@ -377,7 +373,7 @@ class ObjectTree(QWidget,ComponentMixin):
         for i in range(CQ.childCount()):
             item = CQ.child(i)
             for shape in shapes:
-                if item.shape_display.wrapped.IsEqual(shape):
+                if item.ais.Shape().IsEqual(shape):
                     item.setSelected(True)
 
     @pyqtSlot(QTreeWidgetItem,int)

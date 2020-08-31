@@ -138,7 +138,7 @@ class OCCViewer(QWidget,ComponentMixin):
         self.canvas.context.EraseAll(True)
         context = self._get_context()
         context.PurgeDisplay()
-        context.RemoveAll()
+        context.RemoveAll(True)
 
     def _display(self,shape):
 

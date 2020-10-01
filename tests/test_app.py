@@ -1163,4 +1163,4 @@ def test_render_assy(main):
 
     # test rendering via console
     console.execute('show(assy)')
-    assert(obj_tree_comp.CQ.childCount() == 1)
+    assert(obj_tree_comp.CQ.childCount() == 2)

@@ -18,6 +18,8 @@ dependencies:
   - nomkl
   - ezdxf
   - typing_extensions
+  - scipy
+  - nptyping
   - pip
   - pip:
     - "https://github.com/CadQuery/cadquery/archive/master.zip"

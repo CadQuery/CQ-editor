@@ -1134,3 +1134,33 @@ def test_render_shape_list(main):
 
     # smoke test exception in show
     console.execute('show("a")')
+
+code_show_assy = \
+'''import cadquery as cq
+result1 = cq.Workplane("XY" ).box(3, 3, 0.5)
+assy = cq.Assembly(result1)
+
+show_object(assy)
+'''
+
+def test_render_assy(main):
+
+    qtbot, win = main
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_show_assy)
+    debugger._actions['Run'][0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 1)
+
+    # test rendering via console
+    console.execute('show(assy)')
+    assert(obj_tree_comp.CQ.childCount() == 2)

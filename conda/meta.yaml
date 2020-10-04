@@ -21,15 +21,16 @@ requirements:
     - cadquery=master
     - ocp
     - logbook
-    - pyqt=5.9.2
-    - pyparsing
+    - pyqt=5.*
     - pyqtgraph=0.10.0
-    - spyder=3.3.4
+    - spyder=3.3.*
     - path.py
     - logbook
-    - qtconsole=4.4.4
-    - jupyter_client=5.3.4
     - requests
+
+test:
+  imports:
+    - cq_editor
 
 about:
 summary: GUI for CadQuery 2.0

@@ -1,9 +1,11 @@
 import cadquery as cq
+from cadquery.occ_impl.assembly import toCAF
 
 from typing import List, Union, Tuple
 from imp import reload
 from types import SimpleNamespace
 
+from OCP.XCAFPrs import XCAFPrs_AISObject
 from OCP.TopoDS import TopoDS_Shape
 from OCP.AIS import AIS_ColoredShape
 from OCP.Quantity import \
@@ -43,10 +45,15 @@ def to_workplane(obj : cq.Shape):
 
     return rv
 
-def make_AIS(obj : Union[cq.Workplane, cq.Shape], options={}):
+def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Assembly],
+             options={}):
 
-    shape = to_compound(obj)
-    ais = AIS_ColoredShape(shape.wrapped)
+    if isinstance(obj, cq.Assembly):
+        ais = XCAFPrs_AISObject(toCAF(obj)[0])
+        shape = None#cq.Shape(ais.Shape())
+    else:
+        shape = to_compound(obj)
+        ais = AIS_ColoredShape(shape.wrapped)
     
     if 'alpha' in options:
         ais.SetTransparency(options['alpha'])
@@ -102,6 +109,8 @@ def reload_cq():
     reload(cq.occ_impl.geom)
     reload(cq.occ_impl.shapes)
     reload(cq.occ_impl.importers)
+    reload(cq.occ_impl.solver)
+    reload(cq.occ_impl.assembly)
     reload(cq.selectors)
     reload(cq.occ_impl.exporters.svg)
     reload(cq.cq)
@@ -109,7 +118,9 @@ def reload_cq():
     reload(cq.occ_impl.exporters.dxf)
     reload(cq.occ_impl.exporters.amf)
     reload(cq.occ_impl.exporters.json)
+    #reload(cq.occ_impl.exporters.assembly)
     reload(cq.occ_impl.exporters)
+    reload(cq.assembly)
     reload(cq)
     
     

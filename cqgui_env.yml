@@ -4,18 +4,15 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - pyqt
+  - pyqt=5
   - pyparsing
   - pyqtgraph
   - python=3.7
-  - spyder=3.3.4
+  - spyder=3.3
   - ocp=7.4
   - path.py
   - logbook
-  - qtconsole=4.4.4
-  - jupyter_client=5.3.4
   - requests
-  - nomkl
   - ezdxf
   - typing_extensions
   - scipy

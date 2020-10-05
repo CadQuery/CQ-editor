@@ -7,7 +7,7 @@ dependencies:
   - pyqt=5
   - pyparsing
   - pyqtgraph
-  - python=3.7
+  - python=3.8
   - spyder=3.3
   - ocp=7.4
   - path.py

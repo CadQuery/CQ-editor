@@ -8,7 +8,7 @@ dependencies:
   - pyparsing
   - pyqtgraph
   - python=3.8
-  - spyder=3.3
+  - spyder=4
   - ocp=7.4
   - path.py
   - logbook

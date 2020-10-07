@@ -162,7 +162,7 @@ class Debugger(QObject,ComponentMixin):
 
     def get_breakpoints(self):
 
-        return self.parent().components['editor'].get_breakpoints()
+        return self.parent().components['editor'].debugger.get_breakpoints()
 
     def compile_code(self,cq_script):
 

@@ -391,7 +391,7 @@ def test_debug(main,mocker):
 
     patch_debugger(debugger,ev)
 
-    editor.set_breakpoints([(4,None)])
+    editor.debugger.set_breakpoints([(4,None)])
 
     debug.triggered.emit(True)
 
@@ -406,7 +406,7 @@ def test_debug(main,mocker):
 
     patch_debugger(debugger,ev)
 
-    editor.set_breakpoints([(4,None)])
+    editor.debugger.set_breakpoints([(4,None)])
 
     debugger.debug(True)
 
@@ -422,7 +422,7 @@ def test_debug(main,mocker):
     patch_debugger(debugger,ev)
 
     editor.set_text(code_debug_Workplane)
-    editor.set_breakpoints([(4,None)])
+    editor.debugger.set_breakpoints([(4,None)])
 
     debugger.debug(True)
     

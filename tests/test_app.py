@@ -1162,8 +1162,10 @@ def test_render_assy(main):
     # check that object was rendered usin explicit show_object call
     editor.set_text(code_show_assy)
     debugger._actions['Run'][0].triggered.emit()
+    qtbot.wait(500)
     assert(obj_tree_comp.CQ.childCount() == 1)
 
     # test rendering via console
     console.execute('show(assy)')
+    qtbot.wait(500)
     assert(obj_tree_comp.CQ.childCount() == 2)

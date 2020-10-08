@@ -1,5 +1,8 @@
 from path import Path
-import os, sys
+import os, sys, asyncio
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from multiprocessing import Process
 

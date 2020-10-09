@@ -23,7 +23,7 @@ requirements:
     - logbook
     - pyqt=5.*
     - pyqtgraph=0.10.0
-    - spyder=3.3.*
+    - spyder=4.*
     - path.py
     - logbook
     - requests

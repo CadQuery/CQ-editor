@@ -1,4 +1,4 @@
-from spyder.widgets.sourcecode.codeeditor import  CodeEditor
+from spyder.plugins.editor.widgets.codeeditor import CodeEditor
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer
 from PyQt5.QtWidgets import QAction, QFileDialog
 from PyQt5.QtGui import QFontDatabase
@@ -31,6 +31,8 @@ class Editor(CodeEditor,ComponentMixin):
     EXTENSIONS = 'py'
 
     def __init__(self,parent=None):
+
+        self._watched_file = None
 
         super(Editor,self).__init__(parent)
         ComponentMixin.__init__(self)
@@ -83,7 +85,6 @@ class Editor(CodeEditor,ComponentMixin):
 
         # autoreload support
         self._file_watcher = QFileSystemWatcher(self)
-        self._watched_file = None
         # we wait for 50ms after a file change for the file to be written completely
         self._file_watch_timer = QTimer(self)
         self._file_watch_timer.setInterval(50)

@@ -1,5 +1,8 @@
 from path import Path
-import os, sys
+import os, sys, asyncio
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from multiprocessing import Process
 
@@ -391,7 +394,7 @@ def test_debug(main,mocker):
 
     patch_debugger(debugger,ev)
 
-    editor.set_breakpoints([(4,None)])
+    editor.debugger.set_breakpoints([(4,None)])
 
     debug.triggered.emit(True)
 
@@ -406,7 +409,7 @@ def test_debug(main,mocker):
 
     patch_debugger(debugger,ev)
 
-    editor.set_breakpoints([(4,None)])
+    editor.debugger.set_breakpoints([(4,None)])
 
     debugger.debug(True)
 
@@ -422,7 +425,7 @@ def test_debug(main,mocker):
     patch_debugger(debugger,ev)
 
     editor.set_text(code_debug_Workplane)
-    editor.set_breakpoints([(4,None)])
+    editor.debugger.set_breakpoints([(4,None)])
 
     debugger.debug(True)
     
@@ -1159,8 +1162,10 @@ def test_render_assy(main):
     # check that object was rendered usin explicit show_object call
     editor.set_text(code_show_assy)
     debugger._actions['Run'][0].triggered.emit()
+    qtbot.wait(500)
     assert(obj_tree_comp.CQ.childCount() == 1)
 
     # test rendering via console
     console.execute('show(assy)')
+    qtbot.wait(500)
     assert(obj_tree_comp.CQ.childCount() == 2)

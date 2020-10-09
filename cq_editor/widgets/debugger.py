@@ -162,7 +162,7 @@ class Debugger(QObject,ComponentMixin):
 
     def get_breakpoints(self):
 
-        return self.parent().components['editor'].get_breakpoints()
+        return self.parent().components['editor'].debugger.get_breakpoints()
 
     def compile_code(self,cq_script):
 
@@ -178,38 +178,41 @@ class Debugger(QObject,ComponentMixin):
     def _exec(self, code, locals_dict, globals_dict):
 
         with ExitStack() as stack:
-            p = Path(self.parent().components['editor'].filename).abspath().dirname()
-            if self.preferences['Add script dir to path'] and p:
+            fname = self.parent().components['editor'].filename
+            p = Path(fname if fname else '').abspath().dirname()
+
+            if self.preferences['Add script dir to path'] and p.exists():
                 sys.path.insert(0,p)
                 stack.callback(sys.path.remove, p)
-            if self.preferences['Change working dir to script dir'] and p:
+            if self.preferences['Change working dir to script dir'] and p.exists():
                 stack.enter_context(p)
+
             exec(code, locals_dict, globals_dict)
-            
+
     def _inject_locals(self,module):
-        
+
         cq_objects = {}
-        
+
         def _show_object(obj,name=None, options={}):
 
             if name:
                 cq_objects.update({name : SimpleNamespace(shape=obj,options=options)})
             else:
                 cq_objects.update({str(id(obj)) : SimpleNamespace(shape=obj,options=options)})
-                
+
         def _debug(obj,name=None):
-            
+
             _show_object(obj,name,options=dict(color='red',alpha=0.2))
 
         module.__dict__['show_object'] = _show_object
         module.__dict__['debug'] = _debug
         module.__dict__['log'] = lambda x: info(str(x))
         module.__dict__['cq'] = cq
-        
+
         return cq_objects, set(module.__dict__)-{'cq'}
-    
+
     def _cleanup_locals(self,module,injected_names):
-        
+
         for name in injected_names: module.__dict__.pop(name)
 
     @pyqtSlot(bool)
@@ -222,7 +225,7 @@ class Debugger(QObject,ComponentMixin):
         cq_code,module = self.compile_code(cq_script)
 
         if cq_code is None: return
-        
+
         cq_objects,injected_names = self._inject_locals(module)
 
         try:
@@ -230,7 +233,7 @@ class Debugger(QObject,ComponentMixin):
 
             #remove the special methods
             self._cleanup_locals(module,injected_names)
-                        
+
             #collect all CQ objects if no explicit show_object was called
             if len(cq_objects) == 0:
                 cq_objects = find_cq_objects(module.__dict__)
@@ -255,7 +258,7 @@ class Debugger(QObject,ComponentMixin):
                 self.sigDebugging.emit(False)
                 self._actions['Run'][1].setChecked(False)
                 return
-            
+
             cq_objects,injected_names = self._inject_locals(module)
 
             self.breakpoints = [ el[0] for el in self.get_breakpoints()]
@@ -273,11 +276,11 @@ class Debugger(QObject,ComponentMixin):
                 sys.settrace(None)
                 self.sigDebugging.emit(False)
                 self._actions['Run'][1].setChecked(False)
-                
+
                 if len(cq_objects) == 0:
                     cq_objects = find_cq_objects(module.__dict__)
                 self.sigRendered.emit(cq_objects)
-                
+
                 self._cleanup_locals(module,injected_names)
                 self.sigLocals.emit(module.__dict__)
         else:

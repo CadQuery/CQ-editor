@@ -25,8 +25,6 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 
 ## Installation
 
-***PLEASE NOTE:*** CQ-editor requires an Anaconda environment (env) that includes Python 3.7. A future release of CQ-editor will update it to be compatible with Python 3.8.
-
 Use conda to install:
 ```
 conda install -c cadquery -c conda-forge cq-editor=master

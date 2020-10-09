@@ -22,7 +22,7 @@ requirements:
     - ocp
     - logbook
     - pyqt=5.*
-    - pyqtgraph=0.10.0
+    - pyqtgraph
     - spyder=4.*
     - path.py
     - logbook

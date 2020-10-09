@@ -178,12 +178,15 @@ class Debugger(QObject,ComponentMixin):
     def _exec(self, code, locals_dict, globals_dict):
 
         with ExitStack() as stack:
-            p = Path(self.parent().components['editor'].filename).abspath().dirname()
+            fname = self.parent().components['editor'].filename
+            p = Path(fname if fname else '').abspath().dirname()
+
             if self.preferences['Add script dir to path'] and p.exists():
                 sys.path.insert(0,p)
                 stack.callback(sys.path.remove, p)
             if self.preferences['Change working dir to script dir'] and p.exists():
                 stack.enter_context(p)
+
             exec(code, locals_dict, globals_dict)
 
     def _inject_locals(self,module):

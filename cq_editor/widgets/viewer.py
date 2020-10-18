@@ -294,7 +294,7 @@ class OCCViewer(QWidget,ComponentMixin):
     def save_screenshot(self):
 
         fname = get_save_filename(self.IMAGE_EXTENSIONS)
-        if fname is not '':
+        if fname != '':
              self._get_view().Dump(fname)
 
     def _display_ais(self,ais):

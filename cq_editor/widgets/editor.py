@@ -25,6 +25,7 @@ class Editor(CodeEditor,ComponentMixin):
     preferences = Parameter.create(name='Preferences',children=[
         {'name': 'Font size', 'type': 'int', 'value': 12},
         {'name': 'Autoreload', 'type': 'bool', 'value': False},
+        {'name': 'Line wrap', 'type': 'bool', 'value': False},
         {'name': 'Color scheme', 'type': 'list',
          'values': ['Spyder','Monokai','Zenburn'], 'value': 'Spyder'}])
 
@@ -111,6 +112,8 @@ class Editor(CodeEditor,ComponentMixin):
 
         self.findChild(QAction, 'autoreload') \
             .setChecked(self.preferences['Autoreload'])
+            
+        self.toggle_wrap_mode(self.preferences['Line wrap'])
 
     def confirm_discard(self):
 

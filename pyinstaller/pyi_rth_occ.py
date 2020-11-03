@@ -1,7 +1,7 @@
 from os import environ as env
 
-env['CASROOT'] = 'oce'
+env['CASROOT'] = 'opencascade'
 
-env['CSF_ShadersDirectory'] = 'oce/src/Shaders'
-env['CSF_UnitsLexicon'] = 'oce/src/UnitsAPI/Lexi_Expr.dat'
-env['CSF_UnitsDefinition'] = 'oce/src/UnitsAPI/Units.dat'
+env['CSF_ShadersDirectory'] = 'opencascade/src/Shaders'
+env['CSF_UnitsLexicon'] = 'opencascade/src/UnitsAPI/Lexi_Expr.dat'
+env['CSF_UnitsDefinition'] = 'opencascade/src/UnitsAPI/Units.dat'

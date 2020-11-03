@@ -20,9 +20,9 @@ elif sys.platform == 'win32':
 
 a = Analysis(['run.py'],
              pathex=['.'],
-             binaries=[],
+             binaries=[ocp_path],
              datas=[(spyder_data, 'spyder'),
-                    (occt_dir, 'ocp_path')] +
+                    (occt_dir, 'opencascade')] +
                     [(p, 'parso/python') for p in parso_grammar],
              hiddenimports=['ipykernel.datapub'],
              hookspath=[],

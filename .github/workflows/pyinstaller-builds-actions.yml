@@ -53,7 +53,7 @@ jobs:
         conda install -c conda-forge pyinstaller
         pip install path
         qtdiag
-        pip install PyQt5
+        pip install PyQt5==5.15.1
         qtdiag
     - name: Run build
       shell: bash --login {0}

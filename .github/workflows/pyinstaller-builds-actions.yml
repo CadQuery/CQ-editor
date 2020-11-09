@@ -1,0 +1,90 @@
+name: build
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        description: 'Whether to build a single file (onefile) or directory (dir) dist'
+        required: true
+        default: 'dir'
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v1
+      with:
+        miniconda-version: "latest"
+        auto-update-conda: true
+        python-version: 3.8
+        activate-environment: test
+    - name: Install CadQuery, CQ-editor and pyinstaller
+      shell: bash --login {0}
+      run: |
+        conda info
+        conda install -c cadquery -c conda-forge cadquery=master
+        conda install -c cadquery -c conda-forge cq-editor=master
+        conda install -c conda-forge pyinstaller
+        pip install path
+    - name: Run build
+      shell: bash --login {0}
+      run: |
+        conda info
+        pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
+    - uses: actions/upload-artifact@v2
+      with:
+        name: CQ-editor-Linux-x86_64
+        path: dist
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v1
+      with:
+        miniconda-version: "latest"
+        auto-update-conda: true
+        python-version: 3.8
+        activate-environment: test
+    - name: Install CadQuery, CQ-editor and pyinstaller
+      shell: bash --login {0}
+      run: |
+        conda info
+        conda install -c cadquery -c conda-forge cadquery=master
+        conda install -c cadquery -c conda-forge cq-editor=master
+        conda install -c conda-forge pyinstaller
+        pip install path
+    - name: Run build
+      shell: bash --login {0}
+      run: |
+        conda info
+        pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
+    - uses: actions/upload-artifact@v2
+      with:
+        name: CQ-editor-MacOS
+        path: dist
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v1
+      with:
+        miniconda-version: "latest"
+        auto-update-conda: true
+        python-version: 3.8
+        activate-environment: test
+    - name: Install CadQuery and pyinstaller
+      shell: pwsh
+      run: |
+        conda info
+        conda install -c cadquery -c conda-forge cadquery=master
+        conda install -c cadquery -c conda-forge cq-editor=master
+        conda install -c conda-forge pyinstaller
+        pip install path
+    - name: Run build
+      shell: pwsh
+      run: |
+        conda info
+        pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
+    - uses: actions/upload-artifact@v2
+      with:
+        name: CQ-editor-Windows
+        path: dist

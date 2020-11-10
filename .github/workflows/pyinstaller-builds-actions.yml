@@ -79,6 +79,7 @@ jobs:
       run: |
         conda info
         conda env update -f cqgui_env.yml
+        conda install -c anaconda openssl
         conda install -c cadquery -c conda-forge cadquery=master
         conda install -c cadquery -c conda-forge cq-editor=master
         conda install -c conda-forge pyinstaller

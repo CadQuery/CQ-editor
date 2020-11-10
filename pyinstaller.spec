@@ -36,8 +36,14 @@ a = Analysis(['run.py'],
 
 # There is an issue that keeps the OpenSSL libraries from being copied to the output directory
 if sys.platform == 'win32':
-    a.binaries.append((os.path.join(HOMEPATH, 'Library', 'bin', 'libssl-1_1-x64.dll'), '.'))
-    a.binaries.append((os.path.join(HOMEPATH, 'Library', 'bin', 'libssl-1_1-x64.pdb'), '.'))
+    ssl_dll_path = (os.path.join(HOMEPATH, 'Library', 'bin', 'libssl-1_1-x64.dll'), '.', 'BINARY')
+    ssl_pdb_path = (os.path.join(HOMEPATH, 'Library', 'bin', 'libssl-1_1-x64.pdb'), '.', 'EXTENSION')
+    crypto_dll_path = (os.path.join(HOMEPATH, 'Library', 'bin', 'libcrypto-1_1-x64.dll'), '.', 'BINARY')
+    crypto_pdb_path = (os.path.join(HOMEPATH, 'Library', 'bin', 'libcrypto-1_1-x64.pdb'), '.', 'EXTENSION')
+    a.binaries.append(ssl_dll_path)
+    a.binaries.append(ssl_pdb_path)
+    a.binaries.append(crypto_dll_path)
+    a.binaries.append(crypto_pdb_path)
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)

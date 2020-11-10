@@ -16,7 +16,7 @@ elif sys.platform == 'darwin':
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cpython-38-darwin.so'), '.')
 elif sys.platform == 'win32':
     occt_dir = os.path.join(Path(sys.prefix), 'Library', 'share', 'opencascade')
-    ocp_path = (os.path.join(HOMEPATH, 'OCP.cp38-win_amd64.pyd'), '.')
+    ocp_path = (os.path.join(HOMEPATH, 'OCP.cp37-win_amd64.pyd'), '.')
 
 a = Analysis(['run.py'],
              pathex=['.'],

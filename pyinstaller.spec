@@ -16,7 +16,7 @@ elif sys.platform == 'darwin':
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cpython-38-darwin.so'), '.')
 elif sys.platform == 'win32':
     occt_dir = os.path.join(Path(sys.prefix), 'Library', 'share', 'opencascade')
-    ocp_path = (os.path.join(HOMEPATH, 'OCP.cp37-win_amd64.pyd'), '.')
+    ocp_path = (os.path.join(HOMEPATH, 'OCP.cp38-win_amd64.pyd'), '.')
 
 a = Analysis(['run.py'],
              pathex=['.'],
@@ -33,6 +33,11 @@ a = Analysis(['run.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
+
+# There is an issue that keeps the OpenSSL libraries from being copied to the output directory
+if sys.platform == 'win32':
+    a.binaries.append((os.path.join(HOMEPATH, 'Library', 'bin', 'libssl-1_1-x64.dll'), '.'))
+    a.binaries.append((os.path.join(HOMEPATH, 'Library', 'bin', 'libssl-1_1-x64.pdb'), '.'))
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)

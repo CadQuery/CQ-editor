@@ -4,7 +4,7 @@ import sys, site, os
 from path import Path
 
 block_cipher = None
-
+print(sys.platform)
 spyder_data = Path(site.getsitepackages()[-1]) / 'spyder'
 parso_grammar = (Path(site.getsitepackages()[-1]) / 'parso/python').glob('grammar*')
 

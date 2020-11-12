@@ -77,11 +77,12 @@ jobs:
     - name: Install CadQuery and pyinstaller
       shell: pwsh
       run: |
-        conda info
+        conda list
         conda install -c cadquery -c conda-forge cq-editor=master
         conda install -c anaconda openssl
         conda install -c conda-forge pyinstaller
         pip install path
+        pip install pyopenssl
     - name: Run build
       shell: pwsh
       run: |

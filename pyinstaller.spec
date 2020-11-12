@@ -55,7 +55,7 @@ exe = EXE(pyz,
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
-          upx=True,
+          upx=False,
           console=True,
           icon='icons/cadquery_logo_dark.ico')
 
@@ -67,5 +67,5 @@ coll = COLLECT(exe,
                a.zipfiles,
                a.datas,
                strip=False,
-               upx=True,
+               upx=False,
                name='CQ-editor')

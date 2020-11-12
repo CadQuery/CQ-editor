@@ -4,7 +4,7 @@ import sys, site, os
 from path import Path
 
 block_cipher = None
-print(sys.platform)
+
 spyder_data = Path(site.getsitepackages()[-1]) / 'spyder'
 parso_grammar = (Path(site.getsitepackages()[-1]) / 'parso/python').glob('grammar*')
 
@@ -24,7 +24,7 @@ a = Analysis(['run.py'],
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade')] +
                     [(p, 'parso/python') for p in parso_grammar],
-             hiddenimports=['ipykernel.datapub'],
+             hiddenimports=['ipykernel.datapub', 'PyQt5'],
              hookspath=[],
              runtime_hooks=['pyinstaller/pyi_rth_occ.py',
                             'pyinstaller/pyi_rth_fontconfig.py'],

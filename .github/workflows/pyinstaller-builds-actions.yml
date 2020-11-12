@@ -86,7 +86,7 @@ jobs:
       shell: pwsh
       run: |
         conda info
-        pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
+        pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-Windows

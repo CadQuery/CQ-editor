@@ -81,6 +81,8 @@ jobs:
         conda install -c cadquery -c conda-forge cq-editor=master
         conda install -c anaconda openssl
         conda install -c conda-forge pyinstaller
+        pip install pipwin
+        pipwin install numpy
         pip install path
         pip install pyopenssl
     - name: Run build

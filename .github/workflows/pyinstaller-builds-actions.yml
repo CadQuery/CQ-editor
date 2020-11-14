@@ -85,6 +85,7 @@ jobs:
         pipwin install numpy
         pip install path
         pip install pyopenssl
+        Get-Childitem C:\Miniconda3\envs\test\libssl* -Recurse
     - name: Run build
       shell: pwsh
       run: |

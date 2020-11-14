@@ -39,9 +39,9 @@ if sys.platform == 'win32':
     from PyInstaller.compat import is_win
     from PyInstaller.depend.bindepend import getfullnameof
     rel_data_path = ['PyQt5', 'Qt', 'bin']
-    a.binaries += [
-        (getfullnameof('libssl-1_1-x64.dll'), os.path.join(*rel_data_path), 'LIBRARY'),
-        (getfullnameof('libcrypto-1_1-x64.dll'), os.path.join(*rel_data_path), 'LIBRARY'),
+    a.datas += [
+        (getfullnameof('libssl-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
+        (getfullnameof('libcrypto-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
     ]
 
 #    ssl_dll_path = ('.', os.path.join(HOMEPATH, 'Library', 'bin', 'libssl-1_1-x64.dll'), 'LIBRARY')

@@ -75,21 +75,17 @@ jobs:
         python-version: 3.8
         activate-environment: test
     - name: Install CadQuery and pyinstaller
-      shell: powershell
-      run: |
-        conda list
-        conda install -c cadquery -c conda-forge cq-editor=master
-        conda install -c anaconda openssl
-        conda install -c conda-forge pyinstaller
-        pip install pipwin
-        pipwin install numpy
-        pip install path
-        pip install pyopenssl
-        Get-Childitem C:\Miniconda3\envs\test\libssl* -Recurse
-    - name: Run build
-      shell: powershell
-      run: |
-        conda info
+      shell: cmd
+      run: >-
+        conda list &&
+        conda install -c cadquery -c conda-forge cq-editor=master &&
+        conda install -c anaconda openssl &&
+        conda install -c conda-forge pyinstaller &&
+        pip install pipwin &&
+        pipwin install numpy &&
+        pip install path &&
+        pip install pyopenssl &&
+        conda info &&
         pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
     - uses: actions/upload-artifact@v2
       with:

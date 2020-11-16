@@ -75,7 +75,6 @@ jobs:
         python-version: 3.8
         activate-environment: test
     - name: Install CadQuery and pyinstaller
-      shell: cmd
       run: |
         conda list
         conda install -c cadquery -c conda-forge cq-editor=master
@@ -86,11 +85,12 @@ jobs:
         pip install path
         pip install pyopenssl
         Get-Childitem C:\Miniconda3\envs\test\libssl* -Recurse
-    - name: Run build
       shell: cmd
+    - name: Run build
       run: |
         conda info
         pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
+      shell: cmd
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-Windows

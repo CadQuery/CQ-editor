@@ -78,7 +78,7 @@ jobs:
       shell: cmd
       run: >-
         conda list &&
-        conda install -c cadquery -c conda-forge cq-editor=master &&
+        conda install -c cadquery -c conda-forge cq-editor=master python=3.8 &&
         conda install -c anaconda openssl &&
         pip install pyinstaller &&
         pip install pipwin &&

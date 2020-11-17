@@ -85,14 +85,14 @@ jobs:
         pipwin install numpy
         pip install path
         pip install pyopenssl
-        Get-Childitem D:\dist* -Recurse
     - name: Run build
       shell: powershell
       run: |
         conda info
         pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
-        Copy-Item C:\Miniconda3\envs\test\Library\bin\libssl-1_1-x64.dll  D:\a\_actions\actions\upload-artifact\v2\dist\CQ-editor\
-        Copy-Item C:\Miniconda3\envs\test\Library\bin\libcrypto-1_1-x64.dll  D:\a\_actions\actions\upload-artifact\v2\dist\CQ-editor\
+        Get-Childitem D:\dist* -Recurse
+        Copy-Item C:\Miniconda3\envs\test\Library\bin\libssl-1_1-x64.dll  D:\a\_actions\actions\upload-artifact\v2\dist\
+        Copy-Item C:\Miniconda3\envs\test\Library\bin\libcrypto-1_1-x64.dll  D:\a\_actions\actions\upload-artifact\v2\dist\
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-Windows

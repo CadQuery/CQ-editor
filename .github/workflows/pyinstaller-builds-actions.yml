@@ -85,7 +85,7 @@ jobs:
         pipwin install numpy
         pip install path
         pip install pyopenssl
-        Get-Childitem C:\Miniconda3\envs\test\dist* -Recurse
+        Get-Childitem D:\dist* -Recurse
         Copy-Item C:\Miniconda3\envs\test\Library\bin\libssl-1_1-x64.dll  D:\a\CQ-editor\dist\
         Copy-Item C:\Miniconda3\envs\test\Library\bin\libcrypto-1_1-x64.dll  D:\a\CQ-editor\dist\
     - name: Run build

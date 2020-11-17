@@ -86,8 +86,8 @@ jobs:
         pip install path
         pip install pyopenssl
         Get-Childitem D:\dist* -Recurse
-        Copy-Item C:\Miniconda3\envs\test\Library\bin\libssl-1_1-x64.dll  D:\a\_actions\actions\upload-artifact\v2\dist\
-        Copy-Item C:\Miniconda3\envs\test\Library\bin\libcrypto-1_1-x64.dll  D:\a\_actions\actions\upload-artifact\v2\dist\
+        Copy-Item C:\Miniconda3\envs\test\Library\bin\libssl-1_1-x64.dll  D:\a\_actions\actions\upload-artifact\v2\dist\CQ-editor\
+        Copy-Item C:\Miniconda3\envs\test\Library\bin\libcrypto-1_1-x64.dll  D:\a\_actions\actions\upload-artifact\v2\dist\CQ-editor\
     - name: Run build
       shell: powershell
       run: |

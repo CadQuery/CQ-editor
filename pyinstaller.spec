@@ -34,7 +34,8 @@ a = Analysis(['run.py'],
              cipher=block_cipher,
              noarchive=False)
 
-# There is an issue that keeps the OpenSSL libraries from being copied to the output directory
+# There is an issue that keeps the OpenSSL libraries from being copied to the output directory.
+# This should work if nothing else, but does not with GitHub Actions
 if sys.platform == 'win32':
     from PyInstaller.depend.bindepend import getfullnameof
     rel_data_path = ['PyQt5', 'Qt', 'bin']
@@ -42,15 +43,6 @@ if sys.platform == 'win32':
         (getfullnameof('libssl-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
         (getfullnameof('libcrypto-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
     ]
-
-#    ssl_dll_path = ('.', os.path.join(HOMEPATH, 'Library', 'bin', 'libssl-1_1-x64.dll'), 'LIBRARY')
-#    ssl_pdb_path = ('.', os.path.join(HOMEPATH, 'Library', 'bin', 'libssl-1_1-x64.pdb'), 'EXTENSION')
-#    crypto_dll_path = ('.', os.path.join(HOMEPATH, 'Library', 'bin', 'libcrypto-1_1-x64.dll'), 'LIBRARY')
-#    crypto_pdb_path = ('.', os.path.join(HOMEPATH, 'Library', 'bin', 'libcrypto-1_1-x64.pdb'), 'EXTENSION')
-#    a.binaries += [ssl_dll_path]
-#    a.binaries += [ssl_pdb_path]
-#    a.binaries += [crypto_dll_path]
-#    a.binaries += [crypto_pdb_path]
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)

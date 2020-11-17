@@ -77,20 +77,16 @@ jobs:
     - name: Install CadQuery and pyinstaller
       shell: powershell
       run: |
-        conda list
         conda install -c cadquery -c conda-forge cq-editor=master
-        conda install -c anaconda openssl
         conda install -c conda-forge pyinstaller
         pip install pipwin
         pipwin install numpy
         pip install path
-        pip install pyopenssl
     - name: Run build
       shell: powershell
       run: |
         conda info
         pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
-        Get-Childitem D:\dist* -Recurse
         Copy-Item C:\Miniconda3\envs\test\Library\bin\libssl-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\CQ-editor\
         Copy-Item C:\Miniconda3\envs\test\Library\bin\libcrypto-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\CQ-editor\
     - uses: actions/upload-artifact@v2

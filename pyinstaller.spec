@@ -36,7 +36,6 @@ a = Analysis(['run.py'],
 
 # There is an issue that keeps the OpenSSL libraries from being copied to the output directory
 if sys.platform == 'win32':
-    from PyInstaller.compat import is_win
     from PyInstaller.depend.bindepend import getfullnameof
     rel_data_path = ['PyQt5', 'Qt', 'bin']
     a.datas += [

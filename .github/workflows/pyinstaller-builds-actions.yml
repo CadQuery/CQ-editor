@@ -91,8 +91,8 @@ jobs:
         conda info
         pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
         Get-Childitem D:\dist* -Recurse
-        Copy-Item C:\Miniconda3\envs\test\Library\bin\libssl-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\
-        Copy-Item C:\Miniconda3\envs\test\Library\bin\libcrypto-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\
+        Copy-Item C:\Miniconda3\envs\test\Library\bin\libssl-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\CQ-editor\
+        Copy-Item C:\Miniconda3\envs\test\Library\bin\libcrypto-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\CQ-editor\
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-Windows

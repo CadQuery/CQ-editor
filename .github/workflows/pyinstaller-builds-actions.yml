@@ -30,6 +30,7 @@ jobs:
       run: |
         conda info
         pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
+        cp /home/runner/work/CQ-editor/CQ-editor/pyinstaller/CQ-editor.sh /home/runner/work/CQ-editor/CQ-editor/dist/
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-Linux-x86_64
@@ -52,14 +53,13 @@ jobs:
         conda install -c cadquery -c conda-forge cq-editor=master
         conda install -c conda-forge pyinstaller
         pip install path
-        qtdiag
         pip install PyQt5==5.15.1
-        qtdiag
     - name: Run build
       shell: bash --login {0}
       run: |
         conda info
         pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
+        cp /Users/runner/work/CQ-editor/CQ-editor/pyinstaller/CQ-editor.sh /Users/runner/work/CQ-editor/CQ-editor/dist/
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-MacOS
@@ -89,6 +89,7 @@ jobs:
         pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
         Copy-Item C:\Miniconda3\envs\test\Library\bin\libssl-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\CQ-editor\
         Copy-Item C:\Miniconda3\envs\test\Library\bin\libcrypto-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\CQ-editor\
+        Copy-Item D:\a\CQ-editor\CQ-editor\pyinstaller\CQ-editor.cmd D:\a\CQ-editor\CQ-editor\dist\
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-Windows

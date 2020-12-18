@@ -23,7 +23,7 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
   * STL
   * STEP
 
-## Installation
+## Installation (Anaconda)
 
 Use conda to install:
 ```
@@ -46,6 +46,12 @@ On Fedora 29 the packages can be installed as follows:
 ```
 dnf install -y mesa-libGLU mesa-libGL mesa-libGLU-devel
 ```
+
+## Installation (Binary Builds)
+
+Development builds are now available that should work stand-alone without Anaconda. Click on the newest build with a green checkmark [here](https://github.com/jmwright/CQ-editor/actions?query=workflow%3Abuild), wait for the _Artifacts_ section at the bottom of the page to load, and then click on the appropriate download for your operating system. Extract the archive file and run the shell (*nix) or batch (Windows) script in the root CQ-editor directory. The CQ-editor window should launch.
+
+A stable version of these builds will be provided in the future, but are not available currently.
 
 ## Usage
 

@@ -309,8 +309,8 @@ class MainWindow(QMainWindow,MainMixin):
 
         about_dialog(
             self,
-            'CadQuery GUI (PyQT)',
-            f'Experimental PyQt GUI for CadQuery.\nVersion: {__version__}.'
+            f'About CQ-editor',
+            f'PyQt GUI for CadQuery.\nVersion: {__version__}.\nSource Code: https://github.com/CadQuery/CQ-editor',
         )
         
     def check_for_cq_updates(self):

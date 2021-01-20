@@ -25,6 +25,7 @@ class Editor(CodeEditor,ComponentMixin):
     preferences = Parameter.create(name='Preferences',children=[
         {'name': 'Font size', 'type': 'int', 'value': 12},
         {'name': 'Autoreload', 'type': 'bool', 'value': False},
+        {'name': 'Autoreload delay', 'type': 'int', 'value': 50},
         {'name': 'Line wrap', 'type': 'bool', 'value': False},
         {'name': 'Color scheme', 'type': 'list',
          'values': ['Spyder','Monokai','Zenburn'], 'value': 'Spyder'}])
@@ -81,17 +82,18 @@ class Editor(CodeEditor,ComponentMixin):
 
 
         self._fixContextMenu()
-        self.updatePreferences()
 
         # autoreload support
         self._file_watcher = QFileSystemWatcher(self)
         # we wait for 50ms after a file change for the file to be written completely
         self._file_watch_timer = QTimer(self)
-        self._file_watch_timer.setInterval(50)
+        self._file_watch_timer.setInterval(self.preferences['Autoreload delay'])
         self._file_watch_timer.setSingleShot(True)
         self._file_watcher.fileChanged.connect(
                 lambda val: self._file_watch_timer.start())
         self._file_watch_timer.timeout.connect(self._file_changed)
+
+        self.updatePreferences()
 
     def _fixContextMenu(self):
 
@@ -112,6 +114,8 @@ class Editor(CodeEditor,ComponentMixin):
 
         self.findChild(QAction, 'autoreload') \
             .setChecked(self.preferences['Autoreload'])
+
+        self._file_watch_timer.setInterval(self.preferences['Autoreload delay'])
             
         self.toggle_wrap_mode(self.preferences['Line wrap'])
 

@@ -1,3 +1,4 @@
+import signal
 import sys
 import argparse
 
@@ -22,6 +23,8 @@ def main():
     print(args)
     if args.filename:
         win.components['editor'].load_from_file(args.filename)
+
+    signal.signal(signal.SIGINT, signal.SIG_DFL)  # handle Ctrl+C
 
     win.show()
     sys.exit(app.exec_())

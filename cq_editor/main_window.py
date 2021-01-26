@@ -1,5 +1,6 @@
 import sys
 
+from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
 
 import cadquery as cq
@@ -29,6 +30,9 @@ class MainWindow(QMainWindow,MainMixin):
 
         super(MainWindow,self).__init__(parent)
         MainMixin.__init__(self)
+
+        self.toolbar = None
+        self.status_label = None
 
         self.setWindowIcon(icon('app'))
 
@@ -189,7 +193,13 @@ class MainWindow(QMainWindow,MainMixin):
 
     def prepare_toolbar(self):
 
-        self.toolbar = QToolBar('Main toolbar',self,objectName='Main toolbar')
+        self.toolbar = QToolBar('Main toolbar', self, objectName='Main toolbar')
+
+        p = self.toolbar.palette()
+        if p.color(QPalette.Background).lightnessF() < 0.5:  # dark theme is active
+            p.setColor(QPalette.Button, QColor(120, 120, 120))
+            p.setColor(QPalette.Background, QColor(170, 170, 170))
+            self.toolbar.setPalette(p)
 
         for c in self.components.values():
             add_actions(self.toolbar,c.toolbarActions())

@@ -18,7 +18,7 @@ requirements:
 
   run:
     - python {{ environ.get('PYTHON_VERSION') }}
-    - cadquery=master
+    - cadquery=2.1
     - ocp
     - logbook
     - pyqt=5.*
@@ -33,4 +33,4 @@ test:
     - cq_editor
 
 about:
-summary: GUI for CadQuery 2.0
+summary: GUI for CadQuery 2

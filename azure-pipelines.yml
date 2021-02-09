@@ -13,6 +13,10 @@ resources:
       type: github
       name: CadQuery/conda-packages
       endpoint: CadQuery
+    - repository: jmwtemplates
+      type: github
+      name: jmwright/conda-packages
+      endpoint: jmwright
 
 jobs:
 - template: conda-build.yml@templates
@@ -35,6 +39,14 @@ jobs:
   parameters:
     name: Windows
     vmImage: 'vs2017-win2016'
+    py_maj: 3
+    py_min: 8
+    conda_bld: '3.20.3'
+
+- template: pyinstaller-build.yml@jmwtemplates
+  parameters:
+    name: Linux
+    vmImage: 'ubuntu-18.04'
     py_maj: 3
     py_min: 8
     conda_bld: '3.20.3'

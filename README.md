@@ -23,6 +23,12 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
   * STL
   * STEP
 
+## Installation (Binary Builds)
+
+Stable release builds which do not require Anaconda are attached to the [latest release](https://github.com/CadQuery/CQ-editor/releases). Download the zip file for your operating system, extract it, and run the CQ-editor script for your OS (CQ-editor.cmd for Windows, CQ-editor.sh for Linux and MacOS). On Windows you should be able to simply double-click on CQ-editor.cmd. On Linux and MacOS you may need to make the script executable with `chmod +x CQ-editor.sh` and run the script from the command line. The script contains an environment variable export that may be required to get CQ-editor to launch correctly on MacOS Big Sur, so it is better to use the script than to launch CQ-editor directly.
+
+Development builds are also available, but you must be logged in to GitHub to get access. Click on the newest build with a green checkmark [here](https://github.com/jmwright/CQ-editor/actions?query=workflow%3Abuild), wait for the _Artifacts_ section at the bottom of the page to load, and then click on the appropriate download for your operating system. Extract the archive file and run the shell (Linux/MacOS) or batch (Windows) script in the root CQ-editor directory. The CQ-editor window should launch.
+
 ## Installation (Anaconda)
 
 Use conda to install:
@@ -46,12 +52,6 @@ On Fedora 29 the packages can be installed as follows:
 ```
 dnf install -y mesa-libGLU mesa-libGL mesa-libGLU-devel
 ```
-
-## Installation (Binary Builds)
-
-Development builds are now available that should work stand-alone without Anaconda. Click on the newest build with a green checkmark [here](https://github.com/jmwright/CQ-editor/actions?query=workflow%3Abuild), wait for the _Artifacts_ section at the bottom of the page to load, and then click on the appropriate download for your operating system. Extract the archive file and run the shell (*nix) or batch (Windows) script in the root CQ-editor directory. The CQ-editor window should launch.
-
-A stable version of these builds will be provided in the future, but are not available currently.
 
 ## Usage
 

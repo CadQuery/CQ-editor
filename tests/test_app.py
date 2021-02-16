@@ -1169,3 +1169,28 @@ def test_render_assy(main):
     console.execute('show(assy)')
     qtbot.wait(500)
     assert(obj_tree_comp.CQ.childCount() == 2)
+
+
+def test_window_title(monkeypatch, main):
+
+    fname = 'test_window_title.py'
+
+    with open(fname, 'w') as f:
+        f.write(code)
+
+    qtbot, win = main
+
+    #monkeypatch QFileDialog methods
+    def filename(*args, **kwargs):
+        return fname, None
+
+    monkeypatch.setattr(QFileDialog, 'getOpenFileName',
+                        staticmethod(filename))
+
+    win.components["editor"].open()
+    assert(win.windowTitle().endswith(fname))
+
+    # handle a new file
+    win.components["editor"].new()
+    # I don't really care what the title is, as long as it's not a filename
+    assert(not win.windowTitle().endswith('.py'))

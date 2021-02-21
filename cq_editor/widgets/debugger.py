@@ -110,6 +110,7 @@ class Debugger(QObject,ComponentMixin):
         {'name': 'Change working dir to script dir','type': 'bool', 'value': True}])
 
 
+    sigRenderStarted = pyqtSignal()
     sigRendered = pyqtSignal(dict)
     sigLocals = pyqtSignal(dict)
     sigTraceback = pyqtSignal(object,str)
@@ -221,6 +222,7 @@ class Debugger(QObject,ComponentMixin):
 
     @pyqtSlot(bool)
     def render(self):
+        self.sigRenderStarted.emit()
 
         if self.preferences['Reload CQ']:
             reload_cq()

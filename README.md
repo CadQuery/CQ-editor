@@ -64,3 +64,58 @@ show_object(result, options={"alpha":0.5, "color": (64, 164, 223)})
 ```
 
 Note that `show_object` works for `Shape` and `TopoDS_Shape` objects too. In order to display objects from the embedded Python console use `show`.
+
+### Rotate, Pan and Zoom
+
+* _Left Mouse Button_ + _Drag_ = Rotate
+* _Middle Mouse Button_ + _Drag_ = Pan
+* _Right Mouse Button_ + _Drag_ = Zoom
+* _Mouse Wheel_ = Zoom
+
+### Using an External Code Editor
+
+1. Open the Preferences dialog by clicking `Edit->Preferences`.
+2. Make sure that `Code Editor` is selected in the left pane.
+3. Check `autoreload` in the right pane.
+4.  If CQ-editor is not catching the saves from your external editor, increasing `Autoreload delay` in the right pane may help. This is a fairly common issue when using vim or emacs.
+
+### Displaying All Wires for Debugging
+
+**NOTE:** This is for debugging purposes and if not removed, could interfere with the creation of your model.
+
+Using `consolidateWires()` is a quick way to combine all wires so that they will display together in CQ-editor's viewer. In the following code, it is used to make sure that both rects are displayed. This technique can make it easier to debug in-progress 2D sketches.
+
+```python
+import cadquery as cq
+res = cq.Workplane().rect(1,1).rect(3,3).consolidateWires()
+show_object(res)
+```
+
+### Highlighting a Specific Face
+
+Highlighting a specific face in a different color can be useful when debugging, or when trying to learn CadQuery selectors. The following code creates a separate, highlighted object to show the selected face in red.
+
+```python
+import cadquery as cq
+
+result = cq.Workplane().box(10, 10, 10)
+
+highlight = result.faces('>Z')
+
+show_object(result)
+show_object(highlight,'highlight',options=dict(alpha=0.1,color=(1.,0,0)))
+```
+
+### Naming an Object
+
+By default, objects have a randomly generated ID in the object inspector. It can be useful to name objects so that it is easier to identify them. The `name` parameter of `show_object()` can be used to do this.
+
+```python
+import cadquery as cq
+
+result = cq.Workplane().box(10, 10, 10)
+
+highlight = result.faces('>Z')
+
+show_object(result, name='box')
+```

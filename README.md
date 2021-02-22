@@ -98,7 +98,7 @@ Objects displayed with `debug()` are colored in red and have their alpha set so 
 
 ### Console Logging
 
-Python's standard `print()` function will not output to the CQ-editor GUI, and `log()` should be used instead. `log()` will output the provided text to the _Log viewer_ panel, providing another way to debug CadQuery scripts.
+Python's standard `print()` function will not output to the CQ-editor GUI, and `log()` should be used instead. `log()` will output the provided text to the _Log viewer_ panel, providing another way to debug CadQuery scripts. If you started CQ-editor from the command line, the `print()` function will output text back to it.
 
 ### Using an External Code Editor
 

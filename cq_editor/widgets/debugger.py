@@ -255,6 +255,9 @@ class Debugger(QObject,ComponentMixin):
 
     @pyqtSlot(bool)
     def debug(self,value):
+
+        previous_trace = sys.gettrace()
+
         if value:
             self.sigDebugging.emit(True)
             self.state = DbgState.STEP
@@ -280,7 +283,7 @@ class Debugger(QObject,ComponentMixin):
                 self.sigTraceback.emit(sys.exc_info(),
                                        self.script)
             finally:
-                sys.settrace(None)
+                sys.settrace(previous_trace)
                 self.sigDebugging.emit(False)
                 self._actions['Run'][1].setChecked(False)
 
@@ -293,9 +296,8 @@ class Debugger(QObject,ComponentMixin):
                 
                 self._frames = []
         else:
-            sys.settrace(None)
+            sys.settrace(previous_trace)
             self.inner_event_loop.exit(0)
-
 
 
     def debug_cmd(self,state=DbgState.STEP):

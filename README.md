@@ -80,7 +80,7 @@ There are multiple menu options to help in debugging a CadQuery script. They are
 
 * `Debug` (Ctrl + F5) - Instead of running the script completely through as with the `Render` item, it begins executing the script but stops at the first non-empty line, waiting for the user to continue execution manually.
 * `Step` (Ctrl + F10) - Will move execution of the script to the next  non-empty line.
-* `Step in` (Ctrl + F11) - Currently disabled.
+* `Step in` (Ctrl + F11) - Will follow the flow of execution to the inside of a user-created function defined within the script.
 * `Continue` (Ctrl + F12) - Completes execution of the script, starting from the current line that is being debugged.
 
 It is also possible to do visual debugging of objects. This is possible by using the `debug()` function to display an object instead of `show_object()`. An alternative method for the following code snippet is shown below for highlighting a specific face, but it demonstrates one use of `debug()`.

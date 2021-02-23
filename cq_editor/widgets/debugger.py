@@ -347,4 +347,4 @@ class Debugger(QObject,ComponentMixin):
                 self.sigLineChanged.emit(lineno)
                 self.sigFrameChanged.emit(frame)
                 self.state = DbgState.STEP
-                self._frame.append(frame)
+                self._frames.append(frame)

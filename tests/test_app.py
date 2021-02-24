@@ -353,6 +353,12 @@ def test_debug(main,mocker):
     viewer = win.components['viewer']
     assert(number_visible_items(viewer) == 3)
 
+    #check breakpoints
+    assert(debugger.breakpoints == [])
+
+    #check _frames
+    assert(debugger._frames == [])
+
     #test step through
     ev = event_loop([lambda: (assert_func(variables.model().rowCount() == 4),
                               assert_func(number_visible_items(viewer) == 3),

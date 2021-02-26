@@ -57,7 +57,7 @@ def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Sha
         ais = obj
     else:
         shape = to_compound(obj)
-        ais = AIS_ColoredShape(shape.wrappe
+        ais = AIS_ColoredShape(shape.wrapped)
    
     if 'alpha' in options:
         ais.SetTransparency(options['alpha'])

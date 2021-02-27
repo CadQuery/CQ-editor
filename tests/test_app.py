@@ -1175,3 +1175,42 @@ def test_render_assy(main):
     console.execute('show(assy)')
     qtbot.wait(500)
     assert(obj_tree_comp.CQ.childCount() == 2)
+
+code_show_ais = \
+'''import cadquery as cq
+from cadquery.occ_impl.assembly import toCAF
+
+import OCP
+
+result1 = cq.Workplane("XY" ).box(3, 3, 0.5)
+assy = cq.Assembly(result1)
+
+lab, doc = toCAF(assy)
+ais = OCP.XCAFPrs.XCAFPrs_AISObject(lab)
+
+show_object(ais)
+'''
+
+def test_render_ais(main):
+
+    qtbot, win = main
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_show_ais)
+    debugger._actions['Run'][0].triggered.emit()
+    qtbot.wait(500)
+    assert(obj_tree_comp.CQ.childCount() == 1)
+
+    # test rendering via console
+    console.execute('show(ais)')
+    qtbot.wait(500)
+    assert(obj_tree_comp.CQ.childCount() == 2)

@@ -1,7 +1,8 @@
 import sys, imp
 from enum import Enum, auto
 from imp import reload
-from types import SimpleNamespace
+from types import SimpleNamespace, FrameType
+from typing import List
 
 from PyQt5.QtWidgets import (QWidget, QTreeWidget, QTreeWidgetItem, QAction,
                              QLabel, QTableView)
@@ -104,7 +105,7 @@ class Debugger(QObject,ComponentMixin):
     name = 'Debugger'
 
     preferences = Parameter.create(name='Preferences',children=[
-        {'name': 'Reload CQ', 'type': 'bool', 'value': True},
+        {'name': 'Reload CQ', 'type': 'bool', 'value': False},
         {'name': 'Add script dir to path','type': 'bool', 'value': True},
         {'name': 'Change working dir to script dir','type': 'bool', 'value': True}])
 
@@ -119,6 +120,7 @@ class Debugger(QObject,ComponentMixin):
     sigCQChanged = pyqtSignal(dict,bool)
     sigDebugging = pyqtSignal(bool)
 
+    _frames : List[FrameType]
 
     def __init__(self,parent):
 
@@ -148,13 +150,15 @@ class Debugger(QObject,ComponentMixin):
                              'Step in',
                              self,
                              shortcut='ctrl+F11',
-                             triggered=lambda: None),
+                             triggered=lambda: self.debug_cmd(DbgState.STEP_IN)),
                       QAction(icon('arrow-continue'),
                               'Continue',
                               self,
                               shortcut='ctrl+F12',
                               triggered=lambda: self.debug_cmd(DbgState.CONT))
                       ]}
+            
+        self._frames = []
 
     def get_current_script(self):
 
@@ -187,7 +191,7 @@ class Debugger(QObject,ComponentMixin):
             if self.preferences['Change working dir to script dir'] and p.exists():
                 stack.enter_context(p)
 
-            exec(code, locals_dict, globals_dict)
+            exec(code, locals_dict, globals_dict)     
 
     def _inject_locals(self,module):
 
@@ -244,9 +248,16 @@ class Debugger(QObject,ComponentMixin):
         except Exception:
             self.sigTraceback.emit(sys.exc_info(),
                                    cq_script)
+    
+    @property
+    def breakpoints(self):
+        return [ el[0] for el in self.get_breakpoints()]
 
     @pyqtSlot(bool)
     def debug(self,value):
+
+        previous_trace = sys.gettrace()
+
         if value:
             self.sigDebugging.emit(True)
             self.state = DbgState.STEP
@@ -261,11 +272,10 @@ class Debugger(QObject,ComponentMixin):
 
             cq_objects,injected_names = self._inject_locals(module)
 
-            self.breakpoints = [ el[0] for el in self.get_breakpoints()]
-
             #clear possible traceback
             self.sigTraceback.emit(None,
                                    self.script)
+
             try:
                 sys.settrace(self.trace_callback)
                 exec(code,module.__dict__,module.__dict__)
@@ -273,7 +283,7 @@ class Debugger(QObject,ComponentMixin):
                 self.sigTraceback.emit(sys.exc_info(),
                                        self.script)
             finally:
-                sys.settrace(None)
+                sys.settrace(previous_trace)
                 self.sigDebugging.emit(False)
                 self._actions['Run'][1].setChecked(False)
 
@@ -283,10 +293,11 @@ class Debugger(QObject,ComponentMixin):
 
                 self._cleanup_locals(module,injected_names)
                 self.sigLocals.emit(module.__dict__)
+                
+                self._frames = []
         else:
-            sys.settrace(None)
+            sys.settrace(previous_trace)
             self.inner_event_loop.exit(0)
-
 
 
     def debug_cmd(self,state=DbgState.STEP):
@@ -300,6 +311,8 @@ class Debugger(QObject,ComponentMixin):
         filename = frame.f_code.co_filename
 
         if filename==DUMMY_FILE:
+            if not self._frames:
+                self._frames.append(frame)
             self.trace_local(frame,event,arg)
             return self.trace_callback
 
@@ -309,12 +322,14 @@ class Debugger(QObject,ComponentMixin):
     def trace_local(self,frame,event,arg):
 
         lineno = frame.f_lineno
-        line = self.script.splitlines()[lineno-1]
-        f_id = id(frame)
 
-        if event in (DbgEevent.LINE,DbgEevent.RETURN):
-            if (self.state in (DbgState.STEP, DbgState.STEP_IN)) \
+        if event in (DbgEevent.LINE,):
+            if (self.state in (DbgState.STEP, DbgState.STEP_IN) and frame is self._frames[-1]) \
             or (lineno in self.breakpoints):
+                
+                if lineno in self.breakpoints:
+                    self._frames.append(frame)
+                
                 self.sigLineChanged.emit(lineno)
                 self.sigFrameChanged.emit(frame)
                 self.sigLocalsChanged.emit(frame.f_locals)
@@ -324,11 +339,12 @@ class Debugger(QObject,ComponentMixin):
 
         elif event in (DbgEevent.RETURN):
             self.sigLocalsChanged.emit(frame.f_locals)
+            self._frames.pop()
 
         elif event == DbgEevent.CALL:
             func_filename = frame.f_code.co_filename
-
             if self.state == DbgState.STEP_IN and func_filename == DUMMY_FILE:
                 self.sigLineChanged.emit(lineno)
                 self.sigFrameChanged.emit(frame)
                 self.state = DbgState.STEP
+                self._frames.append(frame)

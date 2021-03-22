@@ -246,8 +246,9 @@ class Debugger(QObject,ComponentMixin):
                                    cq_script)
             self.sigLocals.emit(module.__dict__)
         except Exception:
-            self.sigTraceback.emit(sys.exc_info(),
-                                   cq_script)
+            exc_info = sys.exc_info()
+            sys.last_traceback = exc_info[-1]
+            self.sigTraceback.emit(exc_info, cq_script)
     
     @property
     def breakpoints(self):

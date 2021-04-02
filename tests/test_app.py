@@ -481,6 +481,8 @@ def test_traceback(main):
     run.triggered.emit()
 
     assert('SyntaxError' in traceback_view.current_exception.text())
+    assert(hasattr(sys, 'last_tracaback'))
+    del sys.last_tracaback
 
     debug.triggered.emit()
 

@@ -491,6 +491,7 @@ def test_traceback(main):
     run.triggered.emit()
 
     assert('NameError' in traceback_view.current_exception.text())
+    assert(hasattr(sys, 'last_tracaback'))
 
     # restore the tracing function
     sys.settrace(trace_function)

@@ -302,41 +302,39 @@ def test_inspect(main):
     insp._toolbar_actions[0].toggled.emit(False)
     assert(number_visible_items(viewer) == 3)
 
+class event_loop(object):
+    '''Used to mock the QEventLoop for the debugger component
+    '''
+
+    def __init__(self,callbacks):
+
+        self.callbacks = callbacks
+        self.i = 0
+
+    def exec_(self):
+
+        if self.i<len(self.callbacks):
+            self.callbacks[self.i]()
+            self.i+=1
+
+    def exit(self,*args):
+
+        pass
+
+def patch_debugger(debugger,event_loop_mock):
+
+        debugger.inner_event_loop.exec_ = event_loop_mock.exec_
+        debugger.inner_event_loop.exit = event_loop_mock.exit
 
 def test_debug(main,mocker):
 
     # store the tracing function
     trace_function = sys.gettrace()
 
-    class event_loop(object):
-        '''Used to mock the QEventLoop for the debugger component
-        '''
-
-        def __init__(self,callbacks):
-
-            self.callbacks = callbacks
-            self.i = 0
-
-        def exec_(self):
-
-            if self.i<len(self.callbacks):
-                self.callbacks[self.i]()
-                self.i+=1
-
-        def exit(self,*args):
-
-            pass
-
     def assert_func(x):
         '''Neddedd to perform asserts in lambdas
         '''
         assert(x)
-
-    def patch_debugger(debugger,event_loop_mock):
-
-        debugger.inner_event_loop.exec_ = event_loop_mock.exec_
-        debugger.inner_event_loop.exit = event_loop_mock.exit
-
 
     qtbot, win = main
 
@@ -481,8 +479,6 @@ def test_traceback(main):
     run.triggered.emit()
 
     assert('SyntaxError' in traceback_view.current_exception.text())
-    assert(hasattr(sys, 'last_tracaback'))
-    del sys.last_tracaback
 
     debug.triggered.emit()
 
@@ -493,7 +489,20 @@ def test_traceback(main):
     run.triggered.emit()
 
     assert('NameError' in traceback_view.current_exception.text())
-    assert(hasattr(sys, 'last_tracaback'))
+    assert(hasattr(sys, 'last_traceback'))
+    
+    del sys.last_traceback
+    assert(not hasattr(sys, 'last_traceback'))
+    
+    
+    #test last_traceback with debug
+    ev = event_loop([lambda: (cont.triggered.emit(),)])
+    patch_debugger(debugger,ev)
+    
+    debugger.debug(True)
+    
+    assert('NameError' in traceback_view.current_exception.text())
+    assert(hasattr(sys, 'last_traceback'))
 
     # restore the tracing function
     sys.settrace(trace_function)

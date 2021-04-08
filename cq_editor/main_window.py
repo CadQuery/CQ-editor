@@ -22,7 +22,7 @@ from .preferences import PreferencesWidget
 
 class MainWindow(QMainWindow,MainMixin):
 
-    name = 'CQ GUI'
+    name = 'CQ-Editor'
     org = 'CadQuery'
 
     def __init__(self,parent=None):
@@ -329,8 +329,8 @@ class MainWindow(QMainWindow,MainMixin):
 
     def handle_filename_change(self, fname):
 
-        new_title = fname if fname else "CQ-Editor"
-        self.setWindowTitle(new_title)
+        new_title = fname if fname else "*"
+        self.setWindowTitle("{self.name}: {new_title}")
 
 if __name__ == "__main__":
 

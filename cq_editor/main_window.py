@@ -330,7 +330,7 @@ class MainWindow(QMainWindow,MainMixin):
     def handle_filename_change(self, fname):
 
         new_title = fname if fname else "*"
-        self.setWindowTitle("{self.name}: {new_title}")
+        self.setWindowTitle(f"{self.name}: {new_title}")
 
 if __name__ == "__main__":
 

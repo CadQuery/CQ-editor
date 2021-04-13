@@ -105,7 +105,7 @@ class Debugger(QObject,ComponentMixin):
     name = 'Debugger'
 
     preferences = Parameter.create(name='Preferences',children=[
-        {'name': 'Reload CQ', 'type': 'bool', 'value': True},
+        {'name': 'Reload CQ', 'type': 'bool', 'value': False},
         {'name': 'Add script dir to path','type': 'bool', 'value': True},
         {'name': 'Change working dir to script dir','type': 'bool', 'value': True}])
 
@@ -246,8 +246,9 @@ class Debugger(QObject,ComponentMixin):
                                    cq_script)
             self.sigLocals.emit(module.__dict__)
         except Exception:
-            self.sigTraceback.emit(sys.exc_info(),
-                                   cq_script)
+            exc_info = sys.exc_info()
+            sys.last_traceback = exc_info[-1]
+            self.sigTraceback.emit(exc_info, cq_script)
     
     @property
     def breakpoints(self):
@@ -280,7 +281,9 @@ class Debugger(QObject,ComponentMixin):
                 sys.settrace(self.trace_callback)
                 exec(code,module.__dict__,module.__dict__)
             except Exception:
-                self.sigTraceback.emit(sys.exc_info(),
+                exc_info = sys.exc_info()
+                sys.last_traceback = exc_info[-1]
+                self.sigTraceback.emit(exc_info,
                                        self.script)
             finally:
                 sys.settrace(previous_trace)

@@ -183,6 +183,9 @@ def test_render(main):
     debugger = win.components['debugger']
     console = win.components['console']
     log = win.components['log']
+    
+    # enable CQ reloading
+    debugger.preferences['Reload CQ'] = True
 
     # check that object was rendered
     assert(obj_tree_comp.CQ.childCount() == 1)
@@ -299,41 +302,39 @@ def test_inspect(main):
     insp._toolbar_actions[0].toggled.emit(False)
     assert(number_visible_items(viewer) == 3)
 
+class event_loop(object):
+    '''Used to mock the QEventLoop for the debugger component
+    '''
+
+    def __init__(self,callbacks):
+
+        self.callbacks = callbacks
+        self.i = 0
+
+    def exec_(self):
+
+        if self.i<len(self.callbacks):
+            self.callbacks[self.i]()
+            self.i+=1
+
+    def exit(self,*args):
+
+        pass
+
+def patch_debugger(debugger,event_loop_mock):
+
+        debugger.inner_event_loop.exec_ = event_loop_mock.exec_
+        debugger.inner_event_loop.exit = event_loop_mock.exit
 
 def test_debug(main,mocker):
 
     # store the tracing function
     trace_function = sys.gettrace()
 
-    class event_loop(object):
-        '''Used to mock the QEventLoop for the debugger component
-        '''
-
-        def __init__(self,callbacks):
-
-            self.callbacks = callbacks
-            self.i = 0
-
-        def exec_(self):
-
-            if self.i<len(self.callbacks):
-                self.callbacks[self.i]()
-                self.i+=1
-
-        def exit(self,*args):
-
-            pass
-
     def assert_func(x):
         '''Neddedd to perform asserts in lambdas
         '''
         assert(x)
-
-    def patch_debugger(debugger,event_loop_mock):
-
-        debugger.inner_event_loop.exec_ = event_loop_mock.exec_
-        debugger.inner_event_loop.exit = event_loop_mock.exit
-
 
     qtbot, win = main
 
@@ -488,6 +489,20 @@ def test_traceback(main):
     run.triggered.emit()
 
     assert('NameError' in traceback_view.current_exception.text())
+    assert(hasattr(sys, 'last_traceback'))
+    
+    del sys.last_traceback
+    assert(not hasattr(sys, 'last_traceback'))
+    
+    
+    #test last_traceback with debug
+    ev = event_loop([lambda: (cont.triggered.emit(),)])
+    patch_debugger(debugger,ev)
+    
+    debugger.debug(True)
+    
+    assert('NameError' in traceback_view.current_exception.text())
+    assert(hasattr(sys, 'last_traceback'))
 
     # restore the tracing function
     sys.settrace(trace_function)
@@ -1175,3 +1190,66 @@ def test_render_assy(main):
     console.execute('show(assy)')
     qtbot.wait(500)
     assert(obj_tree_comp.CQ.childCount() == 2)
+
+code_show_ais = \
+'''import cadquery as cq
+from cadquery.occ_impl.assembly import toCAF
+
+import OCP
+
+result1 = cq.Workplane("XY" ).box(3, 3, 0.5)
+assy = cq.Assembly(result1)
+
+lab, doc = toCAF(assy)
+ais = OCP.XCAFPrs.XCAFPrs_AISObject(lab)
+
+show_object(ais)
+'''
+
+def test_render_ais(main):
+
+    qtbot, win = main
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_show_ais)
+    debugger._actions['Run'][0].triggered.emit()
+    qtbot.wait(500)
+    assert(obj_tree_comp.CQ.childCount() == 1)
+
+    # test rendering via console
+    console.execute('show(ais)')
+    qtbot.wait(500)
+    assert(obj_tree_comp.CQ.childCount() == 2)
+    
+def test_window_title(monkeypatch, main):
+
+    fname = 'test_window_title.py'
+
+    with open(fname, 'w') as f:
+        f.write(code)
+
+    qtbot, win = main
+
+    #monkeypatch QFileDialog methods
+    def filename(*args, **kwargs):
+        return fname, None
+
+    monkeypatch.setattr(QFileDialog, 'getOpenFileName',
+                        staticmethod(filename))
+
+    win.components["editor"].open()
+    assert(win.windowTitle().endswith(fname))
+
+    # handle a new file
+    win.components["editor"].new()
+    # I don't really care what the title is, as long as it's not a filename
+    assert(not win.windowTitle().endswith('.py'))

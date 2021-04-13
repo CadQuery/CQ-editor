@@ -76,9 +76,11 @@ class TracebackPane(QWidget,ComponentMixin):
             
             # handle the special case of a SyntaxError
             if t is SyntaxError: 
-                root.addChild(QTreeWidgetItem([exc.filename,
-                                               str(exc.lineno),
-                                               exc.text.strip()]))
+                root.addChild(QTreeWidgetItem(
+                  [exc.filename,
+                   str(exc.lineno),
+                   exc.text.strip() if exc.text else '']
+                ))
         else:
             self.current_exception.setText('')
 

@@ -22,7 +22,7 @@ from .preferences import PreferencesWidget
 
 class MainWindow(QMainWindow,MainMixin):
 
-    name = 'CQ GUI'
+    name = 'CQ-Editor'
     org = 'CadQuery'
 
     def __init__(self,parent=None):
@@ -258,6 +258,8 @@ class MainWindow(QMainWindow,MainMixin):
         # trigger re-render when file is modified externally or saved
         self.components['editor'].triggerRerender \
             .connect(self.components['debugger'].render)
+        self.components['editor'].sigFilenameChanged\
+            .connect(self.handle_filename_change)
 
     def prepare_console(self):
 
@@ -324,6 +326,11 @@ class MainWindow(QMainWindow,MainMixin):
     def cq_documentation(self):
 
         open_url('https://cadquery.readthedocs.io/en/latest/')
+
+    def handle_filename_change(self, fname):
+
+        new_title = fname if fname else "*"
+        self.setWindowTitle(f"{self.name}: {new_title}")
 
 if __name__ == "__main__":
 

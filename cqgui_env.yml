@@ -1,15 +1,15 @@
 name: cq-occ-conda-test-py3
 channels:
   - CadQuery
-  - defaults
   - conda-forge
+  - defaults
 dependencies:
   - pyqt=5
   - pyparsing
   - pyqtgraph
   - python=3.8
   - spyder=4
-  - ocp=7.4
+  - ocp=7.5
   - path.py
   - logbook
   - requests

@@ -347,10 +347,12 @@ class MainWindow(QMainWindow,MainMixin):
         self.setWindowTitle(f"{self.name}: {new_title}")
 
     def on_idle(self):
+        self.components['debugger'].set_rendering_state(False)
         self.set_status_message('Idle', '#000000')
 
     @pyqtSlot()
     def on_render_start(self):
+        self.components['debugger'].set_rendering_state(True)
         self.set_status_message('Rendering...', '#ff0000')
 
     @pyqtSlot(int, int, str)

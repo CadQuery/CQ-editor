@@ -29,6 +29,7 @@ class Editor(CodeEditor,ComponentMixin):
         {'name': 'Font size', 'type': 'int', 'value': 12},
         {'name': 'Autoreload', 'type': 'bool', 'value': False},
         {'name': 'Autoreload delay', 'type': 'int', 'value': 50},
+        {'name': 'Autoreload: watch imported modules', 'type': 'bool', 'value': False},
         {'name': 'Line wrap', 'type': 'bool', 'value': False},
         {'name': 'Color scheme', 'type': 'list',
          'values': ['Spyder','Monokai','Zenburn'], 'value': 'Spyder'}])
@@ -119,8 +120,11 @@ class Editor(CodeEditor,ComponentMixin):
             .setChecked(self.preferences['Autoreload'])
 
         self._file_watch_timer.setInterval(self.preferences['Autoreload delay'])
-            
+
         self.toggle_wrap_mode(self.preferences['Line wrap'])
+
+        self._clear_watched_paths()
+        self._watch_paths()
 
     def confirm_discard(self):
 
@@ -186,7 +190,7 @@ class Editor(CodeEditor,ComponentMixin):
 
     def _update_filewatcher(self):
         if self._watched_file and (self._watched_file != self.filename or not self.preferences['Autoreload']):
-            self._file_watcher.removePaths(self._file_watcher.files())
+            self._clear_watched_paths()
             self._watched_file = None
         if self.preferences['Autoreload'] and self.filename and self.filename != self._watched_file:
             self._watched_file = self._filename
@@ -202,9 +206,16 @@ class Editor(CodeEditor,ComponentMixin):
         self._update_filewatcher()
         self.sigFilenameChanged.emit(fname)
 
+    def _clear_watched_paths(self):
+        paths = self._file_watcher.files()
+        if paths:
+            self._file_watcher.removePaths(paths)
+
     def _watch_paths(self):
-        self._file_watcher.addPath(self._filename)
-        self._file_watcher.addPaths(get_imported_module_paths(self._filename))
+        if self._filename:
+            self._file_watcher.addPath(self._filename)
+            if self.preferences['Autoreload: watch imported modules']:
+                self._file_watcher.addPaths(get_imported_module_paths(self._filename))
 
     # callback triggered by QFileSystemWatcher
     def _file_changed(self):

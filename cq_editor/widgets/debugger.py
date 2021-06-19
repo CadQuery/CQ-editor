@@ -103,7 +103,9 @@ class Debugger(QObject,ComponentMixin):
     preferences = Parameter.create(name='Preferences',children=[
         {'name': 'Reload CQ', 'type': 'bool', 'value': False},
         {'name': 'Add script dir to path','type': 'bool', 'value': True},
-        {'name': 'Change working dir to script dir','type': 'bool', 'value': True}])
+        {'name': 'Change working dir to script dir','type': 'bool', 'value': True},
+        {'name': 'Cache imported modules', 'type': 'bool', 'value': False},
+    ])
 
 
     sigRendered = pyqtSignal(dict)
@@ -185,7 +187,8 @@ class Debugger(QObject,ComponentMixin):
                 stack.callback(sys.path.remove, p)
             if self.preferences['Change working dir to script dir'] and p.exists():
                 stack.enter_context(p)
-            stack.enter_context(module_environment())
+            if not self.preferences['Cache imported modules']:
+                stack.enter_context(module_environment())
 
             exec(code, locals_dict, globals_dict)     
 

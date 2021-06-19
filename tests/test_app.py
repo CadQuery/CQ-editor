@@ -14,7 +14,7 @@ from PyQt5.QtCore import Qt, QSettings
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from cq_editor.__main__ import MainWindow
-from cq_editor.widgets.editor import Editor
+from cq_editor.widgets.editor import Editor, get_imported_module_paths
 from cq_editor.cq_utils import export, get_occ_color
 
 code = \
@@ -1253,3 +1253,14 @@ def test_window_title(monkeypatch, main):
     win.components["editor"].new()
     # I don't really care what the title is, as long as it's not a filename
     assert(not win.windowTitle().endswith('.py'))
+
+
+def test_module_discovery(tmp_path):
+    with open(tmp_path.joinpath('main.py'), 'w') as f:
+        f.write('import b')
+
+    assert get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == []
+
+    tmp_path.joinpath('b.py').touch()
+
+    assert get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == [str(tmp_path.joinpath('b.py'))]

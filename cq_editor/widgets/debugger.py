@@ -1,25 +1,21 @@
-import sys, imp
+import sys
+from contextlib import ExitStack, contextmanager
 from enum import Enum, auto
-from imp import reload
-from types import SimpleNamespace, FrameType
+from types import SimpleNamespace, FrameType, ModuleType
 from typing import List
 
-from PyQt5.QtWidgets import (QWidget, QTreeWidget, QTreeWidgetItem, QAction,
-                             QLabel, QTableView)
-from PyQt5.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QEventLoop, QAbstractTableModel
-from PyQt5 import QtCore
-
-from pyqtgraph.parametertree import Parameter, ParameterTree
-from logbook import info
-from spyder.utils.icon_manager import icon
-from path import Path
-from contextlib import ExitStack
-
 import cadquery as cq
+from PyQt5 import QtCore
+from PyQt5.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QEventLoop, QAbstractTableModel
+from PyQt5.QtWidgets import (QAction,
+                             QTableView)
+from logbook import info
+from path import Path
+from pyqtgraph.parametertree import Parameter
+from spyder.utils.icon_manager import icon
 
-from ..mixins import ComponentMixin
-from ..utils import layout
 from ..cq_utils import find_cq_objects, reload_cq
+from ..mixins import ComponentMixin
 
 DUMMY_FILE = '<string>'
 
@@ -168,16 +164,15 @@ class Debugger(QObject,ComponentMixin):
 
         return self.parent().components['editor'].debugger.get_breakpoints()
 
-    def compile_code(self,cq_script):
+    def compile_code(self, cq_script):
 
         try:
-            module = imp.new_module('temp')
-            cq_code = compile(cq_script,'<string>','exec')
-            return cq_code,module
+            module = ModuleType('temp')
+            cq_code = compile(cq_script, '<string>', 'exec')
+            return cq_code, module
         except Exception:
-            self.sigTraceback.emit(sys.exc_info(),
-                                   cq_script)
-            return None,None
+            self.sigTraceback.emit(sys.exc_info(), cq_script)
+            return None, None
 
     def _exec(self, code, locals_dict, globals_dict):
 
@@ -190,6 +185,7 @@ class Debugger(QObject,ComponentMixin):
                 stack.callback(sys.path.remove, p)
             if self.preferences['Change working dir to script dir'] and p.exists():
                 stack.enter_context(p)
+            stack.enter_context(module_environment())
 
             exec(code, locals_dict, globals_dict)     
 
@@ -351,3 +347,13 @@ class Debugger(QObject,ComponentMixin):
                 self.sigFrameChanged.emit(frame)
                 self.state = DbgState.STEP
                 self._frames.append(frame)
+
+
+@contextmanager
+def module_environment():
+    """ unloads any modules loaded while the context manager is active """
+    loaded_modules = set(sys.modules.keys())
+    yield
+    new_modules = set(sys.modules.keys()) - loaded_modules
+    for module_name in new_modules:
+        del sys.modules[module_name]

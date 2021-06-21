@@ -104,7 +104,7 @@ class Debugger(QObject,ComponentMixin):
         {'name': 'Reload CQ', 'type': 'bool', 'value': False},
         {'name': 'Add script dir to path','type': 'bool', 'value': True},
         {'name': 'Change working dir to script dir','type': 'bool', 'value': True},
-        {'name': 'Cache imported modules', 'type': 'bool', 'value': False},
+        {'name': 'Reload imported modules', 'type': 'bool', 'value': True},
     ])
 
 
@@ -187,8 +187,8 @@ class Debugger(QObject,ComponentMixin):
                 stack.callback(sys.path.remove, p)
             if self.preferences['Change working dir to script dir'] and p.exists():
                 stack.enter_context(p)
-            if not self.preferences['Cache imported modules']:
-                stack.enter_context(module_environment())
+            if self.preferences['Reload imported modules']:
+                stack.enter_context(module_manager())
 
             exec(code, locals_dict, globals_dict)     
 
@@ -353,7 +353,7 @@ class Debugger(QObject,ComponentMixin):
 
 
 @contextmanager
-def module_environment():
+def module_manager():
     """ unloads any modules loaded while the context manager is active """
     loaded_modules = set(sys.modules.keys())
     yield

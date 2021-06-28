@@ -24,7 +24,7 @@ a = Analysis(['run.py'],
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade')] +
                     [(p, 'parso/python') for p in parso_grammar],
-             hiddenimports=['ipykernel.datapub'],
+             hiddenimports=['ipykernel.datapub', 'vtkmodules', 'vtkmodules.all'],
              hookspath=[],
              runtime_hooks=['pyinstaller/pyi_rth_occ.py',
                             'pyinstaller/pyi_rth_fontconfig.py'],

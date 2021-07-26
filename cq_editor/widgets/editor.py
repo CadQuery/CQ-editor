@@ -1,3 +1,6 @@
+import os
+from modulefinder import ModuleFinder
+
 from spyder.plugins.editor.widgets.codeeditor import CodeEditor
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer
 from PyQt5.QtWidgets import QAction, QFileDialog
@@ -26,6 +29,7 @@ class Editor(CodeEditor,ComponentMixin):
         {'name': 'Font size', 'type': 'int', 'value': 12},
         {'name': 'Autoreload', 'type': 'bool', 'value': False},
         {'name': 'Autoreload delay', 'type': 'int', 'value': 50},
+        {'name': 'Autoreload: watch imported modules', 'type': 'bool', 'value': False},
         {'name': 'Line wrap', 'type': 'bool', 'value': False},
         {'name': 'Color scheme', 'type': 'list',
          'values': ['Spyder','Monokai','Zenburn'], 'value': 'Spyder'}])
@@ -116,8 +120,11 @@ class Editor(CodeEditor,ComponentMixin):
             .setChecked(self.preferences['Autoreload'])
 
         self._file_watch_timer.setInterval(self.preferences['Autoreload delay'])
-            
+
         self.toggle_wrap_mode(self.preferences['Line wrap'])
+
+        self._clear_watched_paths()
+        self._watch_paths()
 
     def confirm_discard(self):
 
@@ -156,14 +163,14 @@ class Editor(CodeEditor,ComponentMixin):
         if self._filename != '':
 
             if self.preferences['Autoreload']:
-                self._file_watcher.removePath(self.filename)
+                self._file_watcher.blockSignals(True)
                 self._file_watch_timer.stop()
 
-            with open(self._filename,'w') as f:
+            with open(self._filename, 'w') as f:
                 f.write(self.toPlainText())
 
             if self.preferences['Autoreload']:
-                self._file_watcher.addPath(self.filename)
+                self._file_watcher.blockSignals(False)
                 self.triggerRerender.emit(True)
 
             self.reset_modified()
@@ -183,15 +190,15 @@ class Editor(CodeEditor,ComponentMixin):
 
     def _update_filewatcher(self):
         if self._watched_file and (self._watched_file != self.filename or not self.preferences['Autoreload']):
-            self._file_watcher.removePath(self._watched_file)
+            self._clear_watched_paths()
             self._watched_file = None
         if self.preferences['Autoreload'] and self.filename and self.filename != self._watched_file:
             self._watched_file = self._filename
-            self._file_watcher.addPath(self.filename)
+            self._watch_paths()
 
     @property
     def filename(self):
-      return self._filename
+        return self._filename
 
     @filename.setter
     def filename(self, fname):
@@ -199,11 +206,21 @@ class Editor(CodeEditor,ComponentMixin):
         self._update_filewatcher()
         self.sigFilenameChanged.emit(fname)
 
+    def _clear_watched_paths(self):
+        paths = self._file_watcher.files()
+        if paths:
+            self._file_watcher.removePaths(paths)
+
+    def _watch_paths(self):
+        if self._filename:
+            self._file_watcher.addPath(self._filename)
+            if self.preferences['Autoreload: watch imported modules']:
+                self._file_watcher.addPaths(get_imported_module_paths(self._filename))
+
     # callback triggered by QFileSystemWatcher
     def _file_changed(self):
-        # neovim writes a file by removing it first
-        # this causes QFileSystemWatcher to forget the file
-        self._file_watcher.addPath(self._filename)
+        # neovim writes a file by removing it first so must re-add each time
+        self._watch_paths()
         self.set_text_from_file(self._filename)
         self.triggerRerender.emit(True)
 
@@ -235,6 +252,19 @@ class Editor(CodeEditor,ComponentMixin):
                 self.load_from_file(filename)
             except IOError:
                 self._logger.warning(f'could not open {filename}')
+
+
+def get_imported_module_paths(module_path):
+    finder = ModuleFinder([os.path.dirname(module_path)])
+    finder.run_script(module_path)
+    imported_modules = []
+    for module_name, module in finder.modules.items():
+        if module_name != '__main__':
+            path = getattr(module, '__file__', None)
+            if path is not None and os.path.isfile(path):
+                imported_modules.append(path)
+    return imported_modules
+
 
 if __name__ == "__main__":
 

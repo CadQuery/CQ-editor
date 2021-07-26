@@ -14,7 +14,7 @@ from PyQt5.QtCore import Qt, QSettings
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from cq_editor.__main__ import MainWindow
-from cq_editor.widgets.editor import Editor
+from cq_editor.widgets.editor import Editor, get_imported_module_paths
 from cq_editor.cq_utils import export, get_occ_color
 
 code = \
@@ -73,12 +73,19 @@ result1 = cq.Workplane("XY" ).box(3, 3, 0.5)
 result2 = cq.Workplane("XY" ).box(3, 3, 0.5).translate((0,15,0))
 '''
 
-def _modify_file(code):
-        with open('test.py', 'w', 1) as f:
-                    f.write(code)
+code_nested_top = """import test_nested_bottom
+"""
 
-def modify_file(code):
-    p = Process(target=_modify_file,args=(code,))
+code_nested_bottom = """a=1
+"""
+
+def _modify_file(code, path="test.py"):
+    with open(path, "w", 1) as f:
+        f.write(code)
+
+
+def modify_file(code, path="test.py"):
+    p = Process(target=_modify_file, args=(code,path))
     p.start()
     p.join()
 
@@ -645,6 +652,30 @@ def test_editor_autoreload(monkeypatch,editor):
     # Saving a file with autoreload enabled should trigger a rerender.
     with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
         editor.save()
+        
+def test_autoreload_nested(editor):
+    
+    qtbot, editor = editor
+
+    TIMEOUT = 500
+
+    editor.preferences['Autoreload: watch imported modules'] = True
+
+    with open('test_nested_top.py','w') as f:
+        f.write(code_nested_top)
+
+    with open('test_nested_bottom.py','w') as f:
+        f.write("")
+
+    assert(editor.get_text_with_eol() == '')
+
+    editor.load_from_file('test_nested_top.py')
+    assert(len(editor.get_text_with_eol()) > 0)
+
+    # wait for reload.
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+        # modify file - NB: separate process is needed to avoid Widows quirks
+        modify_file(code_nested_bottom, 'test_nested_bottom.py')
 
 def test_console(main):
 
@@ -1253,3 +1284,14 @@ def test_window_title(monkeypatch, main):
     win.components["editor"].new()
     # I don't really care what the title is, as long as it's not a filename
     assert(not win.windowTitle().endswith('.py'))
+
+
+def test_module_discovery(tmp_path):
+    with open(tmp_path.joinpath('main.py'), 'w') as f:
+        f.write('import b')
+
+    assert get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == []
+
+    tmp_path.joinpath('b.py').touch()
+
+    assert get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == [str(tmp_path.joinpath('b.py'))]

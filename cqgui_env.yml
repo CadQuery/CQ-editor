@@ -17,6 +17,7 @@ dependencies:
   - typing_extensions
   - scipy
   - nptyping
+  - nlopt
   - pip
   - pip:
     - "https://github.com/CadQuery/cadquery/archive/master.zip"

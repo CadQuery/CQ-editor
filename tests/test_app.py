@@ -73,7 +73,7 @@ result1 = cq.Workplane("XY" ).box(3, 3, 0.5)
 result2 = cq.Workplane("XY" ).box(3, 3, 0.5).translate((0,15,0))
 '''
 
-code_nested_top = """import bottom
+code_nested_top = """import test_nested_bottom
 """
 
 code_nested_bottom = """a=1

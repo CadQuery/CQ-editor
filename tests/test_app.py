@@ -659,6 +659,7 @@ def test_autoreload_nested(editor):
 
     TIMEOUT = 500
 
+    editor.autoreload(True)
     editor.preferences['Autoreload: watch imported modules'] = True
 
     with open('test_nested_top.py','w') as f:
@@ -674,7 +675,7 @@ def test_autoreload_nested(editor):
 
     # wait for reload.
     with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
-        # modify file - NB: separate process is needed to avoid Widows quirks
+        # modify file - NB: separate process is needed to avoid Windows quirks
         modify_file(code_nested_bottom, 'test_nested_bottom.py')
 
 def test_console(main):

@@ -2,6 +2,7 @@
 
 import sys, site, os
 from path import Path
+from PyInstaller.utils.hooks import collect_all, collect_submodules
 
 block_cipher = None
 
@@ -18,16 +19,19 @@ elif sys.platform == 'win32':
     occt_dir = os.path.join(Path(sys.prefix), 'Library', 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cp38-win_amd64.pyd'), '.')
 
+datas1, binaries1, hiddenimports1 = collect_all('debugpy')
+hiddenimports2 = collect_submodules('xmlrpc')
+
 a = Analysis(['run.py'],
              pathex=['.'],
-             binaries=[ocp_path],
+             binaries=[ocp_path] + binaries1,
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade')] +
-                    [(p, 'parso/python') for p in parso_grammar],
+                    [(p, 'parso/python') for p in parso_grammar] + datas1,
              hiddenimports=['ipykernel.datapub', 'vtkmodules', 'vtkmodules.all',
                             'pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5',
                             'pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5',
-                            'pyqtgraph.imageview.ImageViewTemplate_pyqt5'],
+                            'pyqtgraph.imageview.ImageViewTemplate_pyqt5', 'debugpy', 'xmlrpc'] + hiddenimports1 + hiddenimports2,
              hookspath=[],
              runtime_hooks=['pyinstaller/pyi_rth_occ.py',
                             'pyinstaller/pyi_rth_fontconfig.py'],

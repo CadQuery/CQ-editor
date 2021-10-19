@@ -120,7 +120,7 @@ Any object can be exported to either STEP or STL format. The steps for doing so 
 1. Highlight the object to be exported in the _Objects_ panel.
 2. Click either `Export as STL` or `Export as STEP` from the `Tools` menu, depending on which file format you want to export. Both of these options will be disabled if an object is not selected in the _Objects_ panel.
 
-Clicking either _Export_ item will present a file dialog that allows the file name ad location of the export file to be set.
+Clicking either _Export_ item will present a file dialog that allows the file name and location of the export file to be set.
 
 ### Displaying All Wires for Debugging
 

@@ -249,8 +249,16 @@ def test_export(main,mocker):
     obj_tree = win.components['object_tree'].tree
     obj_tree_comp = win.components['object_tree']
     qtbot.mouseClick(obj_tree, Qt.LeftButton)
-    qtbot.keyClick(obj_tree, Qt.Key_Down)
-    qtbot.keyClick(obj_tree, Qt.Key_Down)
+    if len(obj_tree_comp.tree.selectedItems()) == 0:
+        qtbot.keyClick(obj_tree, Qt.Key_Down)
+    item = obj_tree_comp.tree.selectedItems()[0]
+    if item.text(0) == "CQ models":
+        qtbot.keyClick(obj_tree, Qt.Key_Down)
+        item = obj_tree_comp.tree.selectedItems()[0]
+    elif item.text(0) == "Helpers":
+        qtbot.keyClick(obj_tree, Qt.Key_Up)
+        item = obj_tree_comp.tree.selectedItems()[0]
+    assert(item.text(0) == "result")
 
     #export STL
     mocker.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.stl',''))

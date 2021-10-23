@@ -256,13 +256,17 @@ class Editor(CodeEditor,ComponentMixin):
 
 def get_imported_module_paths(module_path):
     finder = ModuleFinder([os.path.dirname(module_path)])
-    finder.run_script(module_path)
     imported_modules = []
-    for module_name, module in finder.modules.items():
-        if module_name != '__main__':
-            path = getattr(module, '__file__', None)
-            if path is not None and os.path.isfile(path):
-                imported_modules.append(path)
+    try:
+        finder.run_script(module_path)
+    except SyntaxError as err:
+        print(err)
+    else:
+        for module_name, module in finder.modules.items():
+            if module_name != '__main__':
+                path = getattr(module, '__file__', None)
+                if path is not None and os.path.isfile(path):
+                    imported_modules.append(path)
     return imported_modules
 
 

@@ -1286,7 +1286,6 @@ def test_window_title(monkeypatch, main):
     # I don't really care what the title is, as long as it's not a filename
     assert(not win.windowTitle().endswith('.py'))
 
-
 def test_module_discovery(tmp_path):
     with open(tmp_path.joinpath('main.py'), 'w') as f:
         f.write('import b')
@@ -1296,3 +1295,20 @@ def test_module_discovery(tmp_path):
     tmp_path.joinpath('b.py').touch()
 
     assert get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == [str(tmp_path.joinpath('b.py'))]
+
+def test_launch_syntax_error():
+
+    # verify app launches when input file is bad
+    win = MainWindow()
+
+    with open("syntax_error.py","w") as f:
+        f.write("print(")
+    editor = win.components['editor']
+    editor.autoreload(True)
+    editor.preferences['Autoreload: watch imported modules'] = True
+    editor.load_from_file("syntax_error.py")
+
+    win.show()
+    assert(win.isVisible())
+
+    os.remove('syntax_error.py')

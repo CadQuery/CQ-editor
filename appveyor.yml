@@ -4,7 +4,7 @@ image:
 #    - macOS-mojave
 #    - macOS
 #    - Ubuntu
-#    - Ubuntu2004
+    - Ubuntu2004
     - Ubuntu1804
     - Visual Studio 2015
 

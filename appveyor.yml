@@ -3,9 +3,10 @@ shallow_clone: false
 image:
 #    - macOS-mojave
 #    - macOS
-    - Ubuntu
+#    - Ubuntu
+    - Ubuntu2004
     - Ubuntu1804
-    - Visual Studio 2015    
+    - Visual Studio 2015
 
 environment:
     matrix:
@@ -32,7 +33,7 @@ install:
     - cmd: activate cqgui
     - conda list
     - pip install pytest pluggy pytest-qt
-    - pip install pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay==0.2.1
+    - pip install pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay
 
 build: false
 

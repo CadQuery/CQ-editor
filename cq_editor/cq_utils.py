@@ -1,7 +1,7 @@
 import cadquery as cq
 from cadquery.occ_impl.assembly import toCAF
 
-from typing import List, Union, Tuple
+from typing import List, Union
 from imp import reload
 from types import SimpleNamespace
 
@@ -17,7 +17,7 @@ def find_cq_objects(results : dict):
 
     return {k:SimpleNamespace(shape=v,options={}) for k,v in results.items() if isinstance(v,cq.Workplane)}
 
-def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape]]):
+def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Sketch]):
 
     vals = []
 
@@ -33,6 +33,11 @@ def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.
         vals.append(cq.Shape.cast(obj))        
     elif isinstance(obj,list) and isinstance(obj[0],TopoDS_Shape):
         vals.extend(cq.Shape.cast(o) for o in obj)
+    elif isinstance(obj, cq.Sketch):
+        if obj._faces:
+            vals.append(obj._faces)
+        else:
+            vals.extend(obj._edges)
     else:
         raise ValueError(f'Invalid type {type(obj)}')
 
@@ -110,12 +115,17 @@ def get_occ_color(ais : AIS_ColoredShape) -> QColor:
 def reload_cq():
     
     # NB: order of reloads is important
+    reload(cq.types)
     reload(cq.occ_impl.geom)
     reload(cq.occ_impl.shapes)
+    reload(cq.occ_impl.importers.dxf)
     reload(cq.occ_impl.importers)
     reload(cq.occ_impl.solver)
     reload(cq.occ_impl.assembly)
+    reload(cq.occ_impl.sketch_solver)
+    reload(cq.hull)
     reload(cq.selectors)
+    reload(cq.sketch)
     reload(cq.occ_impl.exporters.svg)
     reload(cq.cq)
     reload(cq.occ_impl.exporters.utils)

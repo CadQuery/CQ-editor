@@ -1,9 +1,6 @@
 shallow_clone: false
 
 image:
-#    - macOS-mojave
-#    - macOS
-#    - Ubuntu
     - Ubuntu2004
     - Ubuntu1804
     - Visual Studio 2015
@@ -17,21 +14,20 @@ environment:
 
 install:
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then sudo apt update; sudo apt -y --force-yes install libglu1-mesa xvfb libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev; fi
-    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then curl -o miniconda.sh curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh; fi
-    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then curl -o miniconda.sh curl -o miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-4.7.10-MacOSX-x86_64.sh; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then curl -o miniconda.sh curl -o miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then curl -o miniconda.sh curl -o miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-MacOSX-x86_64.sh; fi
     - sh: bash miniconda.sh -b -p $HOME/miniconda
     - sh: source $HOME/miniconda/bin/activate
-    - cmd: appveyor DownloadFile https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe
-    - cmd: Miniconda3-latest-Windows-x86_64.exe /S /InstallationType=JustMe /D=%MINICONDA_DIRNAME%
+    - cmd: curl -o miniconda.exe curl https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Windows-x86_64.exe
+    - cmd: miniconda.exe /S /InstallationType=JustMe /D=%MINICONDA_DIRNAME%
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
     - cmd: activate
-    - conda config --set always_yes yes
-    - conda install -c conda-forge python=3.7
-    - conda info
-    - conda env create --name cqgui -f cqgui_env.yml
+    - mamba config --set always_yes yes
+    - mamba info
+    - mamba env create --name cqgui -f cqgui_env.yml
     - sh: source activate cqgui
     - cmd: activate cqgui
-    - conda list
+    - mamba list
     - pip install pytest pluggy pytest-qt
     - pip install pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay
 

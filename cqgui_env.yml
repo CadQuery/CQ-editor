@@ -9,14 +9,7 @@ dependencies:
   - pyqtgraph
   - python=3.8
   - spyder=4
-  - ocp=7.5
   - path.py
   - logbook
   - requests
-  - ezdxf
-  - typing_extensions
-  - scipy
-  - nptyping
-  - pip
-  - pip:
-    - "https://github.com/CadQuery/cadquery/archive/master.zip"
+  - cadquery=master

@@ -50,6 +50,10 @@ if sys.platform == 'win32':
         (getfullnameof('libssl-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
         (getfullnameof('libcrypto-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
     ]
+elif sys.platform == 'darwin':
+    a.datas += [
+        ('/Users/runner/miniconda3/envs/test/lib/python3.8/site-packages/importlib_resources/version.txt', 'DATA'),
+    ]
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)

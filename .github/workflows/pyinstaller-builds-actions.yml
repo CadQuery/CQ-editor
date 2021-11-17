@@ -24,7 +24,7 @@ jobs:
       run: |
         conda info
         conda install -c cadquery -c conda-forge cq-editor=master cadquery=master ocp=7.5.2 python=3.8
-        conda install -c conda-forge pyinstaller
+        conda install -c conda-forge/label/cf202003 pyinstaller
         pip install path
     - name: Run build
       shell: bash --login {0}

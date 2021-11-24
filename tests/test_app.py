@@ -1330,3 +1330,59 @@ def test_module_discovery(tmp_path):
     tmp_path.joinpath('b.py').touch()
 
     assert get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == [str(tmp_path.joinpath('b.py'))]
+
+code_import_module_makebox = \
+"""
+from module_makebox import *
+z = 1
+r = makebox(z)
+"""
+
+code_module_makebox = \
+"""
+import cadquery as cq
+def makebox(z):
+    zval = z + 1
+    return cq.Workplane().box(1, 1, zval)
+"""
+
+def test_reload_import_handle_error(tmp_path, main):
+
+    TIMEOUT = 500
+    qtbot, win = main
+    editor = win.components["editor"]
+    debugger = win.components["debugger"]
+    traceback_view = win.components["traceback_viewer"]
+
+    editor.autoreload(True)
+    editor.preferences["Autoreload: watch imported modules"] = True
+
+    # save the module and top level script files
+    module_file = Path(tmp_path).joinpath("module_makebox.py")
+    script = Path(tmp_path).joinpath("main.py")
+    modify_file(code_module_makebox, module_file)
+    modify_file(code_import_module_makebox, script)
+
+    # run, verify that no exception was generated
+    editor.load_from_file(script)
+    debugger._actions["Run"][0].triggered.emit()
+    assert(traceback_view.current_exception.text()  == "")
+
+    # save the module with an error
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+        lines = code_module_makebox.splitlines()
+        lines.remove("    zval = z + 1") # introduce NameError
+        lines = "\n".join(lines)
+        modify_file(lines, module_file)
+
+    # verify NameError is generated
+    debugger._actions["Run"][0].triggered.emit()
+    assert("NameError" in traceback_view.current_exception.text())
+
+    # revert the error, verify rerender is triggered
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+        modify_file(code_module_makebox, module_file)
+
+    # verify that no exception was generated
+    debugger._actions["Run"][0].triggered.emit()
+    assert(traceback_view.current_exception.text()  == "")

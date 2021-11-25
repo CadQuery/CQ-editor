@@ -1262,6 +1262,40 @@ def test_render_ais(main):
     qtbot.wait(500)
     assert(obj_tree_comp.CQ.childCount() == 2)
     
+code_show_sketch = \
+'''import cadquery as cq
+
+s1 = cq.Sketch().rect(1,1)
+s2 = cq.Sketch().segment((0,0), (0,3.),"s1")
+
+show_object(s1)
+show_object(s2)
+'''
+
+def test_render_sketch(main):
+
+    qtbot, win = main
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_show_sketch)
+    debugger._actions['Run'][0].triggered.emit()
+    qtbot.wait(500)
+    assert(obj_tree_comp.CQ.childCount() == 2)
+
+    # test rendering via console
+    console.execute('show(s1); show(s2)')
+    qtbot.wait(500)
+    assert(obj_tree_comp.CQ.childCount() == 4)
+
 def test_window_title(monkeypatch, main):
 
     fname = 'test_window_title.py'
@@ -1298,19 +1332,17 @@ def test_module_discovery(tmp_path, editor):
 
     assert editor.get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == [str(tmp_path.joinpath('b.py'))]
 
-def test_launch_syntax_error():
+def test_launch_syntax_error(tmp_path):
 
     # verify app launches when input file is bad
     win = MainWindow()
 
-    with open("syntax_error.py","w") as f:
-        f.write("print(")
-    editor = win.components['editor']
+    inputfile = Path(tmp_path).joinpath("syntax_error.py")
+    modify_file("print(", inputfile)
+    editor = win.components["editor"]
     editor.autoreload(True)
-    editor.preferences['Autoreload: watch imported modules'] = True
-    editor.load_from_file("syntax_error.py")
+    editor.preferences["Autoreload: watch imported modules"] = True
+    editor.load_from_file(inputfile)
 
     win.show()
     assert(win.isVisible())
-
-    os.remove('syntax_error.py')

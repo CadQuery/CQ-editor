@@ -14,7 +14,7 @@ from PyQt5.QtCore import Qt, QSettings
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 
 from cq_editor.__main__ import MainWindow
-from cq_editor.widgets.editor import Editor, get_imported_module_paths
+from cq_editor.widgets.editor import Editor
 from cq_editor.cq_utils import export, get_occ_color
 
 code = \
@@ -1320,16 +1320,32 @@ def test_window_title(monkeypatch, main):
     # I don't really care what the title is, as long as it's not a filename
     assert(not win.windowTitle().endswith('.py'))
 
+def test_module_discovery(tmp_path, editor):
 
-def test_module_discovery(tmp_path):
+    qtbot, editor = editor
     with open(tmp_path.joinpath('main.py'), 'w') as f:
         f.write('import b')
 
-    assert get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == []
+    assert editor.get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == []
 
     tmp_path.joinpath('b.py').touch()
 
-    assert get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == [str(tmp_path.joinpath('b.py'))]
+    assert editor.get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == [str(tmp_path.joinpath('b.py'))]
+
+def test_launch_syntax_error(tmp_path):
+
+    # verify app launches when input file is bad
+    win = MainWindow()
+
+    inputfile = Path(tmp_path).joinpath("syntax_error.py")
+    modify_file("print(", inputfile)
+    editor = win.components["editor"]
+    editor.autoreload(True)
+    editor.preferences["Autoreload: watch imported modules"] = True
+    editor.load_from_file(inputfile)
+
+    win.show()
+    assert(win.isVisible())
 
 code_import_module_makebox = \
 """
@@ -1386,3 +1402,4 @@ def test_reload_import_handle_error(tmp_path, main):
     # verify that no exception was generated
     debugger._actions["Run"][0].triggered.emit()
     assert(traceback_view.current_exception.text()  == "")
+ 

@@ -215,7 +215,9 @@ class Editor(CodeEditor,ComponentMixin):
         if self._filename:
             self._file_watcher.addPath(self._filename)
             if self.preferences['Autoreload: watch imported modules']:
-                self._file_watcher.addPaths(get_imported_module_paths(self._filename))
+                module_paths =  self.get_imported_module_paths(self._filename)
+                if module_paths:
+                    self._file_watcher.addPaths(module_paths)
 
     # callback triggered by QFileSystemWatcher
     def _file_changed(self):
@@ -254,16 +256,23 @@ class Editor(CodeEditor,ComponentMixin):
                 self._logger.warning(f'could not open {filename}')
 
 
-def get_imported_module_paths(module_path):
-    finder = ModuleFinder([os.path.dirname(module_path)])
-    finder.run_script(module_path)
-    imported_modules = []
-    for module_name, module in finder.modules.items():
-        if module_name != '__main__':
-            path = getattr(module, '__file__', None)
-            if path is not None and os.path.isfile(path):
-                imported_modules.append(path)
-    return imported_modules
+    def get_imported_module_paths(self, module_path):
+
+        finder = ModuleFinder([os.path.dirname(module_path)])
+        imported_modules = []
+
+        try:
+            finder.run_script(module_path)
+        except SyntaxError as err:
+            self._logger.warning(f'Syntax error in {module_path}: {err}')
+        else:
+            for module_name, module in finder.modules.items():
+                if module_name != '__main__':
+                    path = getattr(module, '__file__', None)
+                    if path is not None and os.path.isfile(path):
+                        imported_modules.append(path)
+
+        return imported_modules
 
 
 if __name__ == "__main__":

@@ -108,6 +108,7 @@ class Debugger(QObject,ComponentMixin):
     ])
 
 
+    sigRenderStarted = pyqtSignal()
     sigRendered = pyqtSignal(dict)
     sigLocals = pyqtSignal(dict)
     sigTraceback = pyqtSignal(object,str)
@@ -220,6 +221,7 @@ class Debugger(QObject,ComponentMixin):
 
     @pyqtSlot(bool)
     def render(self):
+        self.sigRenderStarted.emit()
 
         if self.preferences['Reload CQ']:
             reload_cq()
@@ -248,7 +250,12 @@ class Debugger(QObject,ComponentMixin):
             exc_info = sys.exc_info()
             sys.last_traceback = exc_info[-1]
             self.sigTraceback.emit(exc_info, cq_script)
-    
+
+    def set_rendering_state(self, rendering):
+        render_action = self._actions['Run'][0]
+        render_action.setCheckable(rendering)
+        render_action.setChecked(rendering)
+
     @property
     def breakpoints(self):
         return [ el[0] for el in self.get_breakpoints()]

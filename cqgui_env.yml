@@ -4,6 +4,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - importlib-resources=5.3.0
   - pyqt=5
   - pyparsing
   - pyqtgraph

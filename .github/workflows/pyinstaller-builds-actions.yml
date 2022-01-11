@@ -25,7 +25,7 @@ jobs:
         conda info
         conda install -c cadquery -c conda-forge cq-editor=master cadquery=master ocp=7.5.2 python=3.8
         conda install -c conda-forge pyinstaller
-        conda uninstall --force importlib_resources
+        conda uninstall --force -y importlib_resources
         pip install path
     - name: Run build
       shell: bash --login {0}

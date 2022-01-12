@@ -33,6 +33,7 @@ jobs:
         conda info
         pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
         cp /home/runner/work/CQ-editor/CQ-editor/pyinstaller/CQ-editor.sh /home/runner/work/CQ-editor/CQ-editor/dist/
+        rm /home/runner/work/CQ-editor/CQ-editor/dist/CQ-editor/libstdc++.so.6
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-Linux-x86_64

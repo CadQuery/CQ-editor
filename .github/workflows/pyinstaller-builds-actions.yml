@@ -53,6 +53,7 @@ jobs:
         conda info
         conda install -c cadquery -c conda-forge cq-editor=master cadquery=master ocp=7.5.2 python=3.8
         conda install -c conda-forge pyinstaller
+        conda uninstall --force -y importlib_resources
         pip install path
         pip install PyQt5==5.15.1
     - name: Run build

@@ -66,6 +66,7 @@ exe = EXE(pyz,
           console=True,
           icon='icons/cadquery_logo_dark.ico')
 
+exclude = ()
 #exclude = ('libGL','libEGL','libbsd')
 a.binaries = TOC([x for x in a.binaries if not x[0].startswith(exclude)])
 

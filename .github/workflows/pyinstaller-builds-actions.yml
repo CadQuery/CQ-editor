@@ -23,7 +23,7 @@ jobs:
       shell: bash --login {0}
       run: |
         conda info
-        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master ocp=7.5.3 python=3.8
+        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.8
         conda install -c conda-forge pyinstaller
         conda uninstall --force -y importlib_resources
         pip install path
@@ -52,7 +52,7 @@ jobs:
       shell: bash --login {0}
       run: |
         conda info
-        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master ocp=7.5.3 python=3.8
+        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.8
         conda install -c conda-forge pyinstaller
         conda uninstall --force -y importlib_resources
         pip install path
@@ -80,7 +80,7 @@ jobs:
     - name: Install CadQuery and pyinstaller
       shell: powershell
       run: |
-        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master ocp=7.5.3 python=3.8
+        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.8
         conda install -c conda-forge pyinstaller
         pip install pipwin
         pipwin install numpy

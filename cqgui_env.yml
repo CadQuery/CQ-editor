@@ -2,7 +2,6 @@ name: cq-occ-conda-test-py3
 channels:
   - CadQuery
   - conda-forge
-  - defaults
 dependencies:
   - pyqt=5
   - pyparsing

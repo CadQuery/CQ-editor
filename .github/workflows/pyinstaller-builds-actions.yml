@@ -22,6 +22,7 @@ jobs:
     - name: Install CadQuery, CQ-editor and pyinstaller
       shell: bash --login {0}
       run: |
+        apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
         conda info
         conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.8
         conda install -c conda-forge pyinstaller

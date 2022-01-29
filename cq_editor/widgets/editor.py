@@ -265,6 +265,10 @@ class Editor(CodeEditor,ComponentMixin):
             finder.run_script(module_path)
         except SyntaxError as err:
             self._logger.warning(f'Syntax error in {module_path}: {err}')
+        except Exception as err:
+            self._logger.warning(
+                f'Cannot determine imported modules in {module_path}: {type(err).__name__} {err}'
+            )
         else:
             for module_name, module in finder.modules.items():
                 if module_name != '__main__':

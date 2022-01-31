@@ -212,7 +212,7 @@ class Editor(CodeEditor,ComponentMixin):
             self._file_watcher.removePaths(paths)
 
     def _watch_paths(self):
-        if self._filename:
+        if Path(self._filename).exists():
             self._file_watcher.addPath(self._filename)
             if self.preferences['Autoreload: watch imported modules']:
                 module_paths =  self.get_imported_module_paths(self._filename)

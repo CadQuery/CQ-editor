@@ -21,7 +21,8 @@ def main():
     args = parser.parse_args(app.arguments()[1:])
     print(args)
     if args.filename:
-        win.components['editor'].load_from_file(args.filename)
+        win.components['editor']._filename = args.filename
+    win.restoreComponentState()
 
     win.show()
     sys.exit(app.exec_())

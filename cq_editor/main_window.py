@@ -53,7 +53,6 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.restorePreferences()
         self.restoreWindow()
-        self.restoreComponentState()
 
     def closeEvent(self,event):
 

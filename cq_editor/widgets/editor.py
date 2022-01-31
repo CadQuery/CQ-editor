@@ -245,16 +245,18 @@ class Editor(CodeEditor,ComponentMixin):
         if self.filename != '':
             store.setValue(self.name+'/state',self.filename)
 
-    def restoreComponentState(self,store):
+    def restoreComponentState(self, store):
 
-        filename = store.value(self.name+'/state',self.filename)
+        if self._filename == "":
+            filename = store.value(self.name + "/state", "")
+        else:
+            filename = self._filename
 
-        if filename and filename != '':
+        if filename != "":
             try:
                 self.load_from_file(filename)
             except IOError:
-                self._logger.warning(f'could not open {filename}')
-
+                self._logger.warning(f"could not open {filename}")
 
     def get_imported_module_paths(self, module_path):
 

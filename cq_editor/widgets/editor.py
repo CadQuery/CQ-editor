@@ -249,7 +249,7 @@ class Editor(CodeEditor,ComponentMixin):
 
         filename = store.value(self.name+'/state',self.filename)
 
-        if filename and filename != '':
+        if filename and filename != '' and self._filename != '':
             try:
                 self.load_from_file(filename)
             except IOError:

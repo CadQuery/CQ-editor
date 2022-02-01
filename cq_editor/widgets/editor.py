@@ -212,7 +212,7 @@ class Editor(CodeEditor,ComponentMixin):
             self._file_watcher.removePaths(paths)
 
     def _watch_paths(self):
-        if self._filename:
+        if Path(self._filename).exists():
             self._file_watcher.addPath(self._filename)
             if self.preferences['Autoreload: watch imported modules']:
                 module_paths =  self.get_imported_module_paths(self._filename)
@@ -265,6 +265,10 @@ class Editor(CodeEditor,ComponentMixin):
             finder.run_script(module_path)
         except SyntaxError as err:
             self._logger.warning(f'Syntax error in {module_path}: {err}')
+        except Exception as err:
+            self._logger.warning(
+                f'Cannot determine imported modules in {module_path}: {type(err).__name__} {err}'
+            )
         else:
             for module_name, module in finder.modules.items():
                 if module_name != '__main__':

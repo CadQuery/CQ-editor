@@ -1402,4 +1402,26 @@ def test_reload_import_handle_error(tmp_path, main):
     # verify that no exception was generated
     debugger._actions["Run"][0].triggered.emit()
     assert(traceback_view.current_exception.text()  == "")
- 
+
+def test_modulefinder(tmp_path, main):
+
+    TIMEOUT = 500
+    qtbot, win = main
+    editor = win.components["editor"]
+    debugger = win.components["debugger"]
+    traceback_view = win.components["traceback_viewer"]
+    log = win.components['log']
+
+    editor.autoreload(True)
+    editor.preferences["Autoreload: watch imported modules"] = True
+
+    script = Path(tmp_path).joinpath("main.py")
+    Path(tmp_path).joinpath("emptydir").mkdir()
+    modify_file("#import emptydir", script)
+    editor.load_from_file(script)
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+        modify_file("import emptydir", script)
+
+    qtbot.wait(100)
+    assert("Cannot determine imported modules" in log.toPlainText().splitlines()[-1])
+

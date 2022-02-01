@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from OCP.XCAFPrs import XCAFPrs_AISObject
 from OCP.TopoDS import TopoDS_Shape
-from OCP.AIS import AIS_Shape, AIS_ColoredShape
+from OCP.AIS import AIS_InteractiveObject, AIS_Shape, AIS_ColoredShape
 from OCP.Quantity import \
     Quantity_TOC_RGB as TOC_RGB, Quantity_Color
     
@@ -50,7 +50,7 @@ def to_workplane(obj : cq.Shape):
 
     return rv
 
-def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Assembly, AIS_Shape],
+def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Assembly, AIS_InteractiveObject],
              options={}):
 
     shape = None
@@ -58,7 +58,7 @@ def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Sha
     if isinstance(obj, cq.Assembly):
         label, shape = toCAF(obj)
         ais = XCAFPrs_AISObject(label)
-    elif isinstance(obj, AIS_Shape):
+    elif isinstance(obj, AIS_InteractiveObject):
         ais = obj
     else:
         shape = to_compound(obj)

@@ -28,8 +28,8 @@ install:
     - sh: source activate cqgui
     - cmd: activate cqgui
     - mamba list
-    - pip install pytest pluggy pytest-qt
-    - pip install pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay
+    - mamba install pytest pluggy pytest-qt
+    - mamba install pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay
 
 build: false
 

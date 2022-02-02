@@ -25,7 +25,7 @@ class MainWindow(QMainWindow,MainMixin):
     name = 'CQ-Editor'
     org = 'CadQuery'
 
-    def __init__(self,parent=None):
+    def __init__(self,parent=None, filename=None):
 
         super(MainWindow,self).__init__(parent)
         MainMixin.__init__(self)
@@ -53,6 +53,10 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.restorePreferences()
         self.restoreWindow()
+
+        if filename:
+            self.components['editor'].load_from_file(filename)
+
         self.restoreComponentState()
 
     def closeEvent(self,event):

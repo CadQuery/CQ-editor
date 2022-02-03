@@ -247,9 +247,9 @@ class Editor(CodeEditor,ComponentMixin):
 
     def restoreComponentState(self,store):
 
-        filename = store.value(self.name+'/state',self.filename)
+        filename = store.value(self.name+'/state')
 
-        if filename and filename != '':
+        if filename and self.filename == '':
             try:
                 self.load_from_file(filename)
             except IOError:

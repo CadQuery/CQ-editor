@@ -13,16 +13,12 @@ from .main_window import MainWindow
 
 def main():
 
-    win = MainWindow()
-
     parser = argparse.ArgumentParser(description=NAME)
     parser.add_argument('filename',nargs='?',default=None)
 
     args = parser.parse_args(app.arguments()[1:])
-    print(args)
-    if args.filename:
-        win.components['editor'].load_from_file(args.filename)
 
+    win = MainWindow(filename=args.filename if args.filename else None)
     win.show()
     sys.exit(app.exec_())
 

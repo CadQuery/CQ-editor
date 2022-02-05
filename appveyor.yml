@@ -22,7 +22,6 @@ install:
     - cmd: miniconda.exe /S /InstallationType=JustMe /D=%MINICONDA_DIRNAME%
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
     - cmd: activate
-    - mamba config --set always_yes yes
     - mamba info
     - mamba env create --name cqgui -f cqgui_env.yml
     - sh: source activate cqgui

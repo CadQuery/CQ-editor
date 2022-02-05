@@ -6,7 +6,7 @@ dependencies:
   - pyqt=5
   - pyparsing
   - pyqtgraph
-  - python=3.8
+  - python=3.10
   - spyder=4
   - path.py
   - logbook

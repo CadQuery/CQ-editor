@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from OCP.Graphic3d import Graphic3d_Camera, Graphic3d_StereoMode
 from PyQt5.QtWidgets import (QWidget, QPushButton, QDialog, QTreeWidget,
                              QTreeWidgetItem, QVBoxLayout, QFileDialog,
                              QHBoxLayout, QFrame, QLabel, QApplication,
@@ -39,9 +40,12 @@ class OCCViewer(QWidget,ComponentMixin):
         {'name': 'Background color (aux)', 'type': 'color', 'value': (30,30,30)},
         {'name': 'Default object color', 'type': 'color', 'value': "FF0"},
         {'name': 'Deviation', 'type': 'float', 'value': 1e-5, 'dec': True, 'step': 1},
-        {'name': 'Angular deviation', 'type': 'float', 'value': 0.1, 'dec': True, 'step': 1}])
-         
-
+        {'name': 'Angular deviation', 'type': 'float', 'value': 0.1, 'dec': True, 'step': 1},
+        {'name': 'Projection Type', 'type': 'list', 'value': 'Orthographic',
+         'values': ['Orthographic', 'Perspective', 'Stereo', 'MonoLeftEye', 'MonoRightEye']},
+        {'name': 'Stereo Mode', 'type': 'list', 'value': 'QuadBuffer',
+         'values': ['QuadBuffer', 'Anaglyph', 'RowInterlaced', 'ColumnInterlaced',
+                    'ChessBoard', 'SideBySide', 'OverUnder']}])
     IMAGE_EXTENSIONS = 'png'
 
     sigObjectSelected = pyqtSignal(list)
@@ -77,6 +81,18 @@ class OCCViewer(QWidget,ComponentMixin):
         ctx = self.canvas.context
         ctx.SetDeviationCoefficient(self.preferences['Deviation'])
         ctx.SetDeviationAngle(self.preferences['Angular deviation'])
+
+        v = self._get_view()
+        camera = v.Camera()
+        projection_type = self.preferences['Projection Type']
+        camera.SetProjectionType(getattr(Graphic3d_Camera, f'Projection_{projection_type}',
+                                         Graphic3d_Camera.Projection_Orthographic))
+
+        # onle relevant for stereo projection
+        stereo_mode = self.preferences['Stereo Mode']
+        params = v.ChangeRenderingParams()
+        params.StereoMode = getattr(Graphic3d_StereoMode, f'Graphic3d_StereoMode_{stereo_mode}',
+                                    Graphic3d_StereoMode.Graphic3d_StereoMode_QuadBuffer)
 
     def create_actions(self,parent):
 

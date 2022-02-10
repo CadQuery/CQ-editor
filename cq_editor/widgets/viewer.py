@@ -88,6 +88,7 @@ class OCCViewer(QWidget,ComponentMixin):
         camera.SetProjectionType(getattr(Graphic3d_Camera, f'Projection_{projection_type}',
                                          Graphic3d_Camera.Projection_Orthographic))
 
+        # onle relevant for stereo projection
         stereo_mode = self.preferences['Stereo Mode']
         params = v.ChangeRenderingParams()
         params.StereoMode = getattr(Graphic3d_StereoMode, f'Graphic3d_StereoMode_{stereo_mode}',

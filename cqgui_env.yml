@@ -7,7 +7,7 @@ dependencies:
   - pyparsing
   - pyqtgraph
   - python=3.10
-  - spyder=4
+  - spyder=5
   - path.py
   - logbook
   - requests

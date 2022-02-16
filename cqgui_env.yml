@@ -4,11 +4,10 @@ channels:
   - conda-forge
 dependencies:
   - pyqt=5
-  - pyparsing
   - pyqtgraph
   - python=3.10
   - spyder=5
-  - path.py
+  - path
   - logbook
   - requests
   - cadquery=master

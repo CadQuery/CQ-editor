@@ -201,7 +201,7 @@ def test_render(main):
     obj_tree_comp._toolbar_actions[0].triggered.emit()
     assert(obj_tree_comp.CQ.childCount() == 0)
 
-    # check that object was rendered usin explicit show_object call
+    # check that object was rendered using explicit show_object call
     editor.set_text(code_show_Workplane)
     debugger._actions['Run'][0].triggered.emit()
 
@@ -237,6 +237,87 @@ def test_render(main):
     qtbot.wait(100)
     assert(obj_tree_comp.CQ.child(0).text(0) == 'test')
     assert('test' in log.toPlainText().splitlines()[-1])
+
+def test_show_object_string(main):
+
+    qtbot, win = main
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    traceback_view = win.components["traceback_viewer"]
+
+    run = debugger._actions['Run'][0]
+
+    # check show_object with string argument
+    code = code_multi + "\n" + "show_object('result2')"
+    editor.set_text(code)
+    run.triggered.emit()
+
+    qtbot.wait(100)
+    assert(obj_tree_comp.CQ.childCount() == 1)
+    assert(obj_tree_comp.CQ.child(0).text(0) == 'result2')
+
+    # check show_object with string argument and name
+    code = code_multi + "\n" + "show_object('result2', name='my result2 name')"
+    editor.set_text(code)
+    run.triggered.emit()
+
+    qtbot.wait(100)
+    assert(obj_tree_comp.CQ.childCount() == 1)
+    assert(obj_tree_comp.CQ.child(0).text(0) == 'my result2 name')
+
+def test_show_object_invalid(main):
+
+    qtbot, win = main
+
+    obj_tree_comp = win.components["object_tree"]
+    editor = win.components["editor"]
+    debugger = win.components["debugger"]
+    log = win.components['log']
+    traceback_view = win.components["traceback_viewer"]
+
+    run = debugger._actions["Run"][0]
+
+    # verify NameError is generated
+    code = code_multi + "\n" + "show_object(obj_invalid)"
+    editor.set_text(code)
+    run.triggered.emit()
+
+    qtbot.wait(100)
+    assert "NameError" in traceback_view.current_exception.text()
+    assert hasattr(sys, "last_traceback")
+    del sys.last_traceback
+
+    # run with valid code, verify no exception was generated
+    editor.set_text(code_show_Workplane)
+    run.triggered.emit()
+
+    qtbot.wait(100)
+    assert traceback_view.current_exception.text() == ""
+    assert not hasattr(sys, "last_traceback")
+    assert obj_tree_comp.CQ.childCount() == 1
+
+    # verify NameError is generated, string argument
+    code = code_multi + "\n" + "show_object('obj_invalid')"
+    editor.set_text(code)
+    run.triggered.emit()
+
+    qtbot.wait(100)
+    assert "NameError" in traceback_view.current_exception.text()
+    assert hasattr(sys, "last_traceback")
+    del sys.last_traceback
+
+    # show_object does not check for valid CQ object up front
+    # verify traceback appears in Log viewer
+    code = code_multi + "\n" + "show_object(123)"
+    editor.set_text(code)
+    run.triggered.emit()
+
+    qtbot.wait(100)
+    assert('ValueError: Invalid type' in log.toPlainText().splitlines()[-1])
+    assert hasattr(sys, "last_traceback")
+    del sys.last_traceback
 
 def test_export(main,mocker):
 

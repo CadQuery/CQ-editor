@@ -61,13 +61,40 @@ dnf install -y mesa-libGLU mesa-libGL mesa-libGLU-devel
 
 ### Showing Objects
 
-By default, CQ-editor will display a 3D representation of all `Workplane` objects in a script with a default color and alpha (transparency). To have more control over what is shown, and what the color and alpha settings are, the `show_object` method can be used. `show_object` tells CQ-editor to explicity display an object, and accepts the `options` parameter. The `options` parameter is a dictionary of rendering options named `alpha` and `color`. `alpha` is scaled between 0.0 and 1.0, with 0.0 being completely opaque and 1.0 being completely transparent. The color is set using R (red), G (green) and B (blue) values, and each one is scaled from 0 to 255. Either option or both can be omitted.
+By default, CQ-editor will display a 3D representation of all `Workplane` objects in a script with a default color and alpha (transparency). To have more control over what is shown, and what the color and alpha settings are, the `show_object` method can be used. `show_object` tells CQ-editor to explicity display an object, and accepts the `name`, and `options` parameter. The `options` parameter is a dictionary of rendering options named `alpha` and `color`. `alpha` is scaled between 0.0 and 1.0, with 0.0 being completely opaque and 1.0 being completely transparent.  The color is set using text names, or R (red), G (green) and B (blue) values.  RGB values are scaled from 0 to 255. Either option or both can be omitted.
 
 ```python
-show_object(result, options={"alpha":0.5, "color": (64, 164, 223)})
+show_object(result1, name="part 1", options={"color": "darkblue"})
+show_object(result2, name="part 2", options={"alpha": 0.5, "color": (64, 164, 223)})
 ```
 
-Note that `show_object` works for `Shape` and `TopoDS_Shape` objects too. In order to display objects from the embedded Python console use `show`.
+Note that `show_object` works for `Sketch`, `Shape`, `TopoDS_Shape`, and `Assembly` objects too. In order to display objects from the embedded Python console use `show`.
+
+#### Naming an Object
+
+By default, objects have a randomly generated ID in the object inspector. However, it can be useful to name objects so that it is easier to identify them (especially with multiple objects). The `name` parameter of `show_object()` can be used to do this.
+
+```python
+import cadquery as cq
+
+result = cq.Workplane().box(10, 10, 10)
+
+show_object(result, name='box')
+```
+
+When the script defines descriptive or identifiable variable names, the `name` may be set to the same name as the variable.
+
+```python
+show_object(part1, name="part1")
+show_object(part2, name="part2")
+```
+
+Equivalently, specify the first `show_object` argument value as a string for a less verbose method of naming the object as the variable name.
+
+```python
+show_object("part1")
+show_object("part2")
+```
 
 ### Rotate, Pan and Zoom the 3D View
 
@@ -147,16 +174,4 @@ highlight = result.faces('>Z')
 
 show_object(result)
 show_object(highlight,'highlight',options=dict(alpha=0.1,color=(1.,0,0)))
-```
-
-### Naming an Object
-
-By default, objects have a randomly generated ID in the object inspector. However, it can be useful to name objects so that it is easier to identify them. The `name` parameter of `show_object()` can be used to do this.
-
-```python
-import cadquery as cq
-
-result = cq.Workplane().box(10, 10, 10)
-
-show_object(result, name='box')
 ```

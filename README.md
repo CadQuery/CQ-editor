@@ -36,3 +36,4 @@ $ micromamba activate cqgui
 # Test run:
 (cqgui) $ python run.py
 
+![Screenshot from 2022-04-08 16-10-45](https://user-images.githubusercontent.com/41844315/162453237-98acfba5-6d92-49c9-8668-03f416544483.png)

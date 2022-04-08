@@ -335,10 +335,7 @@ if __name__ == "__main__":
     import sys
     from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
 
-    app = QApplication.instance()
-    if app is None:
-        app = QApplication(sys.argv)
-        
+    app = QApplication(sys.argv)
     viewer = OCCViewer()
 
     dlg = QDialog()

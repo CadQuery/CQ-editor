@@ -32,7 +32,7 @@ class Editor(CodeEditor,ComponentMixin):
         {'name': 'Autoreload: watch imported modules', 'type': 'bool', 'value': False},
         {'name': 'Line wrap', 'type': 'bool', 'value': False},
         {'name': 'Color scheme', 'type': 'list',
-         'values': ['Spyder','Monokai','Zenburn'], 'value': 'Monokai'}])
+         'values': ['Spyder','Monokai','Zenburn'], 'value': 'Spyder'}])
 
     EXTENSIONS = 'py'
 

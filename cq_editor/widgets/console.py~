@@ -41,9 +41,9 @@ class ConsoleWidget(RichJupyterWidget,ComponentMixin):
 
     def appThemeChanged(self, appTheme):
         if appTheme == 'Light':
-            self.set_default_style('lightbg')   # Style with light bg
+            self.set_default_style('lightbg')
         elif appTheme == 'Dark':
-            self.set_default_style('linux')     # Style with dark bg
+            self.set_default_style('linux')
 
     @pyqtSlot(dict)
     def push_vars(self, variableDict):

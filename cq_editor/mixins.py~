@@ -14,6 +14,9 @@ from PyQt5.QtCore import pyqtSlot, QSettings
 
 class MainMixin(object):
 
+#    name = 'Main'
+#    org = 'Unknown'
+
     components = {}
     docks = {}
     preferences = None

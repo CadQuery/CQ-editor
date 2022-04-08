@@ -2,6 +2,7 @@
 
 import sys, site, os
 from path import Path
+from PyInstaller.utils.hooks import collect_all, collect_submodules
 
 block_cipher = None
 
@@ -18,21 +19,38 @@ elif sys.platform == 'win32':
     occt_dir = os.path.join(Path(sys.prefix), 'Library', 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cp38-win_amd64.pyd'), '.')
 
+datas1, binaries1, hiddenimports1 = collect_all('debugpy')
+hiddenimports2 = collect_submodules('xmlrpc')
+
 a = Analysis(['run.py'],
              pathex=['.'],
-             binaries=[ocp_path],
+             binaries=[ocp_path] + binaries1,
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade')] +
-                    [(p, 'parso/python') for p in parso_grammar],
-             hiddenimports=['ipykernel.datapub'],
+                    [(p, 'parso/python') for p in parso_grammar] + datas1,
+             hiddenimports=['ipykernel.datapub', 'vtkmodules', 'vtkmodules.all',
+                            'pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5',
+                            'pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5',
+                            'pyqtgraph.imageview.ImageViewTemplate_pyqt5', 'debugpy', 'xmlrpc'] + hiddenimports1 + hiddenimports2,
              hookspath=[],
              runtime_hooks=['pyinstaller/pyi_rth_occ.py',
                             'pyinstaller/pyi_rth_fontconfig.py'],
-             excludes=['_tkinter',],
+             excludes=['_tkinter'],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
+
+# There is an issue that keeps the OpenSSL libraries from being copied to the output directory.
+# This should work if nothing else, but does not with GitHub Actions
+if sys.platform == 'win32':
+    from PyInstaller.depend.bindepend import getfullnameof
+    rel_data_path = ['PyQt5', 'Qt', 'bin']
+    a.datas += [
+        (getfullnameof('libssl-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
+        (getfullnameof('libcrypto-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
+    ]
+
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
@@ -48,7 +66,8 @@ exe = EXE(pyz,
           console=True,
           icon='icons/cadquery_logo_dark.ico')
 
-exclude = ('libGL','libEGL','libbsd')
+exclude = ()
+#exclude = ('libGL','libEGL','libbsd')
 a.binaries = TOC([x for x in a.binaries if not x[0].startswith(exclude)])
 
 coll = COLLECT(exe,

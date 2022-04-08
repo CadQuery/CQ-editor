@@ -16,6 +16,7 @@ from .main_window import MainWindow
 
 def main():
 
+#    app = QApplication.instance()
     parser = argparse.ArgumentParser(description=NAME)
     parser.add_argument('-r', '--restore_defaults',
         required = False,
@@ -26,7 +27,7 @@ def main():
 
     if args.restore_defaults:
         settings = QSettings(MainWindow.org, MainWindow.name)
-        print('Deleting settings file ' + settings.fileName() + '\n')
+        print('Deleting ' + settings.fileName() + '\n')
         # The config file may not exist yet
         try:
             os.remove(settings.fileName())
@@ -38,6 +39,7 @@ def main():
             palette=qdarkstyle.DarkPalette))	
         win = MainWindow()
 
+#    print(args)
         if args.filename:
            win.components['editor'].load_from_file(args.filename)
 

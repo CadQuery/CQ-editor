@@ -1,0 +1,9 @@
+Preferences option to select dark or light mode added.
+Support for application-wide dark or light mode through qt stylesheets added using qdarkstyle.
+The stylesheet doesn't affect the console component background colour, so I made it set light or dark background styles using its own, separate Jupyter styling according to the app theme.
+(The code editor's colours are alse immune to the stylesheet, but I left it untouched since its preferences-selectable syntax color schemes already include schemes with both light and dark backgrounds.
+The 3D viewer's colours are also impervious to stylesheets, I likewise left it untouched since its colours are already fully adjustable in the preferences).
+A command-line option '-r, --restore_defaults' to delete the file containing stored preferences was added.
+All instantiations of QApplication except one were made conditional on it not already having been instantiated. 
+
+

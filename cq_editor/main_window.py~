@@ -66,10 +66,6 @@ class MainWindow(QMainWindow,MainMixin):
         self.restoreWindow()
         self.restoreComponentState()
 
-        self.components['console'].appThemeChanged(
-            self.preferences['Application color theme'])
-
-
     def preferencesChanged(self, *args):
 
         if self.preferences['Application color theme'] == 'Light':

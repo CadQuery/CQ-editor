@@ -12,7 +12,7 @@ It wasn't until I was done with the goal I had set that I was struck with the re
 
 6. Any documentation in the commit is what I remember after everything was done, which is probably half if that.
 
-The largest (only...?) difference between the conda environment dependencies in my fork w.r.t. the origin is a Python version bump to 3.10.? and the resulting versions upgrades of everything dependant on it. I probably didn't have good reasons, although I do remember something about a non-ancient qdarkstyle version and its requirements, although I may be confusing it with something else that may or may not be reality-related.
+The largest (only...?) difference between the conda environment dependencies in my fork w.r.t. the origin is a Python version bump to 3.10.? and the resulting versions upgrades of everything dependant on it. I probably didn't have good reasons, although I do remember something about a non-ancient qdarkstyle version and its requirements, although I may be confusing it with something else that may or may not be reality-related. Additionally, there may well remain unnecessary and forgotten packages I installed but ultimately didn't need.
 
 The steps to get my code running are something at least similar to the ones below:
 

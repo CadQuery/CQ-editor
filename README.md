@@ -20,7 +20,7 @@ $ cd ~/
 $ wget -qO- https://micromamba.snakepit.net/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
 $ bin/micromamba shell init -s bash -p ~/micromamba
 
-$ git clone https://github.com/CadQuery/CQ-editor.git
+$ git clone https://github.com/axhan/CQ-editor_themed.git
 $ micromamba env create -f CQ-editor/cqgui_env.yml -n cqgui
 $ micromamba activate cqgui
 (cqgui) $ cd ~/micromamba/envs/cqgui

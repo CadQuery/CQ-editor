@@ -24,7 +24,7 @@ jobs:
       run: |
         sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
         conda info
-        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.8 nptyping==2.0.0
+        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.9
         conda install -c conda-forge pyinstaller
         conda uninstall --force -y importlib_resources
         pip install path

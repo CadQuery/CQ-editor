@@ -129,7 +129,7 @@ class Debugger(QObject,ComponentMixin):
 
         self._actions =  \
             {'Run' : [QAction(icon('run'),
-                              'Render',
+                              'Render (F5)',
                                self,
                                shortcut='F5',
                                triggered=self.render),

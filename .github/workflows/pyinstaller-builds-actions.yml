@@ -21,7 +21,7 @@ jobs:
         # auto-update-conda: true
         python-version: 3.8
         activate-environment: test
-    - name: Install CadQuery, CQ-editor and pyinstaller
+    - name: Install CadQuery, CQ-editor and pyinstaller=4.10
       shell: bash --login {0}
       run: |
         sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
@@ -51,7 +51,7 @@ jobs:
         auto-update-conda: true
         python-version: 3.8
         activate-environment: test
-    - name: Install CadQuery, CQ-editor and pyinstaller
+    - name: Install CadQuery, CQ-editor and pyinstaller=4.10
       shell: bash --login {0}
       run: |
         conda info
@@ -84,7 +84,7 @@ jobs:
       shell: powershell
       run: |
         conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.8
-        conda install -c conda-forge pyinstaller
+        conda install -c conda-forge pyinstaller=4.10
         pip install pipwin
         pipwin install numpy
         pip install path

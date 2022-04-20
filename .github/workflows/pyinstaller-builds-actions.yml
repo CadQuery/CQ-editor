@@ -21,7 +21,7 @@ jobs:
         # auto-update-conda: true
         python-version: 3.8
         activate-environment: test
-    - name: Install CadQuery, CQ-editor and pyinstaller=4.10
+    - name: Install CadQuery, CQ-editor and pyinstaller
       shell: bash --login {0}
       run: |
         sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
@@ -30,14 +30,12 @@ jobs:
         sudo apt install -y libxcb-xinerama0
         conda info
         conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.8
-        conda install -c conda-forge pyinstaller
+        conda install -c conda-forge pyinstaller=4.10
         conda uninstall --force -y importlib_resources
         pip install path
     - name: Run build
       shell: bash --login {0}
       run: |
-        export DISPLAY=:0.0
-        export QT_DEBUG_PLUGINS=1
         conda info
         pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
         cp /home/runner/work/CQ-editor/CQ-editor/pyinstaller/CQ-editor.sh /home/runner/work/CQ-editor/CQ-editor/dist/

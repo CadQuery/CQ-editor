@@ -74,8 +74,8 @@ Note that `show_object` works for `Shape` and `TopoDS_Shape` objects too. In ord
 The following mouse controls can be used to alter the view of the 3D object, and should be familiar to CAD users, even if the mouse buttons used may differ.
 
 * _Left Mouse Button_ + _Drag_ = Rotate
-* _Middle Mouse Button_ + _Drag_ = Pan
-* _Right Mouse Button_ + _Drag_ = Zoom
+* _Middle Mouse Button_ + _Drag_ (or _Left Mouse Button_ + _Ctrl_) = Pan
+* _Right Mouse Button_ + _Drag_ (or _Left Mouse Button_ + _Shift_) = Zoom
 * _Mouse Wheel_ = Zoom
 
 ### Debugging Objects

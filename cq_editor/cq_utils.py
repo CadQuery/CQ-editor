@@ -118,6 +118,7 @@ def reload_cq():
     reload(cq.types)
     reload(cq.occ_impl.geom)
     reload(cq.occ_impl.shapes)
+    reload(cq.occ_impl.shapes)
     reload(cq.occ_impl.importers.dxf)
     reload(cq.occ_impl.importers)
     reload(cq.occ_impl.solver)

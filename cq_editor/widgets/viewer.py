@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from OCP.Graphic3d import Graphic3d_Camera, Graphic3d_StereoMode
 from PyQt5.QtWidgets import (QWidget, QPushButton, QDialog, QTreeWidget,
                              QTreeWidgetItem, QVBoxLayout, QFileDialog,
                              QHBoxLayout, QFrame, QLabel, QApplication,
@@ -40,12 +39,8 @@ class OCCViewer(QWidget,ComponentMixin):
         {'name': 'Background color (aux)', 'type': 'color', 'value': (30,30,30)},
         {'name': 'Default object color', 'type': 'color', 'value': "FF0"},
         {'name': 'Deviation', 'type': 'float', 'value': 1e-5, 'dec': True, 'step': 1},
-        {'name': 'Angular deviation', 'type': 'float', 'value': 0.1, 'dec': True, 'step': 1},
-        {'name': 'Projection Type', 'type': 'list', 'value': 'Orthographic',
-         'values': ['Orthographic', 'Perspective', 'Stereo', 'MonoLeftEye', 'MonoRightEye']},
-        {'name': 'Stereo Mode', 'type': 'list', 'value': 'QuadBuffer',
-         'values': ['QuadBuffer', 'Anaglyph', 'RowInterlaced', 'ColumnInterlaced',
-                    'ChessBoard', 'SideBySide', 'OverUnder']}])
+        {'name': 'Angular deviation', 'type': 'float', 'value': 0.1, 'dec': True, 'step': 1}])
+
     IMAGE_EXTENSIONS = 'png'
 
     sigObjectSelected = pyqtSignal(list)
@@ -82,70 +77,48 @@ class OCCViewer(QWidget,ComponentMixin):
         ctx.SetDeviationCoefficient(self.preferences['Deviation'])
         ctx.SetDeviationAngle(self.preferences['Angular deviation'])
 
-        v = self._get_view()
-        camera = v.Camera()
-        projection_type = self.preferences['Projection Type']
-        camera.SetProjectionType(getattr(Graphic3d_Camera, f'Projection_{projection_type}',
-                                         Graphic3d_Camera.Projection_Orthographic))
-
-        # onle relevant for stereo projection
-        stereo_mode = self.preferences['Stereo Mode']
-        params = v.ChangeRenderingParams()
-        params.StereoMode = getattr(Graphic3d_StereoMode, f'Graphic3d_StereoMode_{stereo_mode}',
-                                    Graphic3d_StereoMode.Graphic3d_StereoMode_QuadBuffer)
-
     def create_actions(self,parent):
 
         self._actions =  \
                 {'View' : [QAction(qta.icon('fa.arrows-alt'),
-                                   'Fit (Shift+F1)',
+                                   'Fit',
                                    parent,
-                                   shortcut='shift+F1',
                                    triggered=self.fit),
                           QAction(QIcon(':/images/icons/isometric_view.svg'),
-                                  'Iso (Shift+F2)',
+                                  'Iso',
                                   parent,
-                                  shortcut='shift+F2',
                                   triggered=self.iso_view),
                           QAction(QIcon(':/images/icons/top_view.svg'),
-                                  'Top (Shift+F3)',
+                                  'Top',
                                   parent,
-                                  shortcut='shift+F3',
                                   triggered=self.top_view),
                           QAction(QIcon(':/images/icons/bottom_view.svg'),
-                                  'Bottom (Shift+F4)',
+                                  'Bottom',
                                   parent,
-                                  shortcut='shift+F4',
                                   triggered=self.bottom_view),
                           QAction(QIcon(':/images/icons/front_view.svg'),
-                                  'Front (Shift+F5)',
+                                  'Front',
                                   parent,
-                                  shortcut='shift+F5',
                                   triggered=self.front_view),
                           QAction(QIcon(':/images/icons/back_view.svg'),
-                                  'Back (Shift+F6)',
+                                  'Back',
                                   parent,
-                                  shortcut='shift+F6',
                                   triggered=self.back_view),
                           QAction(QIcon(':/images/icons/left_side_view.svg'),
-                                  'Left (Shift+F7)',
+                                  'Left',
                                   parent,
-                                  shortcut='shift+F7',
                                   triggered=self.left_view),
                           QAction(QIcon(':/images/icons/right_side_view.svg'),
-                                  'Right (Shift+F8)',
+                                  'Right',
                                   parent,
-                                  shortcut='shift+F8',
                                   triggered=self.right_view),
                           QAction(qta.icon('fa.square-o'),
-                                  'Wireframe (Shift+F9)',
+                                  'Wireframe',
                                   parent,
-                                  shortcut='shift+F9',
                                   triggered=self.wireframe_view),
                                   QAction(qta.icon('fa.square'),
-                                          'Shaded (Shift+F10)',
+                                          'Shaded',
                                           parent,
-                                          shortcut='shift+F10',
                                           triggered=self.shaded_view)],
                  'Tools' : [QAction(icon('screenshot'),
                                    'Screenshot',
@@ -362,7 +335,10 @@ if __name__ == "__main__":
     import sys
     from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
 
-    app = QApplication(sys.argv)
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication(sys.argv)
+        
     viewer = OCCViewer()
 
     dlg = QDialog()

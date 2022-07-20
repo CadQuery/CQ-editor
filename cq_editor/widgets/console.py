@@ -15,7 +15,10 @@ class ConsoleWidget(RichJupyterWidget,ComponentMixin):
 
 #        if not customBanner is None:
 #            self.banner = customBanner
-
+        
+#        super(RichJupyterWidget, self).set_color_scheme('Monokai')
+        
+#        self.set_default_style('linux')
         self.font_size = 6
         self.kernel_manager = kernel_manager = QtInProcessKernelManager()
         kernel_manager.start_kernel(show_banner=False)
@@ -35,6 +38,12 @@ class ConsoleWidget(RichJupyterWidget,ComponentMixin):
         self.clear()
         
         self.push_vars(namespace)
+
+    def appThemeChanged(self, appTheme):
+        if appTheme == 'Light':
+            self.set_default_style('lightbg')   # Style with light bg
+        elif appTheme == 'Dark':
+            self.set_default_style('linux')     # Style with dark bg
 
     @pyqtSlot(dict)
     def push_vars(self, variableDict):
@@ -69,11 +78,11 @@ class ConsoleWidget(RichJupyterWidget,ComponentMixin):
 
         
 if __name__ == "__main__":
-   
-    
     import sys
     
-    app = QApplication(sys.argv)
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication(sys.argv)
     
     console = ConsoleWidget(customBanner='IPython console test')
     console.show()

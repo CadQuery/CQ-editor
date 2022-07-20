@@ -14,16 +14,12 @@ from PyQt5.QtCore import pyqtSlot, QSettings
 
 class MainMixin(object):
 
-    name = 'Main'
-    org = 'Unknown'
-
     components = {}
     docks = {}
     preferences = None
 
     def __init__(self):
-
-        self.settings = QSettings(self.org,self.name)
+        self.settings = QSettings(self.org, self.name)
 
     def registerComponent(self,name,component,dock=None):
 

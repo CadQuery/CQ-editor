@@ -356,10 +356,7 @@ class Debugger(QObject,ComponentMixin):
 def module_manager():
     """ unloads any modules loaded while the context manager is active """
     loaded_modules = set(sys.modules.keys())
-
-    try:
-        yield
-    finally:
-        new_modules = set(sys.modules.keys()) - loaded_modules
-        for module_name in new_modules:
-            del sys.modules[module_name]
+    yield
+    new_modules = set(sys.modules.keys()) - loaded_modules
+    for module_name in new_modules:
+        del sys.modules[module_name]

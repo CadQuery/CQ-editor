@@ -33,7 +33,7 @@ class Editor(CodeEditor,ComponentMixin):
         {'name': 'Autoreload: watch imported modules', 'type': 'bool', 'value': False},
         {'name': 'Line wrap', 'type': 'bool', 'value': False},
         {'name': 'Color scheme', 'type': 'list',
-         'values': ['Spyder','Monokai','Zenburn'], 'value': 'Spyder'}])
+         'values': ['Spyder','Monokai','Zenburn'], 'value': 'Monokai'}])
 
     EXTENSIONS = 'py'
 
@@ -225,12 +225,10 @@ class Editor(CodeEditor,ComponentMixin):
             self._file_watcher.removePaths(paths)
 
     def _watch_paths(self):
-        if Path(self._filename).exists():
+        if self._filename:
             self._file_watcher.addPath(self._filename)
             if self.preferences['Autoreload: watch imported modules']:
-                module_paths =  self.get_imported_module_paths(self._filename)
-                if module_paths:
-                    self._file_watcher.addPaths(module_paths)
+                self._file_watcher.addPaths(get_imported_module_paths(self._filename))
 
     # callback triggered by QFileSystemWatcher
     def _file_changed(self):
@@ -260,43 +258,35 @@ class Editor(CodeEditor,ComponentMixin):
 
     def restoreComponentState(self,store):
 
-        filename = store.value(self.name+'/state')
+        filename = store.value(self.name+'/state',self.filename)
 
-        if filename and self.filename == '':
+        if filename and filename != '':
             try:
                 self.load_from_file(filename)
             except IOError:
                 self._logger.warning(f'could not open {filename}')
 
 
-    def get_imported_module_paths(self, module_path):
-
-        finder = ModuleFinder([os.path.dirname(module_path)])
-        imported_modules = []
-
-        try:
-            finder.run_script(module_path)
-        except SyntaxError as err:
-            self._logger.warning(f'Syntax error in {module_path}: {err}')
-        except Exception as err:
-            self._logger.warning(
-                f'Cannot determine imported modules in {module_path}: {type(err).__name__} {err}'
-            )
-        else:
-            for module_name, module in finder.modules.items():
-                if module_name != '__main__':
-                    path = getattr(module, '__file__', None)
-                    if path is not None and os.path.isfile(path):
-                        imported_modules.append(path)
-
-        return imported_modules
+def get_imported_module_paths(module_path):
+    finder = ModuleFinder([os.path.dirname(module_path)])
+    finder.run_script(module_path)
+    imported_modules = []
+    for module_name, module in finder.modules.items():
+        if module_name != '__main__':
+            path = getattr(module, '__file__', None)
+            if path is not None and os.path.isfile(path):
+                imported_modules.append(path)
+    return imported_modules
 
 
 if __name__ == "__main__":
 
     from PyQt5.QtWidgets import QApplication
 
-    app = QApplication(sys.argv)
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication(sys.argv)
+
     editor = Editor()
     editor.show()
 

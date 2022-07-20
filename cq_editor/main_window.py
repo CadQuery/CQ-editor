@@ -1,8 +1,11 @@
 import sys
 
-from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
+from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar,
+    QDockWidget, QAction, QApplication)
 
 import cadquery as cq
+
+import qdarkstyle
 
 from .widgets.editor import Editor
 from .widgets.viewer import OCCViewer
@@ -19,16 +22,24 @@ from .mixins import MainMixin
 from .icons import icon
 from .preferences import PreferencesWidget
 
+from pyqtgraph.parametertree import Parameter, ParameterTree
 
 class MainWindow(QMainWindow,MainMixin):
 
     name = 'CQ-Editor'
     org = 'CadQuery'
 
-    def __init__(self,parent=None, filename=None):
+    def __init__(self,parent=None):
 
         super(MainWindow,self).__init__(parent)
         MainMixin.__init__(self)
+
+        self.preferences = Parameter.create(name='Preferences',children=[
+        {'name': 'Application color theme', 'type': 'list',
+         'values': ['Light','Dark'], 'value': 'Dark'}])
+
+        self.preferences.sigTreeStateChanged.connect(self.preferencesChanged)
+
 
         self.setWindowIcon(icon('app'))
 
@@ -53,11 +64,22 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.restorePreferences()
         self.restoreWindow()
-
-        if filename:
-            self.components['editor'].load_from_file(filename)
-
         self.restoreComponentState()
+
+        self.components['console'].appThemeChanged(
+            self.preferences['Application color theme'])
+
+
+    def preferencesChanged(self, *args):
+
+        if self.preferences['Application color theme'] == 'Light':
+            QApplication.instance().setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5',
+                palette=qdarkstyle.LightPalette))	
+            self.components['console'].appThemeChanged('Light') #Set console light bg
+        elif self.preferences['Application color theme'] == 'Dark':
+            QApplication.instance().setStyleSheet(qdarkstyle.load_stylesheet(qt_api='pyqt5',
+                palette=qdarkstyle.DarkPalette))	
+            self.components['console'].appThemeChanged('Dark') #Set console dark bg
 
     def closeEvent(self,event):
 
@@ -99,7 +121,7 @@ class MainWindow(QMainWindow,MainMixin):
                                               'Console',
                                               self,
                                               defaultArea='bottom'))
-
+        		
         self.registerComponent('traceback_viewer',
                                TracebackPane(self),
                                lambda c: dock(c,

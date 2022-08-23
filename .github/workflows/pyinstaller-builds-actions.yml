@@ -64,7 +64,8 @@ jobs:
         conda install -c conda-forge pyinstaller
         conda uninstall --force -y importlib_resources
         pip install path
-        pip install PyQt5==5.15.1
+        pip uninstall PyQt5
+        pip install --user PyQt5==5.15.0
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
     - name: Run build
       shell: bash --login {0}

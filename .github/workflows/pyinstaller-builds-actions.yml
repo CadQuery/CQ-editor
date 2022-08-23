@@ -19,7 +19,7 @@ jobs:
         channels: conda-forge,defaults
         channel-priority: true
         # auto-update-conda: true
-        python-version: 3.8
+        python-version: 3.9
         activate-environment: test
     - name: Install CadQuery, CQ-editor and pyinstaller
       shell: bash --login {0}
@@ -29,7 +29,7 @@ jobs:
         sudo apt install -y libxkbcommon-x11-0
         sudo apt install -y libxcb-xinerama0
         conda info
-        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.8
+        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.9
         conda install -c conda-forge pyinstaller=4.10
         conda uninstall --force -y importlib_resources
         pip install path
@@ -53,13 +53,13 @@ jobs:
       with:
         miniconda-version: "latest"
         auto-update-conda: true
-        python-version: 3.8
+        python-version: 3.9
         activate-environment: test
     - name: Install CadQuery, CQ-editor and pyinstaller=4.10
       shell: bash --login {0}
       run: |
         conda info
-        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.8
+        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.9
         conda install -c conda-forge pyinstaller
         conda uninstall --force -y importlib_resources
         pip install path
@@ -83,12 +83,12 @@ jobs:
       with:
         miniconda-version: "latest"
         auto-update-conda: true
-        python-version: 3.8
+        python-version: 3.9
         activate-environment: test
     - name: Install CadQuery and pyinstaller
       shell: powershell
       run: |
-        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.8
+        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.9
         conda install -c conda-forge pyinstaller=4.10
         pip install pipwin
         pipwin install numpy

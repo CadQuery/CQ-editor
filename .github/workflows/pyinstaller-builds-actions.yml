@@ -51,7 +51,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
       with:
-        miniconda-version: "latest"
+        mamba-version: "*"
         auto-update-conda: true
         python-version: 3.9
         activate-environment: test
@@ -100,7 +100,7 @@ jobs:
         conda info
         pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
         Copy-Item C:\Miniconda3\Library\bin\libssl-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\CQ-editor\
-        Copy-Item C:\Miniconda3\envs\test\Library\bin\libcrypto-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\CQ-editor\
+        Copy-Item C:\Miniconda3\Library\bin\libcrypto-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\CQ-editor\
         Copy-Item D:\a\CQ-editor\CQ-editor\pyinstaller\CQ-editor.cmd D:\a\CQ-editor\CQ-editor\dist\
     - uses: actions/upload-artifact@v2
       with:

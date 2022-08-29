@@ -34,6 +34,8 @@ jobs:
         conda uninstall --force -y importlib_resources
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
+        pip install git+https://github.com/meadiode/cq_gears.git@main
+        pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
     - name: Run build
       shell: bash --login {0}
       run: |
@@ -68,6 +70,8 @@ jobs:
         pip install PyQt5==5.15.7
         pip install PyQtWebEngine==5.15.6
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
+        pip install git+https://github.com/meadiode/cq_gears.git@main
+        pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
     - name: Run build
       shell: bash --login {0}
       run: |
@@ -97,6 +101,8 @@ jobs:
         pipwin install numpy
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
+        pip install git+https://github.com/meadiode/cq_gears.git@main
+        pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
     - name: Run build
       shell: powershell
       run: |

@@ -1,0 +1,57 @@
+shallow_clone: false
+
+image:
+    - Ubuntu2004
+    - Ubuntu1804
+    - Visual Studio 2015
+
+environment:
+    matrix:
+        - PYTEST_QT_API: pyqt5
+    CODECOV_TOKEN:
+        secure: ZggK9wgDeFdTp0pu0MEV+SY4i/i1Ls0xrEC2MxSQOQ0JQV+TkpzJJzI4au7L8TpD
+    MINICONDA_DIRNAME: C:\FreshMiniconda
+
+install:
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then sudo apt update; sudo apt -y --force-yes install libglu1-mesa xvfb libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then curl -fsSL -o miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then curl -fsSL -o miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-MacOSX-x86_64.sh; fi
+    - sh: bash miniconda.sh -b -p $HOME/miniconda
+    - sh: source $HOME/miniconda/bin/activate
+    - cmd: curl -fsSL -o miniconda.exe https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Windows-x86_64.exe
+    - cmd: miniconda.exe /S /InstallationType=JustMe /D=%MINICONDA_DIRNAME%
+    - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
+    - cmd: activate
+    - mamba info
+    - mamba env create --name cqgui -f cqgui_env.yml
+    - sh: source activate cqgui
+    - cmd: activate cqgui
+    - mamba list
+    - mamba install -y pytest pluggy pytest-qt
+    - mamba install -y pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay
+
+build: false
+
+before_test:
+    - sh: ulimit -c unlimited -S
+    - sh: sudo rm -f /cores/core.*
+
+test_script:
+    - sh: export PYTHONPATH=$(pwd)
+    - cmd: set PYTHONPATH=%cd%
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then xvfb-run -s '-screen 0 1920x1080x24 +iglx' pytest -v --cov=cq_editor; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then pytest -v --cov=cq_editor; fi
+    - cmd: pytest -v --cov=cq_editor
+
+on_success:
+    - codecov
+
+#on_failure:
+#    - qtdiag
+#    - ls /cores/core.*
+#    - lldb --core `ls /cores/core.*` --batch --one-line "bt"
+
+on_finish:
+#  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+#  - sh: export APPVEYOR_SSH_BLOCK=true
+#   - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -

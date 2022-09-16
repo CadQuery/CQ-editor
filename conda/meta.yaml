@@ -1,0 +1,36 @@
+package:
+  name: cq-editor
+  version:  {{ environ.get('PACKAGE_VERSION') }}
+
+source:
+  path: ..
+
+build:
+  string: {{ 'py'+environ.get('PYTHON_VERSION')}}
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+  entry_points:
+    - cq-editor = cq_editor.__main__:main
+    - CQ-editor = cq_editor.__main__:main
+requirements:
+  build:
+    - python {{ environ.get('PYTHON_VERSION') }}
+    - setuptools
+
+  run:
+    - python {{ environ.get('PYTHON_VERSION') }}
+    - cadquery=master
+    - ocp
+    - logbook
+    - pyqt=5.*
+    - pyqtgraph
+    - spyder=5.*
+    - path
+    - logbook
+    - requests
+
+test:
+  imports:
+    - cq_editor
+
+about:
+summary: GUI for CadQuery 2

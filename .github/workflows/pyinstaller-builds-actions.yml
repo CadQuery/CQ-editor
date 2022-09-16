@@ -41,8 +41,8 @@ jobs:
       run: |
         conda info
         pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
-        cp /home/runner/work/CQ-editor/CQ-editor/pyinstaller/CQ-editor.sh /home/runner/work/CQ-editor/CQ-editor/dist/
-        rm /home/runner/work/CQ-editor/CQ-editor/dist/CQ-editor/libstdc++.so.6
+        cp /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
+        rm /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/CQ-editor/libstdc++.so.6
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-Linux-x86_64
@@ -77,7 +77,7 @@ jobs:
       run: |
         conda info
         pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
-        cp /Users/runner/work/CQ-editor/CQ-editor/pyinstaller/CQ-editor.sh /Users/runner/work/CQ-editor/CQ-editor/dist/
+        cp /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-MacOS
@@ -108,9 +108,9 @@ jobs:
       run: |
         conda info
         pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
-        Copy-Item C:\Miniconda3\Library\bin\libssl-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\CQ-editor\
-        Copy-Item C:\Miniconda3\Library\bin\libcrypto-1_1-x64.dll  D:\a\CQ-editor\CQ-editor\dist\CQ-editor\
-        Copy-Item D:\a\CQ-editor\CQ-editor\pyinstaller\CQ-editor.cmd D:\a\CQ-editor\CQ-editor\dist\
+        Copy-Item C:\Miniconda3\Library\bin\libssl-1_1-x64.dll  D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\CQ-editor\
+        Copy-Item C:\Miniconda3\Library\bin\libcrypto-1_1-x64.dll  D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\CQ-editor\
+        Copy-Item D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\pyinstaller\CQ-editor.cmd D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-Windows

@@ -267,17 +267,19 @@ class MainWindow(QMainWindow,MainMixin):
 
     def prepare_console(self):
 
+        from logbook import Logger
         console = self.components['console']
         obj_tree = self.components['object_tree']
-
+        
         #application related items
         console.push_vars({'self' : self})
 
         #CQ related items
         console.push_vars({'show' : obj_tree.addObject,
                            'show_object' : obj_tree.addObject,
-                           'cq' : cq})
-
+                           'cq' : cq,
+                           'log' : Logger(self.name).info})
+    
     def fill_dummy(self):
 
         self.components['editor']\

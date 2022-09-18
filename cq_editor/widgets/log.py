@@ -8,12 +8,14 @@ from ..mixins import ComponentMixin
 class QtLogHandler(logging.Handler,logging.StringFormatterHandlerMixin):
     
     def __init__(self, log_widget,*args,**kwargs):
-        
-        super(QtLogHandler,self).__init__(*args,**kwargs)
-        logging.StringFormatterHandlerMixin.__init__(self,None)
-        
-        self.log_widget = log_widget
 
+        super(QtLogHandler,self).__init__(*args,**kwargs)
+
+        log_format_string = '[{record.time:%H:%M:%S.%f%z}] {record.level_name}: {record.message}'
+
+        logging.StringFormatterHandlerMixin.__init__(self,log_format_string)
+        self.log_widget = log_widget
+    
     def emit(self, record):
         
         msg = self.format(record)

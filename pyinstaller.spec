@@ -12,12 +12,15 @@ parso_grammar = (Path(site.getsitepackages()[-1]) / 'parso/python').glob('gramma
 if sys.platform == 'linux':
     occt_dir = os.path.join(Path(sys.prefix), 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cpython-39-x86_64-linux-gnu.so'), '.')
+    cqw_path = os.path.join(Path(sys.prefix), 'src', 'cq_warehouse')
 elif sys.platform == 'darwin':
     occt_dir = os.path.join(Path(sys.prefix), 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cpython-39-darwin.so'), '.')
+    cqw_path = os.path.join(Path(sys.prefix), 'src', 'cq_warehouse')
 elif sys.platform == 'win32':
     occt_dir = os.path.join(Path(sys.prefix), 'Library', 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cp39-win_amd64.pyd'), '.')
+    cqw_path = os.path.join(Path(sys.prefix), 'cq_warehouse')
 
 datas1, binaries1, hiddenimports1 = collect_all('debugpy')
 hiddenimports2 = collect_submodules('xmlrpc')
@@ -26,7 +29,8 @@ a = Analysis(['run.py'],
              pathex=['.'],
              binaries=[ocp_path] + binaries1,
              datas=[(spyder_data, 'spyder'),
-                    (occt_dir, 'opencascade')] +
+                    (occt_dir, 'opencascade'),
+                    (cqw_path, 'cq_warehouse')] +
                     [(p, 'parso/python') for p in parso_grammar] + datas1,
              hiddenimports=['ipykernel.datapub', 'vtkmodules', 'vtkmodules.all',
                             'pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5',

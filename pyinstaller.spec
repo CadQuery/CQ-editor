@@ -8,19 +8,17 @@ block_cipher = None
 
 spyder_data = Path(site.getsitepackages()[-1]) / 'spyder'
 parso_grammar = (Path(site.getsitepackages()[-1]) / 'parso/python').glob('grammar*')
+cqw_path = Path(site.getsitepackages()[-1]) / 'cq_warehouse'
 
 if sys.platform == 'linux':
     occt_dir = os.path.join(Path(sys.prefix), 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cpython-39-x86_64-linux-gnu.so'), '.')
-    cqw_path = os.path.join(Path(sys.prefix), 'src', 'cq_warehouse')
 elif sys.platform == 'darwin':
     occt_dir = os.path.join(Path(sys.prefix), 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cpython-39-darwin.so'), '.')
-    cqw_path = os.path.join(Path(sys.prefix), 'src', 'cq_warehouse')
 elif sys.platform == 'win32':
     occt_dir = os.path.join(Path(sys.prefix), 'Library', 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cp39-win_amd64.pyd'), '.')
-    cqw_path = os.path.join(Path(sys.prefix), 'cq_warehouse')
 
 datas1, binaries1, hiddenimports1 = collect_all('debugpy')
 hiddenimports2 = collect_submodules('xmlrpc')

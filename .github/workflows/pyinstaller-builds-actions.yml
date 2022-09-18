@@ -36,6 +36,7 @@ jobs:
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
         pip install git+https://github.com/meadiode/cq_gears.git@main
         pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
+        pip install git+https://github.com/gumyr/build123d.git#egg=build123d
     - name: Run build
       shell: bash --login {0}
       run: |
@@ -72,6 +73,7 @@ jobs:
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
         pip install git+https://github.com/meadiode/cq_gears.git@main
         pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
+        pip install git+https://github.com/gumyr/build123d.git#egg=build123d
     - name: Run build
       shell: bash --login {0}
       run: |
@@ -103,6 +105,7 @@ jobs:
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
         pip install git+https://github.com/meadiode/cq_gears.git@main
         pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
+        pip install git+https://github.com/gumyr/build123d.git#egg=build123d
     - name: Run build
       shell: powershell
       run: |

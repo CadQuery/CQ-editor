@@ -1,5 +1,10 @@
 # CadQuery editor
 
+This is a fork of jmwright's fork of CadQuery/CQ-editor. This fork includes changes that enable dark mode for CQ-editor (see screenshot below). Under the Actions menu this fork also contains static builds of CQ-editor for Linux/MacOS/Windows that include the cq_gears, cq_cache, cq_warehouse, and build123d libraries. Note you need to change color preferences to enable dark mode for all panes (see Edit -> Preferences).
+
+![image](https://user-images.githubusercontent.com/16868537/191054760-a2cac297-3488-48d4-b9f6-52747dffcce3.png)
+
+
 [![Build status](https://ci.appveyor.com/api/projects/status/g98rs7la393mgy91/branch/master?svg=true)](https://ci.appveyor.com/project/adam-urbanczyk/cq-editor/branch/master)
 [![codecov](https://codecov.io/gh/CadQuery/CQ-editor/branch/master/graph/badge.svg)](https://codecov.io/gh/CadQuery/CQ-editor)
 [![Build Status](https://dev.azure.com/cadquery/CQ-editor/_apis/build/status/CadQuery.CQ-editor?branchName=master)](https://dev.azure.com/cadquery/CQ-editor/_build/latest?definitionId=3&branchName=master)

@@ -97,7 +97,7 @@ jobs:
     - name: Install CadQuery and pyinstaller
       shell: powershell
       run: |
-        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.9
+        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master spyder=5.3.3 ipython=8.4.0 python=3.9
         conda install -c conda-forge pyinstaller=4.10
         pip install pipwin
         pipwin install numpy

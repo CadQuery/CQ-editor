@@ -17,6 +17,26 @@ class ConsoleWidget(RichJupyterWidget,ComponentMixin):
 #            self.banner = customBanner
 
         self.font_size = 6
+        self.style_sheet = '''<style>
+        QPlainTextEdit, QTextEdit {
+            background-color: #3f3f3f;
+            background-clip: padding;
+            color: #dcdccc;
+            selection-background-color: #484848;
+        }
+        .inverted {
+            background-color: #dcdccc;
+            color: #3f3f3f;
+        }
+        .error { color: red; }
+        .in-prompt-number { font-weight: bold; }
+        .out-prompt-number { font-weight: bold; }
+        .in-prompt { color: navy; }
+        .out-prompt { color: darkred; }
+        </style>
+        '''
+        self.syntax_style = 'zenburn' #CHANGES FOR DARKMODE
+        
         self.kernel_manager = kernel_manager = QtInProcessKernelManager()
         kernel_manager.start_kernel(show_banner=False)
         kernel_manager.kernel.gui = 'qt'

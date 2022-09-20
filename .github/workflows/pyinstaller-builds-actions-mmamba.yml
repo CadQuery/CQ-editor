@@ -9,81 +9,82 @@ on:
         required: true
         default: 'dir'
 jobs:
-  # build-linux:
-    # runs-on: ubuntu-latest
-    # steps:
-    # - uses: actions/checkout@v2
-    # - uses: conda-incubator/setup-miniconda@v2
-      # with:
-        # mamba-version: "*"
-        # channels: conda-forge,defaults
-        # channel-priority: true
-        # # auto-update-conda: true
-        # python-version: 3.9
-        # activate-environment: test
-    # - name: Install CadQuery, CQ-editor and pyinstaller
-      # shell: bash --login {0}
-      # run: |
-        # sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
-        # sudo apt install -y libxkbcommon0
-        # sudo apt install -y libxkbcommon-x11-0
-        # sudo apt install -y libxcb-xinerama0
-        # conda info
-        # conda install -c cadquery -c conda-forge cq-editor=master cadquery=master spyder=5.3.3 ipython=8.4.0 python=3.9
-        # conda install -c conda-forge pyinstaller=4.10
-        # conda uninstall --force -y importlib_resources
-        # pip install path
-        # pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
-        # pip install git+https://github.com/meadiode/cq_gears.git@main
-        # pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
-        # pip install git+https://github.com/gumyr/build123d.git#egg=build123d
-    # - name: Run build
-      # shell: bash --login {0}
-      # run: |
-        # conda info
-        # pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
-        # cp /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
-        # rm /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/CQ-editor/libstdc++.so.6
-    # - uses: actions/upload-artifact@v2
-      # with:
-        # name: CQ-editor-Linux-x86_64
-        # path: dist
-  # build-macos:
-    # runs-on: macos-latest
-    # steps:
-    # - uses: actions/checkout@v2
-    # - uses: conda-incubator/setup-miniconda@v2
-      # with:
-        # mamba-version: "*"
-        # channels: conda-forge,defaults
-        # # auto-update-conda: true
-        # python-version: 3.9
-        # activate-environment: test
-    # - name: Install CadQuery, CQ-editor and pyinstaller=4.10
-      # shell: bash --login {0}
-      # run: |
-        # conda info
-        # conda install -c cadquery -c conda-forge cq-editor=master cadquery=master spyder=5.3.3 ipython=8.4.0 python=3.9
-        # conda install -c conda-forge pyinstaller
-        # conda uninstall --force -y importlib_resources
-        # pip install path
-        # pip uninstall -y PyQt5
-        # pip install PyQt5==5.15.7
-        # pip install PyQtWebEngine==5.15.6
-        # pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
-        # pip install git+https://github.com/meadiode/cq_gears.git@main
-        # pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
-        # pip install git+https://github.com/gumyr/build123d.git#egg=build123d
-    # - name: Run build
-      # shell: bash --login {0}
-      # run: |
-        # conda info
-        # pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
-        # cp /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
-    # - uses: actions/upload-artifact@v2
-      # with:
-        # name: CQ-editor-MacOS
-        # path: dist
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: mamba-org/provision-with-micromamba@main
+      with:
+        #miniconda-version: "latest"
+        #auto-update-conda: true
+        environment-name: test
+        environment-file: environment.yml
+        extra-specs:
+            python=3.9
+    - name: Mamba install CadQuery and pyinstaller
+      shell: bash --login {0}
+      run: |
+        sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
+        sudo apt install -y libxkbcommon0
+        sudo apt install -y libxkbcommon-x11-0
+        sudo apt install -y libxcb-xinerama0
+        micromamba info
+        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master debugpy ipython=8.4.0 jedi=0.17.2 python=3.9
+        micromamba install -c conda-forge pyinstaller=4.10
+        micromamba uninstall --force -y importlib_resources
+        pip install path
+        pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
+        pip install git+https://github.com/meadiode/cq_gears.git@main
+        pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
+        pip install git+https://github.com/gumyr/build123d.git#egg=build123d
+    - name: Run build
+      shell: bash --login {0}
+      run: |
+        micromamba info
+        pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
+        cp /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
+        rm /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/CQ-editor/libstdc++.so.6
+    - uses: actions/upload-artifact@v2
+      with:
+        name: CQ-editor-Linux-x86_64
+        path: dist
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: mamba-org/provision-with-micromamba@main
+      with:
+        #miniconda-version: "latest"
+        #auto-update-conda: true
+        environment-name: test
+        environment-file: environment.yml
+        extra-specs:
+            python=3.9
+    - name: Mamba install CadQuery and pyinstaller
+      shell: bash --login {0}
+      run: |
+        micromamba info
+        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master debugpy ipython=8.4.0 jedi=0.17.2 python=3.9
+        micromamba install -c conda-forge pyinstaller
+        micromamba uninstall --force -y importlib_resources
+        pip install path
+        pip uninstall -y PyQt5
+        pip install PyQt5==5.15.7
+        pip install PyQtWebEngine==5.15.6
+        pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
+        pip install git+https://github.com/meadiode/cq_gears.git@main
+        pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
+        pip install git+https://github.com/gumyr/build123d.git#egg=build123d
+    - name: Run build
+      shell: bash --login {0}
+      run: |
+        micromamba info
+        pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
+        cp /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
+    - uses: actions/upload-artifact@v2
+      with:
+        name: CQ-editor-MacOS
+        path: dist
   build-windows:
     runs-on: windows-latest
     steps:

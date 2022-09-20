@@ -93,7 +93,7 @@ jobs:
         #miniconda-version: "latest"
         #auto-update-conda: true
         environment-name: test
-        environment-file: environment.yaml
+        environment-file: environment.yml
         extra-specs:
             python=3.9
     - name: Mamba install CadQuery and pyinstaller

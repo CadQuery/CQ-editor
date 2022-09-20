@@ -115,11 +115,11 @@ jobs:
         micromamba info
         pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
         Copy-Item D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\pyinstaller\CQ-editor.cmd D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\
-    - uses: actions/upload-tartifact@v1
+    - uses: alehechka/upload-tartifact@v1
       with:
         name: CQ-editor-Windows
         path: dist
-    - uses: actions/download-tartifact@v1
+    - uses: alehechka/download-tartifact@v1
       with:
         name: CQ-editor-Windows
         path: dist

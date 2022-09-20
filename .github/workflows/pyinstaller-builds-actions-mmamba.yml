@@ -99,7 +99,7 @@ jobs:
     - name: Mamba install CadQuery and pyinstaller
       shell: powershell
       run: |
-        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.9
+        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master ipython=7.20.0 python=3.9
         micromamba install -c conda-forge pyinstaller=4.10
         pip install pipwin
         pipwin install numpy

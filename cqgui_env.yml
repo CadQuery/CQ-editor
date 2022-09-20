@@ -7,6 +7,8 @@ dependencies:
   - pyqtgraph
   - python=3.10
   - spyder=5
+  - ipython=8.4.0
+  - jedi=0.17.2
   - path
   - logbook
   - requests

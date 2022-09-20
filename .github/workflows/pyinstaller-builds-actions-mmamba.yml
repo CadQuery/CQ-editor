@@ -99,7 +99,7 @@ jobs:
     - name: Mamba install CadQuery and pyinstaller
       shell: powershell
       run: |
-        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master spyder=5.3.3 ipython=8.4.0 python=3.9
+        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master python=3.9
         micromamba install -c conda-forge pyinstaller=4.10
         pip install pipwin
         pipwin install numpy
@@ -113,8 +113,6 @@ jobs:
       run: |
         micromamba info
         pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
-        Copy-Item C:\Miniconda3\Library\bin\libssl-1_1-x64.dll  D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\CQ-editor\
-        Copy-Item C:\Miniconda3\Library\bin\libcrypto-1_1-x64.dll  D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\CQ-editor\
         Copy-Item D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\pyinstaller\CQ-editor.cmd D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\
     - uses: actions/upload-artifact@v2
       with:

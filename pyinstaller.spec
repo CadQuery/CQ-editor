@@ -30,7 +30,7 @@ a = Analysis(['run.py'],
                     (occt_dir, 'opencascade'),
                     (cqw_path, 'cq_warehouse')] +
                     [(p, 'parso/python') for p in parso_grammar] + datas1,
-             hiddenimports=['ipykernel.datapub', 'vtkmodules', 'vtkmodules.all',
+             hiddenimports=['ipykernel.datapub', 'debugpy', 'vtkmodules', 'vtkmodules.all',
                             'pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5',
                             'pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5',
                             'pyqtgraph.imageview.ImageViewTemplate_pyqt5', 'xmlrpc',

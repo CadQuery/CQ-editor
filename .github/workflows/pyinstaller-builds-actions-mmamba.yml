@@ -1,4 +1,4 @@
-name: build
+name: build-micromamba
 on:
   schedule:
     - cron: '0 0 * * 1'
@@ -99,7 +99,7 @@ jobs:
     - name: Mamba install CadQuery and pyinstaller
       shell: powershell
       run: |
-        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master debugpy jedi=0.17.2 python=3.9
+        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master debugpy ipython=8.4.0 jedi=0.17.2 python=3.9
         micromamba install -c conda-forge pyinstaller=4.10
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse

@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
-
+from logbook import Logger
 import cadquery as cq
 
 from .widgets.editor import Editor
@@ -267,7 +267,6 @@ class MainWindow(QMainWindow,MainMixin):
 
     def prepare_console(self):
 
-        from logbook import Logger
         console = self.components['console']
         obj_tree = self.components['object_tree']
         

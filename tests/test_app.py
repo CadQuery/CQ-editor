@@ -79,6 +79,11 @@ code_nested_top = """import test_nested_bottom
 code_nested_bottom = """a=1
 """
 
+code_reload_issue = """wire0 = cq.Workplane().lineTo(5, 5).lineTo(10, 0).close().val()
+solid1 = cq.Solid.extrudeLinear(cq.Face.makeFromWires(wire0), cq.Vector(0, 0, 1))
+r1 = cq.Workplane(solid1).translate((10, 0, 0))
+"""
+
 def _modify_file(code, path="test.py"):
     with open(path, "w", 1) as f:
         f.write(code)
@@ -237,6 +242,20 @@ def test_render(main):
     qtbot.wait(100)
     assert(obj_tree_comp.CQ.child(0).text(0) == 'test')
     assert('test' in log.toPlainText().splitlines()[-1])
+    
+    # cq reloading check
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+    
+    editor.set_text(code_reload_issue)
+    debugger._actions['Run'][0].triggered.emit()
+    
+    qtbot.wait(100)
+    assert(obj_tree_comp.CQ.childCount() == 1)
+    
+    debugger._actions['Run'][0].triggered.emit()
+    qtbot.wait(100)
+    assert(obj_tree_comp.CQ.childCount() == 1)
 
 def test_export(main,mocker):
 

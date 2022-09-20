@@ -1,4 +1,5 @@
 import os
+import spyder.utils.encoding
 from modulefinder import ModuleFinder
 
 from spyder.plugins.editor.widgets.codeeditor import CodeEditor
@@ -158,6 +159,15 @@ class Editor(CodeEditor,ComponentMixin):
         self.filename = fname
         self.reset_modified()
 
+    def determine_encoding(self, fname):
+        if os.path.exists(fname):
+            # this function returns the encoding spyder used to read the file
+            _, encoding = spyder.utils.encoding.read(fname)
+            # spyder returns a -guessed suffix in some cases
+            return encoding.replace('-guessed', '')
+        else:
+            return 'utf-8'
+
     def save(self):
 
         if self._filename != '':
@@ -166,8 +176,10 @@ class Editor(CodeEditor,ComponentMixin):
                 self._file_watcher.blockSignals(True)
                 self._file_watch_timer.stop()
 
-            with open(self._filename, 'w') as f:
-                f.write(self.toPlainText())
+            encoding = self.determine_encoding(self._filename)
+            encoded = self.toPlainText().encode(encoding)
+            with open(self._filename, 'wb') as f:
+                f.write(encoded)
 
             if self.preferences['Autoreload']:
                 self._file_watcher.blockSignals(False)
@@ -182,8 +194,9 @@ class Editor(CodeEditor,ComponentMixin):
 
         fname = get_save_filename(self.EXTENSIONS)
         if fname != '':
-            with open(fname,'w') as f:
-                f.write(self.toPlainText())
+            encoded = self.toPlainText().encode('utf-8')
+            with open(fname, 'wb') as f:
+                f.write(encoded)
                 self.filename = fname
 
             self.reset_modified()

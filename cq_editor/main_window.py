@@ -1,7 +1,7 @@
 import sys
 
 from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
-
+from logbook import Logger
 import cadquery as cq
 
 from .widgets.editor import Editor
@@ -269,14 +269,15 @@ class MainWindow(QMainWindow,MainMixin):
 
         console = self.components['console']
         obj_tree = self.components['object_tree']
-
+        
         #application related items
         console.push_vars({'self' : self})
 
         #CQ related items
         console.push_vars({'show' : obj_tree.addObject,
                            'show_object' : obj_tree.addObject,
-                           'cq' : cq})
+                           'cq' : cq,
+                           'log' : Logger(self.name).info})
 
     def fill_dummy(self):
 

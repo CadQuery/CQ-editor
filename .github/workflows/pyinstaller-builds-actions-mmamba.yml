@@ -92,8 +92,10 @@ jobs:
       with:
         #miniconda-version: "latest"
         #auto-update-conda: true
-        python-version: 3.9
-        activate-environment: test
+        environment-name: test
+        environment-file: environment.yaml
+        extra-specs:
+            python=3.9
     - name: Mamba install CadQuery and pyinstaller
       shell: powershell
       run: |

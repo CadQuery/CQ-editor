@@ -101,8 +101,6 @@ jobs:
       run: |
         micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master jedi=0.17.2 ipython=7.20.0 python=3.9
         micromamba install -c conda-forge pyinstaller=4.10
-        pip install pipwin
-        pipwin install numpy
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
         pip install git+https://github.com/meadiode/cq_gears.git@main

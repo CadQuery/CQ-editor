@@ -10,7 +10,6 @@ spyder_data = Path(site.getsitepackages()[-1]) / 'spyder'
 parso_grammar = (Path(site.getsitepackages()[-1]) / 'parso/python').glob('grammar*')
 cqw_path = Path(site.getsitepackages()[-1]) / 'cq_warehouse'
 cq_path = Path(site.getsitepackages()[-1]) / 'cadquery'
-cqe_path = Path(site.getsitepackages()[-1]) / 'jmwright-cq-editor'
 
 if sys.platform == 'linux':
     occt_dir = os.path.join(Path(sys.prefix), 'share', 'opencascade')
@@ -31,8 +30,7 @@ a = Analysis(['run.py'],
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade'),
                     (cqw_path, 'cq_warehouse'),
-                    (cq_path, 'cadquery'),
-                    (cqe_path, 'cq-editor')] +
+                    (cq_path, 'cadquery')] +
                     [(p, 'parso/python') for p in parso_grammar] + datas1,
              hiddenimports=['ipykernel.datapub', 'debugpy', 'vtkmodules', 'vtkmodules.all',
                             'pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5',

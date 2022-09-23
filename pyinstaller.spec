@@ -10,7 +10,7 @@ spyder_data = Path(site.getsitepackages()[-1]) / 'spyder'
 parso_grammar = (Path(site.getsitepackages()[-1]) / 'parso/python').glob('grammar*')
 cqw_path = Path(site.getsitepackages()[-1]) / 'cq_warehouse'
 cq_path = Path(site.getsitepackages()[-1]) / 'cadquery'
-cqe_path = Path(site.getsitepackages()[-1]) / 'cq-editor'
+cqe_path = Path(site.getsitepackages()[-1]) / 'jmwright-cq-editor'
 
 if sys.platform == 'linux':
     occt_dir = os.path.join(Path(sys.prefix), 'share', 'opencascade')

@@ -21,7 +21,7 @@ class TopTreeItem(QTreeWidgetItem):
 class ObjectTreeItem(QTreeWidgetItem):
 
     props = [{'name': 'Name', 'type': 'str', 'value': ''},
-             {'name': 'Color', 'type': 'color', 'value': "f4a824"},
+             {'name': 'Color', 'type': 'color', 'value': "#f4a824"},
              {'name': 'Alpha', 'type': 'float', 'value': 0, 'limits': (0,1), 'step': 1e-1},
              {'name': 'Visible', 'type': 'bool','value': True}]
 
@@ -32,7 +32,7 @@ class ObjectTreeItem(QTreeWidgetItem):
                  shape_display=None,
                  sig=None,
                  alpha=0.,
-                 color='f4a824',
+                 color='#f4a824',
                  **kwargs):
 
         super(ObjectTreeItem,self).__init__([name],**kwargs)

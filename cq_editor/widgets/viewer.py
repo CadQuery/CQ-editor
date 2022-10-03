@@ -38,7 +38,7 @@ class OCCViewer(QWidget,ComponentMixin):
         {'name': 'Use gradient', 'type': 'bool', 'value': False},
         {'name': 'Background color', 'type': 'color', 'value': (95,95,95)},
         {'name': 'Background color (aux)', 'type': 'color', 'value': (30,30,30)},
-        {'name': 'Default object color', 'type': 'color', 'value': "FF0"},
+        {'name': 'Default object color', 'type': 'color', 'value': "#FF0"},
         {'name': 'Deviation', 'type': 'float', 'value': 1e-5, 'dec': True, 'step': 1},
         {'name': 'Angular deviation', 'type': 'float', 'value': 0.1, 'dec': True, 'step': 1},
         {'name': 'Projection Type', 'type': 'list', 'value': 'Orthographic',

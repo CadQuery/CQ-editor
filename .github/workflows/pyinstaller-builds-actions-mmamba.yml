@@ -29,7 +29,7 @@ jobs:
         sudo apt install -y libxkbcommon-x11-0
         sudo apt install -y libxcb-xinerama0
         micromamba info
-        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master pyqtgraph=0.12.4 debugpy ipython=8.4.0 jedi=0.17.2 python=3.9
+        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master debugpy ipython=8.4.0 jedi=0.17.2 python=3.9
         micromamba install -c conda-forge pyinstaller=4.10
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
@@ -98,7 +98,7 @@ jobs:
     - name: Mamba install CadQuery and pyinstaller
       shell: powershell
       run: |
-        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master debugpy pyqtgraph=0.12.4 ipython=8.4.0 jedi=0.17.2 python=3.9
+        micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master debugpy ipython=8.4.0 jedi=0.17.2 python=3.9
         micromamba install -c conda-forge pyinstaller=4.10
         pip install path
         pip install pipwin

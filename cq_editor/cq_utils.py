@@ -23,8 +23,8 @@ def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.
 
     if isinstance(obj,cq.Workplane):
         vals.extend(obj.vals())
-    elif isinstance(obj,cq.Shape):
-        vals.append(obj)
+    elif hasattr(obj,"wrapped") and isinstance(obj.wrapped,TopoDS_Shape):
+        vals.append(obj.wrapped)
     elif isinstance(obj,list) and isinstance(obj[0],cq.Workplane):
         for o in obj: vals.extend(o.vals())
     elif isinstance(obj,list) and isinstance(obj[0],cq.Shape):

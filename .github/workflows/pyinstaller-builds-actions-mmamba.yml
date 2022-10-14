@@ -43,7 +43,6 @@ jobs:
         micromamba info
         pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
         cp /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
-        rm /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/CQ-editor/libstdc++.so.6
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-Linux-x86_64

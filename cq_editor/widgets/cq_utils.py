@@ -23,8 +23,8 @@ def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.
 
     if isinstance(obj,cq.Workplane):
         vals.extend(obj.vals())
-    elif hasattr(obj,"wrapped") and isinstance(obj.wrapped,TopoDS_Shape):
-        vals.append(obj.wrapped)
+    elif isinstance(obj,cq.Shape):
+        vals.append(obj)
     elif isinstance(obj,list) and isinstance(obj[0],cq.Workplane):
         for o in obj: vals.extend(o.vals())
     elif isinstance(obj,list) and isinstance(obj[0],cq.Shape):
@@ -33,6 +33,10 @@ def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.
         vals.append(cq.Shape.cast(obj))        
     elif isinstance(obj,list) and isinstance(obj[0],TopoDS_Shape):
         vals.extend(cq.Shape.cast(o) for o in obj)
+    elif hasattr(obj, "wrapped") and isinstance(obj.wrapped, TopoDS_Shape):
+        vals.append(cq.Shape.cast(obj.wrapped))        
+    elif hasattr(obj, "_obj") and hasattr(obj._obj, "wrapped") and isinstance(obj._obj.wrapped, TopoDS_Shape):
+        vals.append(cq.Shape.cast(obj._obj.wrapped))
     elif isinstance(obj, cq.Sketch):
         if obj._faces:
             vals.append(obj._faces)

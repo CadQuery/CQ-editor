@@ -1,6 +1,6 @@
 # CadQuery editor
 
-This is a fork of jmwright's fork of CadQuery/CQ-editor. This fork includes changes that enable dark mode for CQ-editor (see screenshot below). Under the GitHub Actions menu this fork also contains static builds of CQ-editor for Linux/MacOS/Windows that include the cq_gears, cq_cache, cq_warehouse, and build123d libraries. Note you need to change color preferences to enable dark mode for all panes (see Edit -> Preferences).
+This is a fork of jmwright's fork of CadQuery/CQ-editor. This fork includes changes that enable dark mode for CQ-editor (see screenshot below). Under the GitHub Actions menu this fork also contains static builds of CQ-editor for Linux/MacOS/Windows that include the [cq_gears](https://github.com/meadiode/cq_gears), [cq_cache](https://github.com/CadQuery/cadquery-plugins/tree/main/plugins/cq_cache), [cq_more](https://github.com/JustinSDK/cqMore), [cq_warehouse](https://github.com/gumyr/cq_warehouse), and [build123d](https://github.com/gumyr/build123d) libraries. Note you need to change color preferences to enable dark mode for all panes (see Edit -> Preferences).
 
 ![image](https://user-images.githubusercontent.com/16868537/191054760-a2cac297-3488-48d4-b9f6-52747dffcce3.png)
 
@@ -36,31 +36,10 @@ Stable release builds which do not require Anaconda are attached to the [latest 
 
 ### Development Packages
 
-Development builds are also available, but can be unstable and should be used at your own risk. Click on the newest build with a green checkmark [here](https://github.com/jmwright/CQ-editor/actions?query=workflow%3Abuild), wait for the _Artifacts_ section at the bottom of the page to load, and then click on the appropriate download for your operating system. Extract the archive file and run the shell (Linux/MacOS) or cmd (Windows) script in the root CQ-editor directory. The CQ-editor window should launch.
+Development builds are also available, but can be unstable and should be used at your own risk. Click on the newest build with a green checkmark [here](https://github.com/jdegenstein/jmwright-CQ-editor/actions), wait for the _Artifacts_ section at the bottom of the page to load, and then click on the appropriate download for your operating system. Extract the archive file and run the shell (Linux/MacOS) or cmd (Windows) script in the root CQ-editor directory. The CQ-editor window should launch.
 
 ## Installation (Anaconda)
-
-Use conda to install:
-```
-conda install -c cadquery -c conda-forge cq-editor=master
-```
-and then simply type `cq-editor` to run it. This installs the latest version built directly from the HEAD of this repository.
-
-Alternatively clone this git repository and set up the following conda environment:
-```
-conda env create -f cqgui_env.yml -n cqgui
-conda activate cqgui
-python run.py
-```
-
-On some linux distributions (e.g. `Ubuntu 18.04`) it might be necessary to install additonal packages:
-```
-sudo apt install libglu1-mesa libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev
-```
-On Fedora 29 the packages can be installed as follows:
-```
-dnf install -y mesa-libGLU mesa-libGL mesa-libGLU-devel
-```
+TBD
 
 ## Usage
 

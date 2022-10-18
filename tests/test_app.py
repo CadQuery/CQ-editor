@@ -1019,12 +1019,15 @@ def test_render_colors(main_clean):
     # object 1 (defualt color)
     r,g,b,a = get_rgba(CQ.child(0).ais)
     assert( a == 0 )
-    assert( r != 1.0 )
+    assert( r == 1.0 )
+    assert( g != 0.0 )
     
     # object 2
+    qtbot.stop()
     r,g,b,a = get_rgba(CQ.child(1).ais)
     assert( a == 0.5 )
     assert( r == 1.0 )
+    assert( g == 0.0 )
 
     # object 3
     r,g,b,a = get_rgba(CQ.child(2).ais)
@@ -1072,7 +1075,8 @@ def test_render_colors_console(main_clean):
     # object 1 (defualt color)
     r,g,b,a = get_rgba(CQ.child(0).ais)
     assert( a == 0 )
-    assert( r != 1.0 )
+    assert( r == 1.0 )
+    assert( g != 0.0 )
     
     # object 2
     r,g,b,a = get_rgba(CQ.child(1).ais)

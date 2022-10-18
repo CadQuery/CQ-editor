@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 from OCP.XCAFPrs import XCAFPrs_AISObject
 from OCP.TopoDS import TopoDS_Shape
-from OCP.AIS import AIS_InteractiveObject, AIS_Shape, AIS_ColoredShape
+from OCP.AIS import AIS_InteractiveObject, AIS_Shape
 from OCP.Quantity import \
     Quantity_TOC_RGB as TOC_RGB, Quantity_Color
     
@@ -62,7 +62,7 @@ def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Sha
         ais = obj
     else:
         shape = to_compound(obj)
-        ais = AIS_ColoredShape(shape.wrapped)
+        ais = AIS_Shape(shape.wrapped)
    
     if 'alpha' in options:
         ais.SetTransparency(options['alpha'])
@@ -105,12 +105,22 @@ def to_occ_color(color) -> Quantity_Color:
                           color.blueF(),
                           TOC_RGB)
 
-def get_occ_color(ais : AIS_ColoredShape) -> QColor:
-    
-    color = Quantity_Color()
-    ais.Color(color)
-    
+def get_occ_color(obj : Union[AIS_InteractiveObject, Quantity_Color]) -> QColor:
+
+    if isinstance(obj, AIS_InteractiveObject):
+        color = Quantity_Color()
+        obj.Color(color)
+    else:
+        color = obj
+
     return QColor.fromRgbF(color.Red(), color.Green(), color.Blue())
+
+def set_color(ais : AIS_Shape, color : Quantity_Color) -> AIS_Shape:
+
+    drawer = ais.Attributes()
+    drawer.ShadingAspect().SetColor(color)
+
+    return ais
 
 def reload_cq():
     

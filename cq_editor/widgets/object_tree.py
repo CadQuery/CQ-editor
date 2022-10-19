@@ -9,7 +9,8 @@ from OCP.gp import gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
 from ..icons import icon
-from ..cq_utils import make_AIS, export, to_occ_color, is_obj_empty, get_occ_color
+from ..cq_utils import make_AIS, export, to_occ_color, is_obj_empty, get_occ_color, set_color
+from .viewer import DEFAULT_FACE_COLOR
 from ..utils import splitter, layout, get_save_filename
 
 class TopTreeItem(QTreeWidgetItem):
@@ -49,14 +50,19 @@ class ObjectTreeItem(QTreeWidgetItem):
 
         self.properties['Name'] = name
         self.properties['Alpha'] = ais.Transparency()
-        self.properties['Color'] = get_occ_color(ais) if ais else color
+        self.properties['Color'] = get_occ_color(ais) if ais and ais.HasColor() else get_occ_color(DEFAULT_FACE_COLOR)
         self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
 
-    def propertiesChanged(self,*args):
+    def propertiesChanged(self, properties, changed):
+
+        changed_prop = changed[0][0]
 
         self.setData(0,0,self.properties['Name'])
         self.ais.SetTransparency(self.properties['Alpha'])
-        self.ais.SetColor(to_occ_color(self.properties['Color']))
+        
+        if changed_prop.name() == 'Color':
+            set_color(self.ais, to_occ_color(self.properties['Color']))
+            
         self.ais.Redisplay()
 
         if self.properties['Visible']:

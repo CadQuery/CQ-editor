@@ -23,7 +23,7 @@ from pyqtgraph.parametertree import Parameter
 import qtawesome as qta
 DEFAULT_FACE_COLOR = Quantity_Color(GOLD)
 DEFAULT_EDGE_COLOR = Quantity_Color(BLACK)
-DEFUALT_EDGE_WIDTH = 2
+DEFAULT_EDGE_WIDTH = 2
 
 class OCCViewer(QWidget,ComponentMixin):
 
@@ -74,7 +74,7 @@ class OCCViewer(QWidget,ComponentMixin):
 
         # face edge lw
         line_aspect = self.canvas.context.DefaultDrawer().FaceBoundaryAspect()
-        line_aspect.SetWidth(DEFUALT_EDGE_WIDTH)
+        line_aspect.SetWidth(DEFAULT_EDGE_WIDTH)
         line_aspect.SetColor(DEFAULT_EDGE_COLOR)
         
     def updatePreferences(self,*args):

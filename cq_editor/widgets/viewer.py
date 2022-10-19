@@ -1,22 +1,16 @@
-# -*- coding: utf-8 -*-
+from PyQt5.QtWidgets import QWidget, QDialog, QTreeWidgetItem, QApplication, QAction
 
-from OCP.Graphic3d import Graphic3d_Camera, Graphic3d_StereoMode
-from PyQt5.QtWidgets import (QWidget, QPushButton, QDialog, QTreeWidget,
-                             QTreeWidgetItem, QVBoxLayout, QFileDialog,
-                             QHBoxLayout, QFrame, QLabel, QApplication,
-                             QToolBar, QAction)
-
-from PyQt5.QtCore import QSize, pyqtSlot, pyqtSignal, QMetaObject, Qt
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from PyQt5.QtGui import QIcon
 
-from OCP.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, \
-    AIS_Axis, AIS_Line
-from OCP.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular, Aspect_GFM_VER
-from OCP.Quantity import Quantity_NOC_BLACK as BLACK, \
+from OCP.Graphic3d import Graphic3d_Camera, Graphic3d_StereoMode, Graphic3d_NOM_JADE,\
+    Graphic3d_MaterialAspect
+from OCP.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, AIS_Axis
+from OCP.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular
+from OCP.Quantity import Quantity_NOC_BLACK as BLACK, Quantity_NOC_GOLD as GOLD,\
     Quantity_TOC_RGB as TOC_RGB, Quantity_Color
-from OCP.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
-     Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
-from OCP.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
+from OCP.Geom import Geom_Axis1Placement
+from OCP.gp import gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..utils import layout, get_save_filename
 from ..mixins import ComponentMixin
@@ -27,7 +21,9 @@ from .occt_widget import OCCTWidget
 
 from pyqtgraph.parametertree import Parameter
 import qtawesome as qta
-
+DEFAULT_FACE_COLOR = Quantity_Color(GOLD)
+DEFAULT_EDGE_COLOR = Quantity_Color(BLACK)
+DEFUALT_EDGE_WIDTH = 2
 
 class OCCViewer(QWidget,ComponentMixin):
 
@@ -64,9 +60,23 @@ class OCCViewer(QWidget,ComponentMixin):
                              [self.canvas,],
                              top_widget=self,
                              margin=0)
-        
+        self.setup_default_drawer() #misspelled in original
         self.updatePreferences()
+        
+    def setup_default_drawer(self):
 
+        # set the default color and material
+        material = Graphic3d_MaterialAspect(Graphic3d_NOM_JADE)
+
+        shading_aspect = self.canvas.context.DefaultDrawer().ShadingAspect()
+        shading_aspect.SetMaterial(material)
+        shading_aspect.SetColor(DEFAULT_FACE_COLOR)
+
+        # face edge lw
+        line_aspect = self.canvas.context.DefaultDrawer().FaceBoundaryAspect()
+        line_aspect.SetWidth(DEFUALT_EDGE_WIDTH)
+        line_aspect.SetColor(DEFAULT_EDGE_COLOR)
+        
     def updatePreferences(self,*args):
 
         color1 = to_occ_color(self.preferences['Background color'])

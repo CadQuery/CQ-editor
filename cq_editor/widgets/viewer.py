@@ -25,7 +25,7 @@ import qtawesome as qta
 
 DEFAULT_FACE_COLOR = Quantity_Color(GOLD)
 DEFAULT_EDGE_COLOR = Quantity_Color(BLACK)
-DEFUALT_EDGE_WIDTH = 2
+DEFAULT_EDGE_WIDTH = 2
 
 class OCCViewer(QWidget,ComponentMixin):
 
@@ -63,10 +63,10 @@ class OCCViewer(QWidget,ComponentMixin):
                              top_widget=self,
                              margin=0)
         
-        self.setup_defualt_drawer()
+        self.setup_default_drawer()
         self.updatePreferences()
 
-    def setup_defualt_drawer(self):
+    def setup_default_drawer(self):
 
         # set the default color and material
         material = Graphic3d_MaterialAspect(Graphic3d_NOM_JADE)
@@ -77,7 +77,7 @@ class OCCViewer(QWidget,ComponentMixin):
 
         # face edge lw
         line_aspect = self.canvas.context.DefaultDrawer().FaceBoundaryAspect()
-        line_aspect.SetWidth(DEFUALT_EDGE_WIDTH)
+        line_aspect.SetWidth(DEFAULT_EDGE_WIDTH)
         line_aspect.SetColor(DEFAULT_EDGE_COLOR)
 
     def updatePreferences(self,*args):

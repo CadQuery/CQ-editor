@@ -16,12 +16,22 @@ def get_version(rel_path):
     else:
         raise RuntimeError("Unable to find version string.")
 
-setup(name='CQ-editor',
-      version=get_version('cq_editor/_version.py'),
-      packages=find_packages(),
-      entry_points={
-          'gui_scripts': [
-              'cq-editor = cq_editor.__main__:main',
-              'CQ-editor = cq_editor.__main__:main' 
-          ]}
-     )
+setup(
+    name="CQ-editor",
+    version=get_version("cq_editor/_version.py"),
+    packages=find_packages(),
+    entry_points={
+        "gui_scripts": [
+            "cq-editor = cq_editor.__main__:main",
+            "CQ-editor = cq_editor.__main__:main",
+        ]
+    },
+    python_requires=">=3.8,<3.11",
+    install_requires=[
+        "logbook>=1",
+        "path>=16",
+        "PyQt5>=5",
+        "requests>=2,<3",
+        "spyder>=5,<6",
+    ],
+)

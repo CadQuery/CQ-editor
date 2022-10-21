@@ -29,7 +29,7 @@ setup(
     python_requires=">=3.8,<3.11",
     install_requires=[
         "logbook>=1",
-        "ipython=8.4.0",
+        "ipython==8.4.0",
         "path>=16",
         "PyQt5>=5",
         "requests>=2,<3",

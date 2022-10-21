@@ -30,6 +30,7 @@ setup(
     install_requires=[
         "logbook>=1",
         "ipython==8.4.0",
+        "jedi==0.17.2",
         "path>=16",
         "PyQt5>=5",
         "requests>=2,<3",

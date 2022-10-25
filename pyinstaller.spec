@@ -28,7 +28,7 @@ hiddenimports2 = collect_submodules('xmlrpc')
 
 a = Analysis(['run.py'],
              pathex=['.'],
-             binaries=[ocp_path] + cas_dllA + cas_dllB + binaries1,
+             binaries=[ocp_path] + [cas_dllA] + [cas_dllB] + binaries1,
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade'),
                     (cqw_path, 'cq_warehouse'),

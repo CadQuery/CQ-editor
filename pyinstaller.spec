@@ -10,7 +10,8 @@ spyder_data = Path(site.getsitepackages()[-1]) / 'spyder'
 parso_grammar = (Path(site.getsitepackages()[-1]) / 'parso/python').glob('grammar*')
 cqw_path = Path(site.getsitepackages()[-1]) / 'cq_warehouse'
 cq_path = Path(site.getsitepackages()[-1]) / 'cadquery'
-
+cas_path = Path(site.getsitepackages()[-1]) / 'casadi'
+#(cas_path, 'casadi')] +
 if sys.platform == 'linux':
     occt_dir = os.path.join(Path(sys.prefix), 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cpython-39-x86_64-linux-gnu.so'), '.')
@@ -37,7 +38,7 @@ a = Analysis(['run.py'],
              hiddenimports=['ipykernel.datapub', 'debugpy', 'vtkmodules', 'vtkmodules.all',
                             'pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5',
                             'pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5',
-                            'pyqtgraph.imageview.ImageViewTemplate_pyqt5', 'xmlrpc', 'casadi'
+                            'pyqtgraph.imageview.ImageViewTemplate_pyqt5', 'xmlrpc', 'casadi',
                             'zmq.backend', 'cq_warehouse', 'cq_warehouse.bearing', 'cq_warehouse.chain',
                             'cq_warehouse.drafting', 'cq_warehouse.extensions', 'cq_warehouse.fastener',
                             'cq_warehouse.sprocket', 'cq_warehouse.thread', 'cq_gears', 'cq_cache',

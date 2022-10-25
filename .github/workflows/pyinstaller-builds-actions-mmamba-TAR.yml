@@ -1,4 +1,4 @@
-name: build-micromamba
+name: build-micromamba-DEV
 on:
   schedule:
     - cron: '0 0 * * 1'

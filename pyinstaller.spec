@@ -20,13 +20,15 @@ elif sys.platform == 'darwin':
 elif sys.platform == 'win32':
     occt_dir = os.path.join(Path(sys.prefix), 'Library', 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cp39-win_amd64.pyd'), '.')
+    cas_dllA = os.path.join(HOMEPATH, 'casadi', 'libcasadi.dll')
+    cas_dllB = os.path.join(HOMEPATH, 'casadi', 'libcasadi_nlpsol_ipopt.dll')
 
 datas1, binaries1, hiddenimports1 = collect_all('debugpy')
 hiddenimports2 = collect_submodules('xmlrpc')
 
 a = Analysis(['run.py'],
              pathex=['.'],
-             binaries=[ocp_path] + binaries1,
+             binaries=[ocp_path] + cas_dllA + cas_dllB + binaries1,
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade'),
                     (cqw_path, 'cq_warehouse'),

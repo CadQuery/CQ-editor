@@ -100,7 +100,7 @@ jobs:
       shell: powershell
       run: |
         micromamba install -c cadquery -c conda-forge cq-editor=master cadquery=master debugpy ipython=8.4.0 jedi=0.17.2 python=3.9
-        micromamba install -c conda-forge pyinstaller=4.10
+        micromamba install -c conda-forge pyinstaller=4.10 casadi ipopt
         pip install path
         pip install pipwin
         pipwin install numpy

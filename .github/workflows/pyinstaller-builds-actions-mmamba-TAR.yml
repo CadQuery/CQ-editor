@@ -114,7 +114,7 @@ jobs:
       run: |
         micromamba info
         pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
-        Copy-Item C:\Users\runneradmin\micromamba-root\envs\test\casadi_nlpsol_ipopt.dll  D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\CQ-editor\
+        Copy-Item C:\Users\runneradmin\micromamba-root\envs\test\Library\bin\casadi_nlpsol_ipopt.dll  D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\CQ-editor\
         Copy-Item D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\pyinstaller\CQ-editor.cmd D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\
     - uses: alehechka/upload-tartifact@v1
       with:

@@ -29,12 +29,11 @@ hiddenimports2 = collect_submodules('xmlrpc')
 
 a = Analysis(['run.py'],
              pathex=['.'],
-             binaries=[ocp_path] + [cas_DLLs] + binaries1,
+             binaries=[ocp_path] + binaries1,
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade'),
                     (cqw_path, 'cq_warehouse'),
-                    (cq_path, 'cadquery'),
-                    cas_DLLs] +
+                    (cq_path, 'cadquery')] +
                     [(p, 'parso/python') for p in parso_grammar] + datas1,
              hiddenimports=['ipykernel.datapub', 'debugpy', 'vtkmodules', 'vtkmodules.all',
                             'pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5',

@@ -11,7 +11,7 @@ parso_grammar = (Path(site.getsitepackages()[-1]) / 'parso/python').glob('gramma
 cqw_path = Path(site.getsitepackages()[-1]) / 'cq_warehouse'
 cq_path = Path(site.getsitepackages()[-1]) / 'cadquery'
 cas_path = Path(site.getsitepackages()[-1]) / 'casadi'
-#(cas_path, 'casadi')] +
+#
 if sys.platform == 'linux':
     occt_dir = os.path.join(Path(sys.prefix), 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cpython-39-x86_64-linux-gnu.so'), '.')
@@ -33,7 +33,8 @@ a = Analysis(['run.py'],
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade'),
                     (cqw_path, 'cq_warehouse'),
-                    (cq_path, 'cadquery')] +
+                    (cq_path, 'cadquery'),
+                    (cas_path, 'casadi')] +
                     [(p, 'parso/python') for p in parso_grammar] + datas1,
              hiddenimports=['ipykernel.datapub', 'debugpy', 'vtkmodules', 'vtkmodules.all',
                             'pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5',

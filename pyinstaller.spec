@@ -10,8 +10,7 @@ spyder_data = Path(site.getsitepackages()[-1]) / 'spyder'
 parso_grammar = (Path(site.getsitepackages()[-1]) / 'parso/python').glob('grammar*')
 cqw_path = Path(site.getsitepackages()[-1]) / 'cq_warehouse'
 cq_path = Path(site.getsitepackages()[-1]) / 'cadquery'
-cas_path = Path(site.getsitepackages()[-1]) / 'casadi'
-#
+
 if sys.platform == 'linux':
     occt_dir = os.path.join(Path(sys.prefix), 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cpython-39-x86_64-linux-gnu.so'), '.')
@@ -21,6 +20,7 @@ elif sys.platform == 'darwin':
 elif sys.platform == 'win32':
     occt_dir = os.path.join(Path(sys.prefix), 'Library', 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cp39-win_amd64.pyd'), '.')
+    cas_DLLs = (os.path.join(Path(sys.prefix), 'Library', 'bin', 'casadi'), '.')
     #cas_dllA = os.path.join(HOMEPATH, 'casadi', 'libcasadi.dll')
     #cas_dllB = os.path.join(HOMEPATH, 'casadi', 'libcasadi_nlpsol_ipopt.dll')
 
@@ -29,17 +29,16 @@ hiddenimports2 = collect_submodules('xmlrpc')
 
 a = Analysis(['run.py'],
              pathex=['.'],
-             binaries=[ocp_path] + binaries1,
+             binaries=[ocp_path] + [cas_DLLs] + binaries1,
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade'),
                     (cqw_path, 'cq_warehouse'),
-                    (cq_path, 'cadquery'),
-                    (cas_path, 'casadi')] +
+                    (cq_path, 'cadquery')] +
                     [(p, 'parso/python') for p in parso_grammar] + datas1,
              hiddenimports=['ipykernel.datapub', 'debugpy', 'vtkmodules', 'vtkmodules.all',
                             'pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5',
                             'pyqtgraph.graphicsItems.PlotItem.plotConfigTemplate_pyqt5',
-                            'pyqtgraph.imageview.ImageViewTemplate_pyqt5', 'xmlrpc', 'casadi',
+                            'pyqtgraph.imageview.ImageViewTemplate_pyqt5', 'xmlrpc',
                             'zmq.backend', 'cq_warehouse', 'cq_warehouse.bearing', 'cq_warehouse.chain',
                             'cq_warehouse.drafting', 'cq_warehouse.extensions', 'cq_warehouse.fastener',
                             'cq_warehouse.sprocket', 'cq_warehouse.thread', 'cq_gears', 'cq_cache',

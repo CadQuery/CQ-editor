@@ -20,7 +20,7 @@ elif sys.platform == 'darwin':
 elif sys.platform == 'win32':
     occt_dir = os.path.join(Path(sys.prefix), 'Library', 'share', 'opencascade')
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cp39-win_amd64.pyd'), '.')
-    cas_DLLs = (os.path.join(Path(sys.prefix), 'Library', 'bin', 'casadi'), '.')
+    cas_DLLs = (os.path.join(Path(sys.prefix), 'Library', 'bin', 'casadi*.dll'), '.')
     #cas_dllA = os.path.join(HOMEPATH, 'casadi', 'libcasadi.dll')
     #cas_dllB = os.path.join(HOMEPATH, 'casadi', 'libcasadi_nlpsol_ipopt.dll')
 

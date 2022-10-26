@@ -33,7 +33,8 @@ a = Analysis(['run.py'],
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade'),
                     (cqw_path, 'cq_warehouse'),
-                    (cq_path, 'cadquery')] +
+                    (cq_path, 'cadquery'),
+                    cas_DLLs] +
                     [(p, 'parso/python') for p in parso_grammar] + datas1,
              hiddenimports=['ipykernel.datapub', 'debugpy', 'vtkmodules', 'vtkmodules.all',
                             'pyqtgraph.graphicsItems.ViewBox.axisCtrlTemplate_pyqt5',

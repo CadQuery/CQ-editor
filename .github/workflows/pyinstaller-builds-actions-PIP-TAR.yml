@@ -96,7 +96,7 @@ jobs:
         environment-file: environment.yml
         extra-specs:
             python=3.9
-    - name: Mamba install CadQuery and pyinstaller
+    - name: pip install cadquery CQ-editor ... etc
       shell: powershell
       run: |
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
@@ -114,7 +114,7 @@ jobs:
       shell: powershell
       run: |
         micromamba info
-        pyinstaller --debug all pyinstaller.spec ${{ github.event.inputs.type }}
+        pyinstaller --debug all pyinstaller_pip.spec ${{ github.event.inputs.type }}
         Copy-Item D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\pyinstaller\CQ-editor.cmd D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\
     - uses: alehechka/upload-tartifact@v1
       with:

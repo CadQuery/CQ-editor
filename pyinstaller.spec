@@ -19,8 +19,16 @@ elif sys.platform == 'darwin':
     ocp_path = (os.path.join(HOMEPATH, 'OCP.cpython-39-darwin.so'), '.')
 elif sys.platform == 'win32':
     occt_dir = os.path.join(Path(sys.prefix), 'Library', 'share', 'opencascade')
-    ocp_path = (os.path.join(HOMEPATH, 'OCP.cp39-win_amd64.pyd'), '.')
-    cas_DLLs = (os.path.join(Path(sys.prefix), 'Library', 'bin', 'casadi*.dll'), '.')
+    ocp_path = [(os.path.join(HOMEPATH, 'OCP.cp39-win_amd64.pyd'), '.')]
+    cas_DLL = [(os.path.join(Path(sys.prefix), 'Library', 'bin', 'casadi_nlpsol_ipopt.dll'), '.')]
+    ipo_DLL = [(os.path.join(Path(sys.prefix), 'Library', 'bin', 'ipopt-3.dll'), '.')]
+    bla_DLL = [(os.path.join(Path(sys.prefix), 'Library', 'bin', 'libblas.dll'), '.')]
+    lap_DLL = [(os.path.join(Path(sys.prefix), 'Library', 'bin', 'liblapack.dll'), '.')]
+    mum_DLL = [(os.path.join(Path(sys.prefix), 'Library', 'bin', 'dmumps.dll'), '.')]
+    fla_DLL = [(os.path.join(Path(sys.prefix), 'Library', 'bin', 'flang.dll'), '.')]
+    flr_DLL = [(os.path.join(Path(sys.prefix), 'Library', 'bin', 'flangrti.dll'), '.')]
+    omp_DLL = [(os.path.join(Path(sys.prefix), 'Library', 'bin', 'libomp.dll'), '.')]
+    mkl_DLLs = [(os.path.join(Path(sys.prefix), 'Library', 'bin', 'mkl*.dll'), '.')]
     #cas_dllA = os.path.join(HOMEPATH, 'casadi', 'libcasadi.dll')
     #cas_dllB = os.path.join(HOMEPATH, 'casadi', 'libcasadi_nlpsol_ipopt.dll')
 
@@ -29,7 +37,7 @@ hiddenimports2 = collect_submodules('xmlrpc')
 
 a = Analysis(['run.py'],
              pathex=['.'],
-             binaries=[ocp_path] + binaries1,
+             binaries=ocp_path + cas_DLL + ipo_DLL + bla_DLL + lap_DLL + mum_DLL + fla_DLL + flr_DLL + omp_DLL + mkl_DLLs + binaries1,
              datas=[(spyder_data, 'spyder'),
                     (occt_dir, 'opencascade'),
                     (cqw_path, 'cq_warehouse'),

@@ -100,7 +100,7 @@ jobs:
       shell: powershell
       run: |
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-        pip install git+https://github.com/cadquery/cadquery
+        pip install --pre cadquery
         pip install pyinstaller==4.10
         pip install path
         pip install pipwin

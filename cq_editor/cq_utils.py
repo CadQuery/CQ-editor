@@ -68,7 +68,6 @@ def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Sha
         shape = to_compound(obj)
         ais = AIS_Shape(shape.wrapped)
 
-    ais.SetTransparency(0)
     set_material(ais, DEFAULT_MATERIAL)
     set_color(ais, DEFAULT_FACE_COLOR)
 
@@ -126,6 +125,7 @@ def get_occ_color(obj : Union[AIS_InteractiveObject, Quantity_Color]) -> QColor:
 def set_color(ais : AIS_Shape, color : Quantity_Color) -> AIS_Shape:
 
     drawer = ais.Attributes()
+    drawer.SetupOwnShadingAspect()
     drawer.ShadingAspect().SetColor(color)
 
     return ais
@@ -133,6 +133,7 @@ def set_color(ais : AIS_Shape, color : Quantity_Color) -> AIS_Shape:
 def set_material(ais : AIS_Shape, material: Graphic3d_MaterialAspect) -> AIS_Shape:
 
     drawer = ais.Attributes()
+    drawer.SetupOwnShadingAspect()
     drawer.ShadingAspect().SetMaterial(material)
 
     return ais
@@ -140,6 +141,7 @@ def set_material(ais : AIS_Shape, material: Graphic3d_MaterialAspect) -> AIS_Sha
 def set_transparency(ais : AIS_Shape, alpha: float) -> AIS_Shape:
 
     drawer = ais.Attributes()
+    drawer.SetupOwnShadingAspect()
     drawer.ShadingAspect().SetTransparency(alpha)
 
     return ais

@@ -7,21 +7,21 @@ from OCP.Graphic3d import Graphic3d_Camera, Graphic3d_StereoMode, Graphic3d_NOM_
     Graphic3d_MaterialAspect
 from OCP.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, AIS_Axis
 from OCP.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular
-from OCP.Quantity import Quantity_NOC_BLACK as BLACK, Quantity_NOC_GOLD as GOLD,\
-    Quantity_TOC_RGB as TOC_RGB, Quantity_Color
+from OCP.Quantity import Quantity_NOC_BLACK as BLACK, Quantity_TOC_RGB as TOC_RGB,\
+    Quantity_Color
 from OCP.Geom import Geom_Axis1Placement
 from OCP.gp import gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..utils import layout, get_save_filename
 from ..mixins import ComponentMixin
 from ..icons import icon
-from ..cq_utils import to_occ_color, make_AIS
+from ..cq_utils import to_occ_color, make_AIS, DEFAULT_FACE_COLOR
 
 from .occt_widget import OCCTWidget
 
 from pyqtgraph.parametertree import Parameter
 import qtawesome as qta
-DEFAULT_FACE_COLOR = Quantity_Color(GOLD)
+
 DEFAULT_EDGE_COLOR = Quantity_Color(BLACK)
 DEFAULT_EDGE_WIDTH = 2
 

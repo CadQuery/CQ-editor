@@ -35,5 +35,6 @@ setup(
         "PyQt5>=5",
         "requests>=2,<3",
         "spyder>=5,<6",
+        "pyqtgraph==0.12.4",
     ],
 )

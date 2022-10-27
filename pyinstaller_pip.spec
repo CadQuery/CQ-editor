@@ -28,7 +28,6 @@ a = Analysis(['run.py'],
              pathex=['.'],
              binaries=ocp_path + binaries1,
              datas=[(spyder_data, 'spyder'),
-                    (occt_dir, 'opencascade'),
                     (cqw_path, 'cq_warehouse'),
                     (cq_path, 'cadquery')] +
                     [(p, 'parso/python') for p in parso_grammar] + datas1,

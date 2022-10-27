@@ -79,7 +79,7 @@ def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Sha
     if 'rgba' in options:
         r,g,b,a = options['rgba']
         set_color(ais, to_occ_color((r,g,b)))
-        set_transparency(ais, options['alpha'])
+        set_transparency(ais, a)
 
     return ais,shape
 

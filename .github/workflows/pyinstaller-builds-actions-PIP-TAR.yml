@@ -43,7 +43,7 @@ jobs:
       shell: bash --login {0}
       run: |
         micromamba info
-        pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
+        pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
         cp /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
     - uses: alehechka/upload-tartifact@v1
       with:
@@ -82,7 +82,7 @@ jobs:
       shell: bash --login {0}
       run: |
         micromamba info
-        pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
+        pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
         cp /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
     - uses: alehechka/upload-tartifact@v1
       with:

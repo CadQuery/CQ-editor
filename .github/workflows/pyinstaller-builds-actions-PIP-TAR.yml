@@ -100,7 +100,7 @@ jobs:
       shell: powershell
       run: |
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-        pip install --pre cadquery casadi==3.5.5
+        pip install --pre git+https://github.com/cadquery/cadquery casadi==3.5.5
         pip install pyinstaller==4.10
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse

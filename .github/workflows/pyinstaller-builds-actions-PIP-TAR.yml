@@ -103,8 +103,6 @@ jobs:
         pip install --pre cadquery casadi==3.5.5
         pip install pyinstaller==4.10
         pip install path
-        pip install pipwin
-        pipwin install numpy
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
         pip install git+https://github.com/meadiode/cq_gears.git@main
         pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"

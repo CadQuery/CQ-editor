@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QAction, QMenu, QWidget, QAbstractItemView
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
-
+from random import randrange as rrr, seed
 from pyqtgraph.parametertree import Parameter, ParameterTree
 
 from OCP.AIS import AIS_Line
@@ -12,6 +12,8 @@ from ..icons import icon
 from ..cq_utils import make_AIS, export, to_occ_color, is_obj_empty, get_occ_color, set_color
 from .viewer import DEFAULT_FACE_COLOR
 from ..utils import splitter, layout, get_save_filename
+
+seed(371353) #preserves colors run to run, needs to be run once globally
 
 class TopTreeItem(QTreeWidgetItem):
 
@@ -391,5 +393,22 @@ class ObjectTree(QWidget,ComponentMixin):
             else:
                 item.properties['Visible'] = False
 
-
+def rand_color(alpha = 0., cfloat=False):
+    #helper function to generate a random color dict
+    #for CQ-editor's show_object function
+    lower = 10
+    upper = 100 #not too high to keep color brightness in check
+    if cfloat: #for two output types depending on need
+        return (
+                (rrr(lower,upper)/255),
+                (rrr(lower,upper)/255),
+                (rrr(lower,upper)/255),
+                alpha,
+                )
+    return {"alpha": alpha,
+            "color": (
+                      rrr(lower,upper),
+                      rrr(lower,upper),
+                      rrr(lower,upper),
+                     )}
 

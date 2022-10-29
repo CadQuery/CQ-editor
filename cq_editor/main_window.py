@@ -7,7 +7,7 @@ import cadquery as cq
 from .widgets.editor import Editor
 from .widgets.viewer import OCCViewer
 from .widgets.console import ConsoleWidget
-from .widgets.object_tree import ObjectTree
+from .widgets.object_tree import ObjectTree, rand_color
 from .widgets.traceback_viewer import TracebackPane
 from .widgets.debugger import Debugger, LocalsView
 from .widgets.cq_object_inspector import CQObjectInspector

@@ -114,7 +114,7 @@ def get_rgba(ais):
     alpha = ais.Transparency()
     color = get_occ_color(ais)
         
-    return color.redF(),color.redF(),color.redF(),alpha
+    return color.redF(), color.greenF(), color.blueF(), alpha
 
 @pytest.fixture
 def main(qtbot,mocker):
@@ -1017,14 +1017,13 @@ def test_render_colors(main_clean):
     CQ = obj_tree.CQ
     
     # object 1 (defualt color)
-    r,g,b,a = get_rgba(CQ.child(0).ais)
-    assert( a == 0 )
-    assert( r != 1.0 )
-    
+    assert not CQ.child(0).ais.HasColor()
+
     # object 2
     r,g,b,a = get_rgba(CQ.child(1).ais)
     assert( a == 0.5 )
     assert( r == 1.0 )
+    assert( g == 0.0 )
 
     # object 3
     r,g,b,a = get_rgba(CQ.child(2).ais)
@@ -1059,20 +1058,11 @@ def test_render_colors_console(main_clean):
     console = win.components['console']
 
     console.execute_command(code_color)
-
-    def get_rgba(ais):
-        
-        alpha = ais.Transparency()
-        color = get_occ_color(ais)
-        
-        return color.redF(),color.redF(),color.redF(),alpha
     
     CQ = obj_tree.CQ
     
     # object 1 (defualt color)
-    r,g,b,a = get_rgba(CQ.child(0).ais)
-    assert( a == 0 )
-    assert( r != 1.0 )
+    assert not CQ.child(0).ais.HasColor()
     
     # object 2
     r,g,b,a = get_rgba(CQ.child(1).ais)
@@ -1102,7 +1092,37 @@ def test_render_colors_console(main_clean):
     # check if error occured
     qtbot.wait(100)
     assert('Unknown color format' in log.toPlainText().splitlines()[-1])
+
+code_shading = \
+'''
+import cadquery as cq
+
+res1 = cq.Workplane('XY').box(5, 7, 5)
+res2 = cq.Workplane('XY').box(8, 5, 4)
+show_object(res1)
+show_object(res2,options={"alpha":0})
+'''
+
+def test_shading_aspect(main_clean):
     
+    qtbot, win = main_clean
+
+    obj_tree = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+
+    editor.set_text(code_shading)
+    debugger._actions['Run'][0].triggered.emit()
+
+    CQ = obj_tree.CQ
+
+    # get material aspects
+    ma1 = CQ.child(0).ais.Attributes().ShadingAspect().Material()
+    ma2 = CQ.child(1).ais.Attributes().ShadingAspect().Material()
+
+    # verify that they are the same
+    assert ma1.Shininess() == ma2.Shininess()
+
 def test_confirm_new(monkeypatch,editor):
 
     qtbot, editor = editor

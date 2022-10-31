@@ -1,4 +1,4 @@
-name: build-PIP-TAR
+name: build-pip
 on:
   schedule:
     - cron: '0 0 * * 1'

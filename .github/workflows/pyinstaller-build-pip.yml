@@ -44,7 +44,7 @@ jobs:
       run: |
         micromamba info
         pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
-        cp /home/runner/work/CQ-editor/CQ-editor/pyinstaller/CQ-editor.sh /home/runner/work/CQ-editor/CQ-editor/dist/
+        cp /home/runner/work/CQ-editor/pyinstaller/CQ-editor.sh /home/runner/work/CQ-editor/dist/
     - uses: alehechka/upload-tartifact@v1
       with:
         name: CQ-editor-Linux-x86_64
@@ -83,7 +83,7 @@ jobs:
       run: |
         micromamba info
         pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
-        cp /Users/runner/work/CQ-editor/CQ-editor/pyinstaller/CQ-editor.sh /Users/runner/work/CQ-editor/CQ-editor/dist/
+        cp /Users/runner/work/CQ-editor/pyinstaller/CQ-editor.sh /Users/runner/work/CQ-editor/dist/
     - uses: alehechka/upload-tartifact@v1
       with:
         name: CQ-editor-MacOS
@@ -119,7 +119,7 @@ jobs:
       run: |
         micromamba info
         pyinstaller --debug all pyinstaller_pip.spec ${{ github.event.inputs.type }}
-        Copy-Item D:\a\CQ-editor\CQ-editor\pyinstaller\CQ-editor.cmd D:\a\CQ-editor\CQ-editor\dist\
+        Copy-Item D:\a\CQ-editor\pyinstaller\CQ-editor.cmd D:\a\CQ-editor\dist\
     - uses: alehechka/upload-tartifact@v1
       with:
         name: CQ-editor-Windows

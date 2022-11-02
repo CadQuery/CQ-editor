@@ -24,11 +24,12 @@ jobs:
     - name: Mamba install CadQuery and pyinstaller
       shell: bash --login {0}
       run: |
-        sudo apt install -y libblas-dev libblas3 libblas-dev
+        sudo apt install -y libblas3 libblas-dev
         sudo apt install -y libxkbcommon0
         sudo apt install -y libxkbcommon-x11-0
         sudo apt install -y libxcb-xinerama0
         micromamba info
+        python -m pip install --upgrade pip
         pip install git+https://github.com/jmwright/CQ-editor
         pip install --pre git+https://github.com/CadQuery/cadquery casadi==3.5.5
         pip install pyinstaller==4.10

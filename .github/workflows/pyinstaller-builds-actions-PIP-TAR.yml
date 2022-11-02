@@ -30,7 +30,7 @@ jobs:
         sudo apt install -y libxcb-xinerama0
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-        pip install -v --pre git+https://github.com/cadquery/cadquery casadi
+        pip install -vvv --pre git+https://github.com/cadquery/cadquery casadi
         pip install pyinstaller==4.10
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse

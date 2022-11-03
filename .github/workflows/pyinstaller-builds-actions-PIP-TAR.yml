@@ -10,7 +10,7 @@ on:
         default: 'dir'
 jobs:
   build-linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - uses: mamba-org/provision-with-micromamba@main
@@ -24,13 +24,13 @@ jobs:
     - name: Mamba install CadQuery and pyinstaller
       shell: bash --login {0}
       run: |
-        sudo apt install -y libblas-dev libblas3
+        sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
         sudo apt install -y libxkbcommon0
         sudo apt install -y libxkbcommon-x11-0
         sudo apt install -y libxcb-xinerama0
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-        pip install -vvv --pre git+https://github.com/cadquery/cadquery casadi
+        pip install -vvv --pre git+https://github.com/cadquery/cadquery casadi==3.5.5
         pip install pyinstaller==4.10
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse

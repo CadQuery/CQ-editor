@@ -13,6 +13,7 @@ from logbook import info
 from path import Path
 from pyqtgraph.parametertree import Parameter
 from spyder.utils.icon_manager import icon
+from random import randrange as rrr,seed
 
 from ..cq_utils import find_cq_objects, reload_cq
 from ..mixins import ComponentMixin
@@ -192,6 +193,25 @@ class Debugger(QObject,ComponentMixin):
 
             exec(code, locals_dict, globals_dict)     
 
+    def _rand_color(self, alpha = 0., cfloat=False):
+        #helper function to generate a random color dict
+        #for CQ-editor's show_object function
+        lower = 10
+        upper = 100 #not too high to keep color brightness in check
+        if cfloat: #for two output types depending on need
+            return (
+                    (rrr(lower,upper)/255),
+                    (rrr(lower,upper)/255),
+                    (rrr(lower,upper)/255),
+                    alpha,
+                    )
+        return {"alpha": alpha,
+                "color": (
+                          rrr(lower,upper),
+                          rrr(lower,upper),
+                          rrr(lower,upper),
+                         )}
+
     def _inject_locals(self,module):
 
         cq_objects = {}
@@ -209,6 +229,7 @@ class Debugger(QObject,ComponentMixin):
 
         module.__dict__['show_object'] = _show_object
         module.__dict__['debug'] = _debug
+        module.__dict__['rand_color'] = self._rand_color
         module.__dict__['log'] = lambda x: info(str(x))
         module.__dict__['cq'] = cq
 
@@ -221,6 +242,7 @@ class Debugger(QObject,ComponentMixin):
     @pyqtSlot(bool)
     def render(self):
 
+        seed(371353)
         if self.preferences['Reload CQ']:
             reload_cq()
 

@@ -1,0 +1,47 @@
+name: appimage-build
+on:
+  schedule:
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        # mamba-version: "*"
+        miniconda-version: latest
+        channels: conda-forge,defaults
+        channel-priority: true
+        auto-update-conda: true
+        python-version: 3.9
+        activate-environment: test
+    - name: Install CadQuery, CQ-editor and pyinstaller
+      shell: bash --login {0}
+      run: |
+        sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
+        sudo apt install -y libxkbcommon0
+        sudo apt install -y libxkbcommon-x11-0
+        sudo apt install -y libxcb-xinerama0
+        conda info
+        conda install -c cadquery -c conda-forge cq-editor=master cadquery=master ipython=8.4.0 jedi=0.17.2 pyqtgraph=0.12.4 python=3.9
+        conda install -c conda-forge pyinstaller=4.10
+        conda uninstall --force -y importlib_resources
+        pip install path
+        pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
+        pip install git+https://github.com/meadiode/cq_gears.git@main
+        pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
+    - name: Run build
+      shell: bash --login {0}
+      run: |
+        conda info
+        pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
+        cp /home/runner/work/CQ-editor/CQ-editor/pyinstaller/CQ-editor.sh /home/runner/work/CQ-editor/CQ-editor/dist/
+        /home/runner/work/CQ-editor/CQ-editor/appimage/appimage-build.sh
+        # rm /home/runner/work/CQ-editor/CQ-editor/dist/CQ-editor/libstdc++.so.6
+    - uses: actions/upload-artifact@v2
+      with:
+        name: CQ-editor-Linux-x86_64
+        path: dist

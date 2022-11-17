@@ -4,6 +4,6 @@ Name=CQ-editor
 Comment=CadQuery IDE
 Categories=Utility;
 Exec=CQ-editor
-Icon=cq_logo
+Icon=cq_logo.png
 StartupNotify=false
 Terminal=false

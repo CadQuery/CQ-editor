@@ -35,7 +35,7 @@ export PIP_VERBOSE=1
 mkdir -p AppDir/usr/share/metainfo/
 cp "$REPO_ROOT"/*.appdata.xml AppDir/usr/share/metainfo/
 
-./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin conda -d "$REPO_ROOT"/appimage/CQ-edtior.desktop
+./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin conda -d "$REPO_ROOT"/appimage/CQ-editor.desktop
 
 export VERSION="0.3-dev"
 

@@ -37,11 +37,10 @@ jobs:
       shell: bash --login {0}
       run: |
         conda info
-        pyinstaller pyinstaller.spec ${{ github.event.inputs.type }}
-        cp /home/runner/work/CQ-editor/CQ-editor/pyinstaller/CQ-editor.sh /home/runner/work/CQ-editor/CQ-editor/dist/
         /home/runner/work/CQ-editor/CQ-editor/appimage/appimage-build.sh
-        # rm /home/runner/work/CQ-editor/CQ-editor/dist/CQ-editor/libstdc++.so.6
+        ls /home/runner/work/CQ-editor/CQ-editor/AppDir/
+        ls /home/runner/work/CQ-editor/CQ-editor/AppDir/CQ-editor-0.3-dev-x86_64.AppImage
     - uses: actions/upload-artifact@v2
       with:
         name: CQ-editor-Linux-x86_64
-        path: dist
+        path: AppDir/CQ-editor-0.3-dev-x86_64.AppImage

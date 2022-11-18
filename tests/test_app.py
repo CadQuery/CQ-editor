@@ -403,6 +403,7 @@ def test_debug(main,mocker):
     patch_debugger(debugger,ev)
 
     debug.triggered.emit(True)
+    qtbot.wait(100)
     assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 4)
 

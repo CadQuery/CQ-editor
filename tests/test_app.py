@@ -403,7 +403,7 @@ def test_debug(main,mocker):
     patch_debugger(debugger,ev)
 
     debug.triggered.emit(True)
-    assert(variables.model().rowCount() == 1)
+    assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 4)
 
     #test exit debug

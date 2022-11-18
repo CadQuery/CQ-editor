@@ -38,7 +38,7 @@ jobs:
       run: |
         conda info
         /home/runner/work/CQ-editor/CQ-editor/appimage/appimage-build.sh
-        ls /home/runner/work/CQ-editor/CQ-editor/
+        ls /home/runner/work/CQ-editor/CQ-editor/AppDir
         # ls /home/runner/work/CQ-editor/CQ-editor/CQ-editor-0.3-dev-x86_64.AppImage
     - uses: actions/upload-artifact@v2
       with:

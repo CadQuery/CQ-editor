@@ -35,8 +35,6 @@ def to_compound(
 ):
 
     vals = []
-    print(obj)
-    print(dir(obj))
 
     if isinstance(obj, cq.Workplane):
         vals.extend(obj.vals())

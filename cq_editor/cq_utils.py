@@ -69,7 +69,7 @@ def to_compound(
         and hasattr(obj[0]._obj, "wrapped")
         and isinstance(obj[0]._obj.wrapped, TopoDS_Shape)
     ):
-        vals.append(cq.Shape.cast(obj._obj.wrapped))
+        vals.append(o for o in obj)
     elif isinstance(obj, cq.Sketch):
         if obj._faces:
             vals.append(obj._faces)

@@ -3,6 +3,7 @@ from contextlib import ExitStack, contextmanager
 from enum import Enum, auto
 from types import SimpleNamespace, FrameType, ModuleType
 from typing import List
+from functools import singledispatch
 
 import cadquery as cq
 from PyQt5 import QtCore
@@ -196,12 +197,28 @@ class Debugger(QObject,ComponentMixin):
 
         cq_objects = {}
 
-        def _show_object(obj,name=None, options={}):
+        @singledispatch
+        def _show_object(obj, name=None, options={}):
 
             if name:
-                cq_objects.update({name : SimpleNamespace(shape=obj,options=options)})
+                cq_objects.update({name: SimpleNamespace(shape=obj, options=options)})
             else:
-                cq_objects.update({str(id(obj)) : SimpleNamespace(shape=obj,options=options)})
+                cq_objects.update(
+                    {str(id(obj)): SimpleNamespace(shape=obj, options=options)}
+                )
+
+        @_show_object.register
+        def _(obj: str, name=None, options={}):
+
+            if not name:
+                name = obj
+
+            if obj in module.__dict__:
+                obj = module.__dict__[obj]
+            else:
+                raise NameError(f"name '{obj}' is not defined")
+            cq_objects.update({name: SimpleNamespace(shape=obj, options=options)})
+
 
         def _debug(obj,name=None):
 

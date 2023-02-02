@@ -95,8 +95,8 @@ class OCCTWidget(QWidget):
                           self.old_pos.y() - y, theToStart=True)
             
         elif event.buttons() == Qt.RightButton:
-            self.view.ZoomAtPoint(self.old_pos.x(), y,
-                                  x, self.old_pos.y())
+            self.view.Pan(x - self.old_pos.x(),
+                          self.old_pos.y() - y, theToStart=True)
         
         self.old_pos = pos
         

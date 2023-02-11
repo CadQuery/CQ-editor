@@ -241,7 +241,7 @@ class Debugger(QObject,ComponentMixin):
 
     @pyqtSlot(bool)
     def render(self):
-        seed(371353) #reset the seed every time render is called (preserves colors run to run)
+        seed(59798267586177) #reset the seed every time render is called (preserves colors run to run)
         if self.preferences['Reload CQ']:
             reload_cq()
 

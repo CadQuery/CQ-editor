@@ -4,6 +4,8 @@ This is a fork of [jmwright's fork](https://github.com/jmwright/CQ-editor) of [C
 
 This fork also contains additional changes to the `show_object` function in CQ-editor that make it easier to display and export build123d objects and object lists.
 
+Running into issues? Please click here to join the [***CadQuery, CQ-Editor, and build123d Discord***](https://discord.com/invite/Bj9AQPsCfx)
+
 ![image](https://user-images.githubusercontent.com/16868537/191054760-a2cac297-3488-48d4-b9f6-52747dffcce3.png)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/g98rs7la393mgy91/branch/master?svg=true)](https://ci.appveyor.com/project/adam-urbanczyk/cq-editor/branch/master)

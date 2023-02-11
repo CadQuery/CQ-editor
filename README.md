@@ -44,7 +44,7 @@ Development builds are also available, but can be unstable and should be used at
 ```
 pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
 pip install --pre git+https://github.com/cadquery/cadquery
-pip install git+https://github.com/gumyr/build123d.git#egg=build123d
+pip install git+https://github.com/gumyr/build123d
 ```
 
 ## Usage

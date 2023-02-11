@@ -246,7 +246,7 @@ class Debugger(QObject,ComponentMixin):
     @pyqtSlot(bool)
     def render(self):
 
-        seed(371353)
+        seed(59798267586177)
         if self.preferences['Reload CQ']:
             reload_cq()
 

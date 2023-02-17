@@ -43,9 +43,14 @@ Development builds are also available, but can be unstable and should be used at
 
 ## Installation (pip)
 
+Additional packages for Linux (known as needed on Ubuntu 22.04):
+```
+sudo apt install qtbase5-dev qt5-qmake
+```
+All platforms (Windows/Mac/Linux):
 ```
 pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-pip install --pre git+https://github.com/cadquery/cadquery
+pip install --pre cadquery
 pip install git+https://github.com/gumyr/build123d
 ```
 

@@ -28,6 +28,7 @@ jobs:
         sudo apt install -y libxkbcommon0
         sudo apt install -y libxkbcommon-x11-0
         sudo apt install -y libxcb-xinerama0
+        sudo apt install -y qtbase5-dev qt5-qmake
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install -vvv --pre git+https://github.com/cadquery/cadquery casadi==3.5.5

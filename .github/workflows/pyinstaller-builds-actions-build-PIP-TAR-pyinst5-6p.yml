@@ -111,14 +111,14 @@ jobs:
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
         pip install git+https://github.com/meadiode/cq_gears.git@main
         pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
-        pip install git+https://github.com/gumyr/build123d.git#egg=build123d
+        pip install git+https://github.com/gumyr/build123d
         pip install git+https://github.com/JustinSDK/cqMore
         pip list
     - name: Run build
       shell: powershell
       run: |
         micromamba info
-        pyinstaller --debug all pyinstaller_pip.spec ${{ github.event.inputs.type }}
+        pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
         Copy-Item D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\pyinstaller\CQ-editor.cmd D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\
     - uses: alehechka/upload-tartifact@v1
       with:

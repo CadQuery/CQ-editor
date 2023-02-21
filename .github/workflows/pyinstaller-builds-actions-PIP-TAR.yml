@@ -21,7 +21,7 @@ jobs:
         environment-file: environment.yml
         extra-specs:
             python=3.9
-    - name: Mamba install CadQuery and pyinstaller
+    - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
         sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
@@ -31,12 +31,12 @@ jobs:
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install -vvv --pre git+https://github.com/cadquery/cadquery casadi==3.5.5
-        pip install pyinstaller==4.10
+        pip install pyinstaller>=5.6
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
         pip install git+https://github.com/meadiode/cq_gears.git@main
         pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
-        pip install git+https://github.com/gumyr/build123d.git#egg=build123d
+        pip install git+https://github.com/gumyr/build123d
         pip install git+https://github.com/JustinSDK/cqMore
         pip list
     - name: Run build
@@ -61,7 +61,7 @@ jobs:
         environment-file: environment.yml
         extra-specs:
             python=3.9
-    - name: Mamba install CadQuery and pyinstaller
+    - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
         micromamba info
@@ -75,7 +75,7 @@ jobs:
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
         pip install git+https://github.com/meadiode/cq_gears.git@main
         pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
-        pip install git+https://github.com/gumyr/build123d.git#egg=build123d
+        pip install git+https://github.com/gumyr/build123d
         pip install git+https://github.com/JustinSDK/cqMore
         pip list
     - name: Run build
@@ -106,19 +106,19 @@ jobs:
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install --pre git+https://github.com/cadquery/cadquery casadi==3.5.5
-        pip install pyinstaller==4.10
+        pip install pyinstaller>=5.6
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
         pip install git+https://github.com/meadiode/cq_gears.git@main
         pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
-        pip install git+https://github.com/gumyr/build123d.git#egg=build123d
+        pip install git+https://github.com/gumyr/build123d
         pip install git+https://github.com/JustinSDK/cqMore
         pip list
     - name: Run build
       shell: powershell
       run: |
         micromamba info
-        pyinstaller --debug all pyinstaller_pip.spec ${{ github.event.inputs.type }}
+        pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
         Copy-Item D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\pyinstaller\CQ-editor.cmd D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\
     - uses: alehechka/upload-tartifact@v1
       with:

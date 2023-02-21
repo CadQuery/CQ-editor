@@ -35,6 +35,5 @@ setup(
         "requests>=2,<3",
         "spyder>=5,<6",
         "pyqtgraph==0.12.4",
-        "scipy<=1.9.1",
     ],
 )

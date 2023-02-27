@@ -63,7 +63,7 @@ jobs:
         environment-name: test
         environment-file: environment.yml
         extra-specs:
-            python=3.9
+            python=3.10
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
@@ -102,7 +102,7 @@ jobs:
         environment-name: test
         environment-file: environment.yml
         extra-specs:
-            python=3.9
+            python=3.10
     - name: pip install cadquery CQ-editor ... etc
       shell: powershell
       run: |

@@ -33,7 +33,7 @@ jobs:
         pip install pyopengl
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install -vvv --pre git+https://github.com/cadquery/cadquery casadi
-        pip install pyinstaller>=5.6
+        pip install pyinstaller>=5.6 git+https://github.com/pyinstaller/pyinstaller-hooks-contrib
         pip install path
         pip install jupyter-rfb
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
@@ -109,7 +109,7 @@ jobs:
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install --pre git+https://github.com/cadquery/cadquery casadi
-        pip install pyinstaller>=5.6
+        pip install pyinstaller>=5.6 git+https://github.com/pyinstaller/pyinstaller-hooks-contrib
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
         pip install git+https://github.com/meadiode/cq_gears.git@main

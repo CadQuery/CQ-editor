@@ -32,7 +32,7 @@ jobs:
         micromamba info
         pip install pyopengl
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-        pip install -vvv --pre git+https://github.com/cadquery/cadquery casadi==3.5.5
+        pip install -vvv --pre git+https://github.com/cadquery/cadquery casadi
         pip install pyinstaller>=5.6
         pip install path
         pip install jupyter-rfb
@@ -69,7 +69,7 @@ jobs:
       run: |
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-        pip install --pre git+https://github.com/cadquery/cadquery casadi==3.5.5
+        pip install --pre git+https://github.com/cadquery/cadquery casadi
         pip install pyinstaller==4.10
         pip install path
         pip uninstall -y PyQt5
@@ -108,7 +108,7 @@ jobs:
       run: |
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-        pip install --pre git+https://github.com/cadquery/cadquery casadi==3.5.5
+        pip install --pre git+https://github.com/cadquery/cadquery casadi
         pip install pyinstaller>=5.6
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse

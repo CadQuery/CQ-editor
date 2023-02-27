@@ -70,7 +70,7 @@ jobs:
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install --pre git+https://github.com/cadquery/cadquery casadi
-        pip install pyinstaller==4.10
+        pip install pyinstaller>=5.6 git+https://github.com/jdegenstein/pyinstaller-hooks-contrib
         pip install path
         pip uninstall -y PyQt5
         pip install PyQt5==5.15.7

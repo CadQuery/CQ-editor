@@ -202,7 +202,7 @@ class ObjectTree(QWidget,ComponentMixin):
         ais_list = []
 
         for name,color,direction in zip(('X','Y','Z'),
-                                        ('red','lawngreen','blue'),
+                                        ((0.2,0,0),'lawngreen','blue'),
                                         ((1,0,0),(0,1,0),(0,0,1))):
             line_placement = Geom_Line(gp_Ax1(gp_Pnt(*origin),
                                        gp_Dir(*direction)))

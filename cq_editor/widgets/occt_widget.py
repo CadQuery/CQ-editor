@@ -54,6 +54,8 @@ class OCCTWidget(QWidget):
             Aspect_TypeOfTriedronPosition.Aspect_TOTP_RIGHT_LOWER,
             Quantity_Color(), 0.1)
         
+        view.ZBufferTriedronSetup(Quantity_Color(*(0.2, 0.0, 0.0), Quantity_TOC_RGB))        
+
         viewer = self.viewer
         
         viewer.SetDefaultLights()

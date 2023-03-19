@@ -10,7 +10,7 @@ from OCP.Aspect import Aspect_DisplayConnection, Aspect_TypeOfTriedronPosition
 from OCP.OpenGl import OpenGl_GraphicDriver
 from OCP.V3d import V3d_Viewer
 from OCP.AIS import AIS_InteractiveContext, AIS_DisplayMode
-from OCP.Quantity import Quantity_Color
+from OCP.Quantity import Quantity_Color, Quantity_TOC_RGB as TOC_RGB
 
 
 ZOOM_STEP = 0.9
@@ -54,7 +54,7 @@ class OCCTWidget(QWidget):
             Aspect_TypeOfTriedronPosition.Aspect_TOTP_RIGHT_LOWER,
             Quantity_Color(), 0.1)
         
-        view.ZBufferTriedronSetup(Quantity_Color(*(0.2, 0.0, 0.0), Quantity_TOC_RGB))        
+        view.ZBufferTriedronSetup(Quantity_Color(*(0.2, 0.0, 0.0), TOC_RGB))        
 
         viewer = self.viewer
         

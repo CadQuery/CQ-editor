@@ -8,6 +8,7 @@ from .widgets.editor import Editor
 from .widgets.viewer import OCCViewer
 from .widgets.console import ConsoleWidget
 from .widgets.object_tree import ObjectTree
+from .widgets.clipping_planes import ClippingPlanes
 from .widgets.traceback_viewer import TracebackPane
 from .widgets.debugger import Debugger, LocalsView
 from .widgets.cq_object_inspector import CQObjectInspector
@@ -127,6 +128,13 @@ class MainWindow(QMainWindow,MainMixin):
                                               'Log viewer',
                                               self,
                                               defaultArea='bottom'))
+
+        self.registerComponent('clipping_planes',
+                               ClippingPlanes(self),
+                               lambda c: dock(c,
+                                              'Clipping Planes',
+                                              self,
+                                              defaultArea='right'))
 
         for d in self.docks.values():
             d.show()
@@ -258,6 +266,9 @@ class MainWindow(QMainWindow,MainMixin):
             .connect(self.components['object_tree'].addObjects)
         self.components['debugger'].sigTraceback\
             .connect(self.components['traceback_viewer'].addTraceback)
+
+        self.components['clipping_planes'].sigClippingPlaneChanged\
+            .connect(self.components['viewer'].update_clipping_plane)
 
         # trigger re-render when file is modified externally or saved
         self.components['editor'].triggerRerender \

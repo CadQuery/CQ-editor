@@ -6,18 +6,18 @@ source:
   path: ..
 
 build:
-  string: {{ 'py'+environ.get('PYTHON_VERSION')}}
+  noarch: python
   script: python setup.py install --single-version-externally-managed --record=record.txt
   entry_points:
     - cq-editor = cq_editor.__main__:main
     - CQ-editor = cq_editor.__main__:main
 requirements:
   build:
-    - python {{ environ.get('PYTHON_VERSION') }}
+    - python >=3.8
     - setuptools
 
   run:
-    - python {{ environ.get('PYTHON_VERSION') }}
+    - python >=3.8
     - cadquery=master
     - ocp
     - logbook

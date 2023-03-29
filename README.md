@@ -13,6 +13,7 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 
 ## Notable features
 
+* Automatic code reloading - you can any editor
 * OCCT based
 * Graphical debugger for CadQuery scripts
   * Step through script and watch how your model changes

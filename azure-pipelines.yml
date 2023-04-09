@@ -25,7 +25,7 @@ jobs:
   - template: conda-build.yml@templates
     parameters:
       name: Linux
-      vmImage: 'ubuntu-18.04'
+      vmImage: 'ubuntu-latest'
       py_maj: 3
       py_min: ${{minor}}
       conda_bld: 3.21.6

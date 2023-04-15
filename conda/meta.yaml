@@ -6,7 +6,7 @@ source:
   path: ..
 
 build:
-  string: h{{ PKG_HASH }}_{{ PKG_BUILDNUM }}
+  string: h{{ GIT_DESCRIBE_HASH }}_{{ PKG_BUILDNUM }}
   noarch: python
   script: python setup.py install --single-version-externally-managed --record=record.txt
   entry_points:

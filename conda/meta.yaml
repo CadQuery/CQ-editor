@@ -28,7 +28,7 @@ requirements:
     - path
     - logbook
     - requests
-
+    - qtconsole=5.4.1
 test:
   imports:
     - cq_editor

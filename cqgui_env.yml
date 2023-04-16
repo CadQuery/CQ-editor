@@ -11,3 +11,4 @@ dependencies:
   - logbook
   - requests
   - cadquery=master
+  - qtconsole=5.4.1

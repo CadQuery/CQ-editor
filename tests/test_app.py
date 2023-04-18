@@ -377,6 +377,13 @@ def test_debug(main,mocker):
 
     variables = win.components['variables_viewer']
 
+    traceback_view = win.components['traceback_viewer']
+
+    def check_no_error_occured():
+        '''check that no error occured while stepping through the debugger
+        '''
+        assert( '' == traceback_view.current_exception.text())
+
     viewer = win.components['viewer']
     assert(number_visible_items(viewer) == 3)
 
@@ -387,28 +394,31 @@ def test_debug(main,mocker):
     assert(debugger._frames == [])
 
     #test step through
-    ev = event_loop([lambda: (assert_func(variables.model().rowCount() == 4),
-                              assert_func(number_visible_items(viewer) == 3),
-                              step.triggered.emit()),
-                     lambda: (assert_func(variables.model().rowCount() == 4),
+    ev = event_loop([lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 3),
                               step.triggered.emit()),
                      lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 3),
                               step.triggered.emit()),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
+                              assert_func(number_visible_items(viewer) == 3),
+                              step.triggered.emit()),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit())])
 
     patch_debugger(debugger,ev)
 
     debug.triggered.emit(True)
+
+    check_no_error_occured()
+
     assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 4)
 
     #test exit debug
     ev = event_loop([lambda: (step.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 1),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 3),
                               debug.triggered.emit(False),)])
 
@@ -416,12 +426,14 @@ def test_debug(main,mocker):
 
     debug.triggered.emit(True)
 
+    check_no_error_occured()
+
     assert(variables.model().rowCount() == 1)
     assert(number_visible_items(viewer) == 3)
 
     #test breakpoint
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -431,12 +443,14 @@ def test_debug(main,mocker):
 
     debug.triggered.emit(True)
 
+    check_no_error_occured()
+
     assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 4)
-    
+
     #test breakpoint without using singals
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -446,12 +460,14 @@ def test_debug(main,mocker):
 
     debugger.debug(True)
 
+    check_no_error_occured()
+
     assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 4)
-    
+
     #test debug() without using singals
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -461,9 +477,11 @@ def test_debug(main,mocker):
     editor.debugger.set_breakpoints([(4,None)])
 
     debugger.debug(True)
-    
+
+    check_no_error_occured()
+
     CQ = obj_tree.CQ
-    
+
     # object 1 (defualt color)
     r,g,b,a = get_rgba(CQ.child(0).ais)
     assert( a == pytest.approx(0.2) )

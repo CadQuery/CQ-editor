@@ -18,7 +18,7 @@ from spyder.utils.icon_manager import icon
 from ..cq_utils import find_cq_objects, reload_cq
 from ..mixins import ComponentMixin
 
-DUMMY_FILE = '<string>'
+DUMMY_FILE = '<cq_editor-string>'
 
 
 class DbgState(Enum):
@@ -173,7 +173,7 @@ class Debugger(QObject,ComponentMixin):
 
         try:
             module = ModuleType('temp')
-            cq_code = compile(cq_script, '<string>', 'exec')
+            cq_code = compile(cq_script, DUMMY_FILE, 'exec')
             return cq_code, module
         except Exception:
             self.sigTraceback.emit(sys.exc_info(), cq_script)

@@ -396,23 +396,19 @@ def test_debug(main,mocker):
     #test step through
     ev = event_loop([
         lambda: (
-            qtbot.wait(50),
+            assert_func(variables.model().rowCount() == 4),
+            assert_func(number_visible_items(viewer) == 3),
+            step.triggered.emit()),
+        lambda: (
+            assert_func(variables.model().rowCount() == 4),
+            assert_func(number_visible_items(viewer) == 3),
+            step.triggered.emit()),
+        lambda: (
             assert_func(variables.model().rowCount() == 5),
             assert_func(number_visible_items(viewer) == 3),
             step.triggered.emit()),
         lambda: (
-            qtbot.wait(50),
             assert_func(variables.model().rowCount() == 5),
-            assert_func(number_visible_items(viewer) == 3),
-            step.triggered.emit()),
-        lambda: (
-            qtbot.wait(50),
-            assert_func(variables.model().rowCount() == 6),
-            assert_func(number_visible_items(viewer) == 3),
-            step.triggered.emit()),
-        lambda: (
-            qtbot.wait(50),
-            assert_func(variables.model().rowCount() == 6),
             assert_func(number_visible_items(viewer) == 4),
             cont.triggered.emit())
         ])
@@ -428,7 +424,7 @@ def test_debug(main,mocker):
 
     #test exit debug
     ev = event_loop([lambda: (step.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 4),
                               assert_func(number_visible_items(viewer) == 3),
                               debug.triggered.emit(False),)])
 
@@ -443,7 +439,7 @@ def test_debug(main,mocker):
 
     #test breakpoint
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 6),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -460,7 +456,7 @@ def test_debug(main,mocker):
 
     #test breakpoint without using singals
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 6),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -477,7 +473,7 @@ def test_debug(main,mocker):
 
     #test debug() without using singals
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 6),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 

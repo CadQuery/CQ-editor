@@ -8,7 +8,7 @@ from bdb import BdbQuit
 import cadquery as cq
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QEventLoop, QAbstractTableModel
-from PyQt5.QtWidgets import QApplication, QAction, QTableView
+from PyQt5.QtWidgets import QAction, QTableView
 
 from logbook import info
 from path import Path
@@ -172,7 +172,7 @@ class Debugger(QObject,ComponentMixin):
     def compile_code(self, cq_script):
 
         try:
-            module = ModuleType('temp')
+            module = ModuleType('__cq_main__')
             cq_code = compile(cq_script, DUMMY_FILE, 'exec')
             return cq_code, module
         except Exception:
@@ -344,8 +344,6 @@ class Debugger(QObject,ComponentMixin):
                 self.sigFrameChanged.emit(frame)
                 self.sigLocalsChanged.emit(frame.f_locals)
                 self.sigCQChanged.emit(find_cq_objects(frame.f_locals),True)
-
-                QApplication.processEvents()
 
                 self.inner_event_loop.exec_()
 

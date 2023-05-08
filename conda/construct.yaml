@@ -1,0 +1,19 @@
+name: CQ-editor
+company: Cadquery
+version: master
+installer_type: all
+icon_image: ../icons/cadquery_logo_dark.ico
+license_file: ../LICENSE
+register_python: False
+initialize_conda: False
+keep_pkgs: False
+
+channels:
+  - conda-forge
+  - cadquery
+
+specs:
+  - cq-editor
+  - nomkl
+
+menu_packages: []

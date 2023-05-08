@@ -50,7 +50,7 @@ sudo apt install qtbase5-dev qt5-qmake
 All platforms (Windows/Mac/Linux):
 ```
 pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-pip install --pre cadquery
+pip install --pre "cadquery>=2.2"
 pip install git+https://github.com/gumyr/build123d
 ```
 

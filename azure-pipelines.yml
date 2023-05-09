@@ -20,13 +20,22 @@ parameters:
     default:
       - 11
 
-jobs:
-- ${{ each minor in parameters.minor }}:
-  - template: conda-build.yml@templates
-    parameters:
-      name: Linux
-      vmImage: 'ubuntu-latest'
-      py_maj: 3
-      py_min: ${{minor}}
-      conda_bld: 3.21.6
-- template: constructor-build.yml@templates
+stages:
+- stage: build_conda_package
+  jobs:
+  - ${{ each minor in parameters.minor }}:
+    - template: conda-build.yml@templates
+      parameters:
+        name: Linux
+        vmImage: 'ubuntu-latest'
+        py_maj: 3
+        py_min: ${{minor}}
+        conda_bld: 3.21.6
+- stage: build_installers
+  jobs:
+  - template: constructor-build.yml@templates
+    vmImage: 'ubuntu-latest'
+  - template: constructor-build.yml@templates
+    vmImage: 'windows-latest'
+  - template: constructor-build.yml@templates
+    vmImage: 'macOS-latest'

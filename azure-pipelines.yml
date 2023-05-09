@@ -34,8 +34,11 @@ stages:
 - stage: build_installers
   jobs:
   - template: constructor-build.yml@templates
-    vmImage: 'ubuntu-latest'
+    parameters:
+      vmImage: 'ubuntu-latest'
   - template: constructor-build.yml@templates
-    vmImage: 'windows-latest'
+    parameters:
+      vmImage: 'windows-latest'
   - template: constructor-build.yml@templates
-    vmImage: 'macOS-latest'
+    parameters:
+      vmImage: 'macOS-latest'

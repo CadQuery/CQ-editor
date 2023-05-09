@@ -35,10 +35,13 @@ stages:
   jobs:
   - template: constructor-build.yml@templates
     parameters:
+      name: linux
       vmImage: 'ubuntu-latest'
   - template: constructor-build.yml@templates
     parameters:
+      name: win
       vmImage: 'windows-latest'
   - template: constructor-build.yml@templates
     parameters:
+      name: macos
       vmImage: 'macOS-latest'

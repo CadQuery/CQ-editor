@@ -12,7 +12,8 @@ channels:
   - cadquery
 
 specs:
-  - cq-editor
+  - cq-editor=master
+  - cadquery=master
   - nomkl
 
 menu_packages: []

@@ -55,8 +55,20 @@ stages:
     steps:
     - download: current
       artifact: installer_ubuntu-latest
+      targetPath: $(Build.SourcesDirectory)/out
     - download: current
       artifact: installer_windows-latest
+      targetPath: $(Build.SourcesDirectory)/out
     - download: current
       artifact: installer_macOS-latest
-    - bash: git clone https://github.com/CadQuery/CQ-editor.wiki.git && ls
+      targetPath: $(Build.SourcesDirectory)/out
+    - bash: |
+        git clone https://github.com/CadQuery/CQ-editor.wiki.git && \
+        ls && \
+        ls out && \
+        cp out/*.exe CQ-editor.wiki && \
+        cd CQ-editor.wiki && \
+        git add *exe && \
+        git commit -m"" && \
+        git push
+

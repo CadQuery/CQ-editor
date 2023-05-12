@@ -63,9 +63,9 @@ stages:
         git clone https://github.com/CadQuery/CQ-editor.wiki.git && \
         ls && \
         ls $(Pipeline.Workspace) && \
-        cp $(Pipeline.Workspace)/*.exe CQ-editor.wiki && \
+        cp $(Pipeline.Workspace)/*/*.* CQ-editor.wiki && \
         cd CQ-editor.wiki && \
-        git add *exe && \
+        git add *.exe *.sh *.pkg && \
         git commit -m"" && \
         git push
 

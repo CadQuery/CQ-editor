@@ -66,6 +66,6 @@ stages:
         cp $(Pipeline.Workspace)/installer*/*.* CQ-editor.wiki && \
         cd CQ-editor.wiki && \
         git add *.exe *.sh && \
-        git commit -m"" && \
+        git commit -m"Upload installers" && \
         git push
 

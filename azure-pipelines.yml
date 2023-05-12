@@ -50,7 +50,8 @@ stages:
 - stage: upload_installers
   jobs:
   - job: upload_to_wiki
-    vmImage: ubuntu-latest
+    pool:
+      vmImage: ubuntu-latest
     steps:
     - download: current
       artifact: installer_ubuntu-latest

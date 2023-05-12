@@ -1,7 +1,6 @@
 name: CQ-editor
 company: Cadquery
 version: master
-installer_type: all
 icon_image: ../icons/cadquery_logo_dark.ico
 license_file: ../LICENSE
 register_python: False

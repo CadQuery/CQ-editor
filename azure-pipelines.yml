@@ -67,7 +67,7 @@ stages:
     - task: GitHubRelease@1
       inputs:
         gitHubConnection: github.com_oauth
-        assets: CQ-editor-master-Windows-x86_64.exe
+        assets: CQ-editor-*.*
         action: edit
         tag: nightly
         addChangeLog: false

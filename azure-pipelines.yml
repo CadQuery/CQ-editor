@@ -72,3 +72,4 @@ stages:
         tag: nightly
         addChangeLog: false
         assetUploadMode: replace
+        isPreRelease: true

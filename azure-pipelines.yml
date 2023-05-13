@@ -63,9 +63,12 @@ stages:
         git clone https://github.com/CadQuery/CQ-editor.wiki.git && \
         ls && \
         ls $(Pipeline.Workspace) && \
-        cp $(Pipeline.Workspace)/installer*/*.* CQ-editor.wiki && \
-        cd CQ-editor.wiki && \
-        git add *.exe *.sh && \
-        git commit -m"Upload installers" && \
-        git push
-
+        cp $(Pipeline.Workspace)/installer*/*.* .
+    - task: GitHubRelease@1
+      inputs:
+        gitHubConnection: CadQuery
+        assets: CQ-editor-master-Windows-x86_64.exe
+        action: edit
+        tag: nightly
+        addChangeLog: false
+        assetUploadMode: replace

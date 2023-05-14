@@ -70,6 +70,7 @@ stages:
         assets: CQ-editor-*.*
         action: edit
         tag: nightly
+        target: d8e247d15001bf785ef7498d922b4b5aa017a9c9
         addChangeLog: false
         assetUploadMode: replace
         isPreRelease: true

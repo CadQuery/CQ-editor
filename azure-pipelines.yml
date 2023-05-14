@@ -51,7 +51,8 @@ stages:
 
 - stage: upload_installers
   jobs:
-  - job: upload_to_wiki
+  - job: upload_to_github
+    condition: ne(variables['Build.Reason'], 'PullRequest')
     pool:
       vmImage: ubuntu-latest
     steps:
@@ -61,11 +62,7 @@ stages:
       artifact: installer_windows-latest
     - download: current
       artifact: installer_macOS-latest
-    - bash: |
-        git clone https://github.com/CadQuery/CQ-editor.wiki.git && \
-        ls && \
-        ls $(Pipeline.Workspace) && \
-        cp $(Pipeline.Workspace)/installer*/*.* .
+    - bash: cp $(Pipeline.Workspace)/installer*/*.* .
     - task: GitHubRelease@1
       inputs:
         gitHubConnection: github.com_oauth

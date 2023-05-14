@@ -3,6 +3,8 @@ trigger:
     include:
       - master
       - refs/tags/*
+    exclude:
+      - refs/tags/nightly
 
 pr:
 - master

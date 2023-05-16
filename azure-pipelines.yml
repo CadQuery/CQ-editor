@@ -23,6 +23,15 @@ parameters:
       - 11
 
 stages:
+- stage: debug
+  jobs:
+  - job: debug_osx
+    pool:
+      vmImage: macOS-latest
+    steps:
+    - bash: wget https://github.com/CadQuery/CQ-editor/releases/download/nightly/CQ-editor-master-MacOSX-x86_64.sh
+    - bash: sh ./CQ-editor-master-MacOSX-x86_64.sh -b -p dummy && cd dummy && ./bin/cq-editor
+      
 - stage: build_conda_package
   jobs:
   - ${{ each minor in parameters.minor }}:

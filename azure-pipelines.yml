@@ -63,6 +63,8 @@ stages:
     - download: current
       artifact: installer_macOS-latest
     - bash: cp $(Pipeline.Workspace)/installer*/*.* .
+    - bash: ./CQ-editor-master-MacOSX-x86_64.sh -b -p dummy && cd dummy && find .
+      condition: eq( variables['Agent.OS'], 'Darwin' )
     - task: GitHubRelease@1
       inputs:
         gitHubConnection: github.com_oauth

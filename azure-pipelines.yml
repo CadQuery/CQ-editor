@@ -52,7 +52,7 @@ stages:
 - stage: upload_installers
   jobs:
   - job: upload_to_github
-    condition: ne(variables['Build.Reason'], 'PullRequest')
+    #condition: ne(variables['Build.Reason'], 'PullRequest')
     pool:
       vmImage: macOS-latest
     steps:

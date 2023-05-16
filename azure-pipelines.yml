@@ -54,7 +54,7 @@ stages:
   - job: upload_to_github
     condition: ne(variables['Build.Reason'], 'PullRequest')
     pool:
-      vmImage: ubuntu-latest
+      vmImage: macOS-latest
     steps:
     - download: current
       artifact: installer_ubuntu-latest

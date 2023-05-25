@@ -15,5 +15,6 @@ specs:
   - cq-editor=master
   - cadquery=master
   - nomkl
+  - mamba
 
 menu_packages: []

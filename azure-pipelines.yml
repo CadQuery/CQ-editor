@@ -81,4 +81,4 @@ stages:
     steps:
     - download: current
       artifact: installer_ubuntu-latest
-    - bash: sh ./CQ-editor-master-Linux-x86_64.sh -b -p dummy && cd dummy && && ./run.sh
+    - bash: sh ./CQ-editor-master-Linux-x86_64.sh -b -p dummy && cd dummy && ./run.sh

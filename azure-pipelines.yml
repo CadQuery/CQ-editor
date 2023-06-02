@@ -72,3 +72,13 @@ stages:
         addChangeLog: false
         assetUploadMode: replace
         isPreRelease: true
+
+- stage: verify
+  jobs:
+  - job: verify_linux
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - download: current
+      artifact: installer_ubuntu-latest
+    - bash: sh ./CQ-editor-master-Linux-x86_64.sh -b -p dummy && cd dummy && && ./run.sh

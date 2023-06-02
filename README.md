@@ -32,7 +32,7 @@ Stable release builds which do not require Anaconda are attached to the [latest 
 
 ### Development Packages
 
-Development builds are also available, but can be unstable and should be used at your own risk. You can download the newest build [here](https://github.com/CadQuery/CQ-editor/releases/tag/nightly). Install and run the shell (Linux/MacOS) or cmd (Windows) script in the root CQ-editor directory. The CQ-editor window should launch.
+Development builds are also available, but can be unstable and should be used at your own risk. You can download the newest build [here](https://github.com/CadQuery/CQ-editor/releases/tag/nightly). Install and run the `run.sh` (Linux/MacOS) or `run.bat` (Windows) script in the root CQ-editor directory. The CQ-editor window should launch.
 
 ### MacOS workarounds
 

@@ -18,3 +18,7 @@ specs:
   - mamba
 
 menu_packages: []
+
+extra_files:
+  - run.sh # [unix]
+  - run.bat # [win]

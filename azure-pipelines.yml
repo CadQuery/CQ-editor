@@ -74,7 +74,9 @@ stages:
         assetUploadMode: replace
         isPreRelease: true
 
+# stage left for debugging, disabled by default
 - stage: verify
+  condition: False 
   jobs:
   - job: verify_linux
     pool:

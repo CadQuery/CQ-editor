@@ -13,13 +13,13 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-    - uses: mamba-org/provision-with-micromamba@main
+    - uses: mamba-org/setup-micromamba@v1
       with:
         #miniconda-version: "latest"
         #auto-update-conda: true
         environment-name: test
         environment-file: environment.yml
-        extra-specs:
+        create-args: >-
             python=3.10
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
@@ -56,13 +56,13 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: mamba-org/provision-with-micromamba@main
+    - uses: mamba-org/setup-micromamba@v1
       with:
         #miniconda-version: "latest"
         #auto-update-conda: true
         environment-name: test
         environment-file: environment.yml
-        extra-specs:
+        create-args: >-
             python=3.10
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
@@ -95,13 +95,13 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: mamba-org/provision-with-micromamba@main
+    - uses: mamba-org/setup-micromamba@v1
       with:
         #miniconda-version: "latest"
         #auto-update-conda: true
         environment-name: test
         environment-file: environment.yml
-        extra-specs:
+        create-args: >-
             python=3.10
     - name: pip install cadquery CQ-editor ... etc
       shell: powershell

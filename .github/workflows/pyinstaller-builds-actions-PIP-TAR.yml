@@ -101,6 +101,8 @@ jobs:
         #auto-update-conda: true
         environment-name: test
         environment-file: environment.yml
+        init-shell: >-
+            powershell
         create-args: >-
             python=3.10
     - name: pip install cadquery CQ-editor ... etc

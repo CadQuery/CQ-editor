@@ -50,13 +50,13 @@ a = Analysis(['run.py'],
 
 # There is an issue that keeps the OpenSSL libraries from being copied to the output directory.
 # This should work if nothing else, but does not with GitHub Actions
-if sys.platform == 'win32':
-    from PyInstaller.depend.bindepend import getfullnameof
-    rel_data_path = ['PyQt5', 'Qt', 'bin']
-    a.datas += [
-        (getfullnameof('libssl-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
-        (getfullnameof('libcrypto-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
-    ]
+# if sys.platform == 'win32':
+#     from PyInstaller.depend.bindepend import getfullnameof
+#     rel_data_path = ['PyQt5', 'Qt', 'bin']
+#     a.datas += [
+#         (getfullnameof('libssl-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
+#         (getfullnameof('libcrypto-1_1-x64.dll'), os.path.join(*rel_data_path), 'DATA'),
+#     ]
 
 
 pyz = PYZ(a.pure, a.zipped_data,

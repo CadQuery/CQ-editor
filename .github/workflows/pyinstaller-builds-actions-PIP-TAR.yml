@@ -10,7 +10,7 @@ on:
         default: 'dir'
 jobs:
   build-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: mamba-org/setup-micromamba@v1
@@ -20,7 +20,7 @@ jobs:
         environment-name: test
         environment-file: environment.yml
         create-args: >-
-            python=3.10
+            python=3.11
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
@@ -63,7 +63,7 @@ jobs:
         environment-name: test
         environment-file: environment.yml
         create-args: >-
-            python=3.10
+            python=3.11
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
@@ -104,7 +104,7 @@ jobs:
         init-shell: >-
             powershell
         create-args: >-
-            python=3.10
+            python=3.11
     - name: pip install cadquery CQ-editor ... etc
       shell: powershell
       run: |

@@ -20,7 +20,7 @@ jobs:
         environment-name: test
         environment-file: environment.yml
         create-args: >-
-            python=3.11
+            python=3.10
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
@@ -63,7 +63,7 @@ jobs:
         environment-name: test
         environment-file: environment.yml
         create-args: >-
-            python=3.11
+            python=3.10
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
@@ -104,7 +104,7 @@ jobs:
         init-shell: >-
             powershell
         create-args: >-
-            python=3.11
+            python=3.10
     - name: pip install cadquery CQ-editor ... etc
       shell: powershell
       run: |

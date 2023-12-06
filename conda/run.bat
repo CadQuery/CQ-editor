@@ -1,2 +1,2 @@
 @echo off
-start /B Scripts/CQ-editor.exe
+start /B Scripts\conda.exe run -n base python Scripts\cq-editor-script.py

@@ -9,6 +9,7 @@ block_cipher = None
 spyder_data = Path(site.getsitepackages()[-1]) / 'spyder'
 parso_grammar = (Path(site.getsitepackages()[-1]) / 'parso/python').glob('grammar*')
 cqw_path = Path(site.getsitepackages()[-1]) / 'cq_warehouse'
+bdw_path = Path(site.getsitepackages()[-1]) / 'bd_warehouse'
 cq_path = Path(site.getsitepackages()[-1]) / 'cadquery'
 
 if sys.platform == 'linux':
@@ -29,6 +30,7 @@ a = Analysis(['run.py'],
              binaries=ocp_path + binaries1,
              datas=[(spyder_data, 'spyder'),
                     (cqw_path, 'cq_warehouse'),
+                    (bdw_path, 'bd_warehouse'),
                     (cq_path, 'cadquery')] +
                     [(p, 'parso/python') for p in parso_grammar] + datas1,
              hiddenimports=['ipykernel.datapub', 'debugpy', 'vtkmodules', 'vtkmodules.all',
@@ -38,7 +40,8 @@ a = Analysis(['run.py'],
                             'zmq.backend', 'cq_warehouse', 'cq_warehouse.bearing', 'cq_warehouse.chain',
                             'cq_warehouse.drafting', 'cq_warehouse.extensions', 'cq_warehouse.fastener',
                             'cq_warehouse.sprocket', 'cq_warehouse.thread', 'cq_gears', 'cq_cache',
-                            'build123d', 'cqmore'] + hiddenimports1 + hiddenimports2,
+                            'build123d', 'cqmore', 'bd_warehouse', 'bd_warehouse.pipe', 'bd_warehouse.flange',
+                            'bd_warehouse.thread', 'bd_warehouse.gears'] + hiddenimports1 + hiddenimports2,
              hookspath=['pyinstaller/extrahooks/'],
              runtime_hooks=['pyinstaller/pyi_rth_occ.py',
                             'pyinstaller/pyi_rth_fontconfig.py'],

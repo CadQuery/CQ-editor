@@ -16,7 +16,7 @@ class OCCTWidget(QWidget):
     sigObjectSelected = pyqtSignal(list)
     
     def __init__(self, parent=None, *,
-                 orbital_rotation: bool = True,
+                 turntable_rotation: bool = True,
                  rotate_step: float = 0.008,
                  zoom_step: float = 0.1):
         
@@ -31,7 +31,7 @@ class OCCTWidget(QWidget):
         self._old_pos = QPoint(0, 0)
         self._rotate_step = rotate_step
         self._zoom_step = zoom_step
-        self._orbital_rotation = orbital_rotation
+        self._turntable_rotation = turntable_rotation
         
         # OCCT secific things
         self.display_connection = Aspect_DisplayConnection()
@@ -44,10 +44,10 @@ class OCCTWidget(QWidget):
         # Trihedorn, lights, etc
         self.prepare_display()
 
-    def set_orbital_rotation(self, new_value: bool):
-        if self._orbital_rotation != new_value:
-            self._orbital_rotation = new_value
-            if self._orbital_rotation:
+    def set_turntable_rotation(self, new_value: bool):
+        if self._turntable_rotation != new_value:
+            self._turntable_rotation = new_value
+            if self._turntable_rotation:
                 self.view.SetUp(0, 0, 1)
 
     def prepare_display(self):
@@ -87,7 +87,7 @@ class OCCTWidget(QWidget):
         pos = event.pos()
 
         if event.button() == Qt.LeftButton:
-            if not self._orbital_rotation:
+            if not self._turntable_rotation:
                 self.view.StartRotation(pos.x(), pos.y())
         elif event.button() == Qt.RightButton:
             self.view.StartZoomAtPoint(pos.x(), pos.y())
@@ -100,7 +100,7 @@ class OCCTWidget(QWidget):
         x, y = pos.x(), pos.y()
 
         if event.buttons() == Qt.LeftButton:
-            if self._orbital_rotation:
+            if self._turntable_rotation:
                 delta_x, delta_y = x - self._old_pos.x(), y - self._old_pos.y()
                 cam = self.view.Camera()
                 z_rotation = gp_Trsf()

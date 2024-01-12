@@ -2,21 +2,13 @@ name: cq-occ-conda-test-py3
 channels:
   - CadQuery
   - conda-forge
-  - defaults
 dependencies:
   - pyqt=5
-  - pyparsing
   - pyqtgraph
-  - python=3.8
-  - spyder=4
-  - ocp=7.5
-  - path.py
+  - python=3.10
+  - spyder=5
+  - path
   - logbook
   - requests
-  - ezdxf
-  - typing_extensions
-  - scipy
-  - nptyping
-  - pip
-  - pip:
-    - "https://github.com/CadQuery/cadquery/archive/master.zip"
+  - cadquery=master
+  - qtconsole=5.4.1

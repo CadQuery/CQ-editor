@@ -29,8 +29,7 @@ class QtLogHandler(logging.Handler,logging.StringFormatterHandlerMixin):
         
         msg = self.format(record)
 
-        if sys.platform == "win32":
-            msg = strip_escape_sequences(msg)
+        msg = strip_escape_sequences(msg)
 
         QtCore.QMetaObject\
             .invokeMethod(self.log_widget,

@@ -1,5 +1,4 @@
 import sys
-import ctypes
 
 from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
 from logbook import Logger
@@ -32,8 +31,10 @@ class MainWindow(QMainWindow,MainMixin):
         MainMixin.__init__(self)
 
         self.setWindowIcon(icon('app'))
+
+        # Windows workaround - makes the correct task bar icon show up.
         if sys.platform == "win32":
-            # Make the correct task bar icon show up.
+            import ctypes
             myappid = 'cq-editor' # arbitrary string
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 

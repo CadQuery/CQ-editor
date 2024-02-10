@@ -275,7 +275,9 @@ class ObjectTree(QWidget,ComponentMixin):
             self.sigObjectsAdded[list].emit(ais_list)
 
     @pyqtSlot(object,str,object)
-    def addObject(self,obj,name='',options={}):
+    def addObject(self,obj,name='',options=None):
+
+        if options is None: options={}
 
         root = self.CQ
 

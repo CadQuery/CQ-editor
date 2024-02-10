@@ -43,7 +43,9 @@ class OCCViewer(QWidget,ComponentMixin):
          'values': ['Orthographic', 'Perspective', 'Stereo', 'MonoLeftEye', 'MonoRightEye']},
         {'name': 'Stereo Mode', 'type': 'list', 'value': 'QuadBuffer',
          'values': ['QuadBuffer', 'Anaglyph', 'RowInterlaced', 'ColumnInterlaced',
-                    'ChessBoard', 'SideBySide', 'OverUnder']}])
+                    'ChessBoard', 'SideBySide', 'OverUnder']},
+        {'name': 'Orbit Method', 'type': 'list', 'value': 'Turntable', 'values': ['Turntable', 'Trackball']},
+    ])
     IMAGE_EXTENSIONS = 'png'
 
     sigObjectSelected = pyqtSignal(list)
@@ -88,6 +90,14 @@ class OCCViewer(QWidget,ComponentMixin):
         if not self.preferences['Use gradient']:
             color2 = color1
         self.canvas.view.SetBgGradientColors(color1,color2,theToUpdate=True)
+
+        orbit_method = self.preferences['Orbit Method']
+        if orbit_method == 'Turntable':
+            self.canvas.set_turntable_rotation(True)
+        elif orbit_method == 'Trackball':
+            self.canvas.set_turntable_rotation(False)
+        else:
+            raise ValueError(orbit_method)
 
         self.canvas.update()
 

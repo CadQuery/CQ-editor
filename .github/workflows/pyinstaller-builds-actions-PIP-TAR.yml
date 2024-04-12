@@ -12,7 +12,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: mamba-org/setup-micromamba@v1
       with:
         #miniconda-version: "latest"
@@ -56,7 +56,7 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: mamba-org/setup-micromamba@v1
       with:
         #miniconda-version: "latest"
@@ -96,7 +96,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: mamba-org/setup-micromamba@v1
       with:
         #miniconda-version: "latest"

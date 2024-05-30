@@ -17,8 +17,10 @@ jobs:
       with:
         environment-name: test
         environment-file: environment.yml
-        create-args: >-
-            python=3.11
+        init-shell: >-
+            bash
+        # create-args: >-
+        #     python=3.11
     - name: pip install cadquery CQ-editor ... etc
       shell: bash
       run: |
@@ -27,7 +29,6 @@ jobs:
         sudo apt install -y libxkbcommon-x11-0
         sudo apt install -y libxcb-xinerama0
         sudo apt install -y qtbase5-dev qt5-qmake
-        micromamba activate test
         micromamba info
         pip install pyopengl
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
@@ -61,12 +62,13 @@ jobs:
       with:
         environment-name: test
         environment-file: environment.yml
-        create-args: >-
-            python=3.11
+        init-shell: >-
+            bash
+        # create-args: >-
+        #     python=3.11
     - name: pip install cadquery CQ-editor ... etc
       shell: bash
       run: |
-        micromamba activate test
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install --pre git+https://github.com/cadquery/cadquery casadi
@@ -103,12 +105,11 @@ jobs:
         environment-file: environment.yml
         init-shell: >-
             bash
-        create-args: >-
-            python=3.11
+        # create-args: >-
+        #     python=3.11
     - name: pip install cadquery CQ-editor ... etc
       shell: bash
       run: |
-        micromamba activate test
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install --pre git+https://github.com/cadquery/cadquery casadi

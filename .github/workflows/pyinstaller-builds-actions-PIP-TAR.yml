@@ -22,7 +22,7 @@ jobs:
         # create-args: >-
         #     python=3.11
     - name: pip install cadquery CQ-editor ... etc
-      shell: bash
+      shell: bash --login {0}
       run: |
         sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
         sudo apt install -y libxkbcommon0
@@ -44,7 +44,7 @@ jobs:
         pip install git+https://github.com/JustinSDK/cqMore
         pip list
     - name: Run build
-      shell: bash
+      shell: bash --login {0}
       run: |
         micromamba activate test
         micromamba info
@@ -67,7 +67,7 @@ jobs:
         # create-args: >-
         #     python=3.11
     - name: pip install cadquery CQ-editor ... etc
-      shell: bash
+      shell: bash --login {0}
       run: |
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
@@ -85,7 +85,7 @@ jobs:
         pip install git+https://github.com/JustinSDK/cqMore
         pip list
     - name: Run build
-      shell: bash
+      shell: bash --login {0}
       run: |
         micromamba activate test
         micromamba info
@@ -108,7 +108,7 @@ jobs:
         # create-args: >-
         #     python=3.11
     - name: pip install cadquery CQ-editor ... etc
-      shell: bash
+      shell: bash --login {0}
       run: |
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
@@ -123,7 +123,7 @@ jobs:
         pip install git+https://github.com/JustinSDK/cqMore
         pip list
     - name: Run build
-      shell: bash
+      shell: bash --login {0}
       run: |
         micromamba activate test
         micromamba info

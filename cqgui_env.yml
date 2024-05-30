@@ -5,7 +5,7 @@ channels:
 dependencies:
   - pyqt=5
   - pyqtgraph
-  - python=3.10
+  - python=3.11
   - spyder=5
   - path
   - logbook

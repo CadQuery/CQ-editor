@@ -27,6 +27,7 @@ jobs:
         sudo apt install -y libxkbcommon-x11-0
         sudo apt install -y libxcb-xinerama0
         sudo apt install -y qtbase5-dev qt5-qmake
+        micromamba activate test
         micromamba info
         pip install pyopengl
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
@@ -44,6 +45,7 @@ jobs:
     - name: Run build
       shell: bash
       run: |
+        micromamba activate test
         micromamba info
         pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
         cp /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
@@ -64,6 +66,7 @@ jobs:
     - name: pip install cadquery CQ-editor ... etc
       shell: bash
       run: |
+        micromamba activate test
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install --pre git+https://github.com/cadquery/cadquery casadi
@@ -82,6 +85,7 @@ jobs:
     - name: Run build
       shell: bash
       run: |
+        micromamba activate test
         micromamba info
         pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
         cp /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
@@ -98,12 +102,13 @@ jobs:
         environment-name: test
         environment-file: environment.yml
         init-shell: >-
-            powershell
+            bash
         create-args: >-
             python=3.11
     - name: pip install cadquery CQ-editor ... etc
       shell: bash
       run: |
+        micromamba activate test
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install --pre git+https://github.com/cadquery/cadquery casadi
@@ -119,6 +124,7 @@ jobs:
     - name: Run build
       shell: bash
       run: |
+        micromamba activate test
         micromamba info
         pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
         cp D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\pyinstaller\CQ-editor.cmd D:\a\jmwright-CQ-Editor\jmwright-CQ-Editor\dist\

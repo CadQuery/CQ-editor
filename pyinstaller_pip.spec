@@ -14,13 +14,13 @@ cq_path = Path(site.getsitepackages()[-1]) / 'cadquery'
 
 if sys.platform == 'linux':
     occt_dir = os.path.join(Path(sys.prefix), 'share', 'opencascade')
-    ocp_path = [(os.path.join(HOMEPATH, 'OCP.cpython-310-x86_64-linux-gnu.so'), '.')]
+    ocp_path = [(os.path.join(HOMEPATH, 'OCP.cpython-311-x86_64-linux-gnu.so'), '.')]
 elif sys.platform == 'darwin':
     occt_dir = os.path.join(Path(sys.prefix), 'share', 'opencascade')
-    ocp_path = [(os.path.join(HOMEPATH, 'OCP.cpython-310-darwin.so'), '.')]
+    ocp_path = [(os.path.join(HOMEPATH, 'OCP.cpython-311-darwin.so'), '.')]
 elif sys.platform == 'win32':
     occt_dir = os.path.join(Path(sys.prefix), 'Library', 'share', 'opencascade')
-    ocp_path = [(os.path.join(HOMEPATH, 'OCP.cp310-win_amd64.pyd'), '.')]
+    ocp_path = [(os.path.join(HOMEPATH, 'OCP.cp311-win_amd64.pyd'), '.')]
 
 datas1, binaries1, hiddenimports1 = collect_all('debugpy')
 hiddenimports2 = collect_submodules('xmlrpc')

@@ -19,15 +19,11 @@ jobs:
         environment-file: environment.yml
         init-shell: >-
             bash
-        # create-args: >-
-        #     python=3.11
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
         sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
-        sudo apt install -y libxkbcommon0
-        sudo apt install -y libxkbcommon-x11-0
-        sudo apt install -y libxcb-xinerama0
+        sudo apt install -y libxkbcommon0 libxkbcommon-x11-0 libxcb-xinerama0
         sudo apt install -y qtbase5-dev qt5-qmake
         micromamba info
         pip install pyopengl
@@ -64,8 +60,6 @@ jobs:
         environment-file: environment.yml
         init-shell: >-
             bash
-        # create-args: >-
-        #     python=3.11
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
@@ -105,13 +99,12 @@ jobs:
         environment-file: environment.yml
         init-shell: >-
             bash
-        # create-args: >-
-        #     python=3.11
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
+        pip install https://github.com/CadQuery/ocp-build-system/releases/download/7.7.2.0/cadquery_ocp-7.7.2-cp311-cp311-macosx_11_0_arm64.whl
         pip install --pre git+https://github.com/cadquery/cadquery casadi
         pip install pyinstaller>=5.6 git+https://github.com/jdegenstein/pyinstaller-hooks-contrib
         pip install path
@@ -146,8 +139,6 @@ jobs:
         environment-file: environment.yml
         init-shell: >-
             bash
-        # create-args: >-
-        #     python=3.11
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
@@ -172,6 +163,7 @@ jobs:
         cp D:/a/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.cmd D:/a/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
 
     - name: Zip artifact (workaround for too many files during artifact upload)
+      shell: bash --login {0}
       run: zip release.zip dist/ -r
       
     - uses: actions/upload-artifact@v4

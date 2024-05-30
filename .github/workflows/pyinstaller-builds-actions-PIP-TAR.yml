@@ -93,7 +93,7 @@ jobs:
         cp /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
     - uses: actions/upload-artifact@v4
       with:
-        name: CQ-editor-MacOS
+        name: CQ-editor-MacOS-x86_64
         path: dist
   build-macos-arm64:
     runs-on: macos-14
@@ -134,7 +134,7 @@ jobs:
         cp /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
     - uses: actions/upload-artifact@v4
       with:
-        name: CQ-editor-MacOS
+        name: CQ-editor-MacOS-arm64
         path: dist
   build-windows:
     runs-on: windows-latest
@@ -170,7 +170,11 @@ jobs:
         micromamba info
         pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
         cp D:/a/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.cmd D:/a/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
+
+    - name: Zip artifact (workaround for too many files during artifact upload)
+      run: zip release.zip dist/ -r
+      
     - uses: actions/upload-artifact@v4
       with:
         name: CQ-editor-Windows
-        path: dist
+        path: release.zip

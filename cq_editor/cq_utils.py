@@ -17,9 +17,11 @@ from PyQt5.QtGui import QColor
 DEFAULT_FACE_COLOR = Quantity_Color(GOLD)
 DEFAULT_MATERIAL = Graphic3d_MaterialAspect(Graphic3d_NOM_JADE)
 
+CQ_OBJECTS = (cq.Workplane, cq.Shape, cq.Assembly, cq.Sketch)
+
 def find_cq_objects(results : dict):
 
-    return {k:SimpleNamespace(shape=v,options={}) for k,v in results.items() if isinstance(v,cq.Workplane)}
+    return {k:SimpleNamespace(shape=v,options={}) for k,v in results.items() if isinstance(v, CQ_OBJECTS)}
 
 def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Sketch]):
 

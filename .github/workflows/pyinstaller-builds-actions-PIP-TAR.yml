@@ -165,7 +165,7 @@ jobs:
 
     - name: 7zip artifact (workaround for too many files during artifact upload)
       shell: bash --login {0}
-      run: 7z a release.zip .\dist\*
+      run: 7z a release.zip ./dist/*
       
     - uses: actions/upload-artifact@v4
       with:

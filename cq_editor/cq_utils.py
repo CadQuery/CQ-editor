@@ -2,7 +2,7 @@ import cadquery as cq
 from cadquery.occ_impl.assembly import toCAF
 
 from typing import List, Union
-from imp import reload
+from importlib import reload
 from types import SimpleNamespace
 
 from OCP.XCAFPrs import XCAFPrs_AISObject

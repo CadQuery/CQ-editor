@@ -3,7 +3,7 @@ from cadquery.occ_impl.assembly import toCAF
 
 from typing import List, Union
 from imp import reload
-from types import SimpleNamespace
+from types import SimpleNamespace, ModuleType
 
 from OCP.XCAFPrs import XCAFPrs_AISObject
 from OCP.TopoDS import TopoDS_Shape
@@ -18,10 +18,21 @@ DEFAULT_FACE_COLOR = Quantity_Color(GOLD)
 DEFAULT_MATERIAL = Graphic3d_MaterialAspect(Graphic3d_NOM_JADE)
 
 CQ_OBJECTS = (cq.Workplane, cq.Shape, cq.Assembly, cq.Sketch)
+CQ_OBJECT_NAMES = tuple(f'{el.__module__}.{el.__qualname__}' for el in CQ_OBJECTS)
+
+
+def is_cq_instance(obj):
+
+    t = type(obj)
+    rv = f'{t.__module__}.{t.__qualname__}' in CQ_OBJECT_NAMES
+
+    return rv
+
 
 def find_cq_objects(results : dict):
 
-    return {k:SimpleNamespace(shape=v,options={}) for k,v in results.items() if isinstance(v, CQ_OBJECTS)}
+    return {k:SimpleNamespace(shape=v,options={}) for k,v in results.items() if is_cq_instance(v)}
+
 
 def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Sketch]):
 
@@ -49,12 +60,14 @@ def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.
 
     return cq.Compound.makeCompound(vals)
 
+
 def to_workplane(obj : cq.Shape):
 
     rv = cq.Workplane('XY')
     rv.objects = [obj,]
 
     return rv
+
 
 def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Assembly, AIS_InteractiveObject],
              options={}):
@@ -84,6 +97,7 @@ def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Sha
 
     return ais,shape
 
+
 def export(obj : Union[cq.Workplane, List[cq.Workplane]], type : str,
            file, precision=1e-1):
 
@@ -95,6 +109,7 @@ def export(obj : Union[cq.Workplane, List[cq.Workplane]], type : str,
         comp.exportStep(file)
     elif type == 'brep':
         comp.exportBrep(file)
+
 
 def to_occ_color(color) -> Quantity_Color:
 
@@ -114,6 +129,7 @@ def to_occ_color(color) -> Quantity_Color:
                           color.blueF(),
                           TOC_RGB)
 
+
 def get_occ_color(obj : Union[AIS_InteractiveObject, Quantity_Color]) -> QColor:
 
     if isinstance(obj, AIS_InteractiveObject):
@@ -124,6 +140,7 @@ def get_occ_color(obj : Union[AIS_InteractiveObject, Quantity_Color]) -> QColor:
 
     return QColor.fromRgbF(color.Red(), color.Green(), color.Blue())
 
+
 def set_color(ais : AIS_Shape, color : Quantity_Color) -> AIS_Shape:
 
     drawer = ais.Attributes()
@@ -131,6 +148,7 @@ def set_color(ais : AIS_Shape, color : Quantity_Color) -> AIS_Shape:
     drawer.ShadingAspect().SetColor(color)
 
     return ais
+
 
 def set_material(ais : AIS_Shape, material: Graphic3d_MaterialAspect) -> AIS_Shape:
 
@@ -140,6 +158,7 @@ def set_material(ais : AIS_Shape, material: Graphic3d_MaterialAspect) -> AIS_Sha
 
     return ais
 
+
 def set_transparency(ais : AIS_Shape, alpha: float) -> AIS_Shape:
 
     drawer = ais.Attributes()
@@ -147,6 +166,7 @@ def set_transparency(ais : AIS_Shape, alpha: float) -> AIS_Shape:
     drawer.ShadingAspect().SetTransparency(alpha)
 
     return ais
+
 
 def reload_cq():
 

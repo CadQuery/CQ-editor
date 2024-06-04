@@ -69,22 +69,7 @@ class TracebackPane(QWidget,ComponentMixin):
                 root.addChild(QTreeWidgetItem([el.filename,
                                                str(el.lineno),
                                                line]))
-            
-            for el in tb:
-                if 'string>' in el.filename:
-                    skip = False
-                if skip:
-                    continue
 
-                #workaround of the traceback module
-                if el.line == '':
-                    line = code[el.lineno-1].strip()
-                else:
-                    line = el.line
-                
-                root.addChild(QTreeWidgetItem([el.filename,
-                                               str(el.lineno),
-                                               line]))
 
             exc_name = t.__name__
             exc_msg = str(exc)

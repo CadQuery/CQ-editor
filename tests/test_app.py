@@ -517,6 +517,10 @@ code_err2 = \
 result = cq.Workplane("XY" ).box(3, 3, 0.5).edges("|Z").fillet(0.125)
 f()
 '''
+code_err3 =\
+'''import cadquery as cq
+result = cq.Workplane("XY" ).box(3, 3, 0)
+'''
 
 def test_traceback(main):
 
@@ -560,9 +564,17 @@ def test_traceback(main):
 
     assert('NameError' in traceback_view.current_exception.text())
     assert(hasattr(sys, 'last_traceback'))
+    assert(traceback_view.tree.root.childCount() == 1)
 
     # restore the tracing function
     sys.settrace(trace_function)
+
+    # check if errors deeper in CQ are reported too
+    editor.set_text(code_err3)
+    run.triggered.emit()
+
+    assert('Standard_DomainError' in traceback_view.current_exception.text())
+    assert(traceback_view.tree.root.childCount() == 3) # 1 in user code + 2 in CQ code
 
 @pytest.fixture
 def editor(qtbot):

@@ -70,7 +70,6 @@ class TracebackPane(QWidget,ComponentMixin):
                                                str(el.lineno),
                                                line]))
 
-
             exc_name = t.__name__
             exc_msg = str(exc)
             exc_msg = exc_msg.replace('<', '&lt;').replace('>', '&gt;') #replace <> 

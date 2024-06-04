@@ -29,7 +29,7 @@ jobs:
         pip install pyopengl
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install -vvv --pre git+https://github.com/cadquery/cadquery casadi
-        pip install pyinstaller>=5.6 git+https://github.com/jdegenstein/pyinstaller-hooks-contrib
+        pip install pyinstaller>=5.6
         pip install path
         pip install jupyter-rfb
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
@@ -66,7 +66,7 @@ jobs:
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install --pre git+https://github.com/cadquery/cadquery casadi
-        pip install pyinstaller>=5.6 git+https://github.com/jdegenstein/pyinstaller-hooks-contrib
+        pip install pyinstaller>=5.6
         pip install path
         pip uninstall -y PyQt5
         pip install PyQt5==5.15.7
@@ -107,7 +107,7 @@ jobs:
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install https://github.com/CadQuery/ocp-build-system/releases/download/7.7.2.0/cadquery_ocp-7.7.2-cp311-cp311-macosx_11_0_arm64.whl
         pip install --pre git+https://github.com/cadquery/cadquery casadi
-        pip install pyinstaller>=5.6 git+https://github.com/jdegenstein/pyinstaller-hooks-contrib
+        pip install pyinstaller>=5.6
         pip install path
         pip uninstall -y PyQt5
         pip install PyQt5==5.15.10
@@ -146,7 +146,7 @@ jobs:
         micromamba info
         pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
         pip install --pre git+https://github.com/cadquery/cadquery casadi
-        pip install pyinstaller>=5.6 git+https://github.com/jdegenstein/pyinstaller-hooks-contrib
+        pip install pyinstaller>=5.6
         pip install path
         pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
         pip install git+https://github.com/gumyr/bd_warehouse

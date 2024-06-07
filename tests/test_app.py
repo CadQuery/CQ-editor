@@ -84,6 +84,13 @@ solid1 = cq.Solid.extrudeLinear(cq.Face.makeFromWires(wire0), cq.Vector(0, 0, 1)
 r1 = cq.Workplane(solid1).translate((10, 0, 0))
 """
 
+code_show_all = """import cadquery as cq
+b = cq.Workplane().box(1,1,1)
+sh = b.val()
+a = cq.Assembly().add(sh)
+sk = cq.Sketch().rect(1,1)
+"""
+
 def _modify_file(code, path="test.py"):
     with open(path, "w", 1) as f:
         f.write(code)
@@ -251,11 +258,11 @@ def test_render(main):
     debugger._actions['Run'][0].triggered.emit()
 
     qtbot.wait(100)
-    assert(obj_tree_comp.CQ.childCount() == 1)
+    assert(obj_tree_comp.CQ.childCount() == 3)
 
     debugger._actions['Run'][0].triggered.emit()
     qtbot.wait(100)
-    assert(obj_tree_comp.CQ.childCount() == 1)
+    assert(obj_tree_comp.CQ.childCount() == 3)
 
 def test_export(main,mocker):
 
@@ -504,6 +511,10 @@ code_err2 = \
 result = cq.Workplane("XY" ).box(3, 3, 0.5).edges("|Z").fillet(0.125)
 f()
 '''
+code_err3 =\
+'''import cadquery as cq
+result = cq.Workplane("XY" ).box(3, 3, 0)
+'''
 
 def test_traceback(main):
 
@@ -547,9 +558,17 @@ def test_traceback(main):
 
     assert('NameError' in traceback_view.current_exception.text())
     assert(hasattr(sys, 'last_traceback'))
+    assert(traceback_view.tree.root.childCount() == 1)
 
     # restore the tracing function
     sys.settrace(trace_function)
+
+    # check if errors deeper in CQ are reported too
+    editor.set_text(code_err3)
+    run.triggered.emit()
+
+    assert('Standard_DomainError' in traceback_view.current_exception.text())
+    assert(traceback_view.tree.root.childCount() == 3) # 1 in user code + 2 in CQ code
 
 @pytest.fixture
 def editor(qtbot):
@@ -1482,3 +1501,22 @@ def test_modulefinder(tmp_path, main):
     qtbot.wait(100)
     assert("Cannot determine imported modules" in log.toPlainText().splitlines()[-1])
 
+def test_show_all(main):
+
+    qtbot, win = main
+
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    object_tree = win.components['object_tree']
+
+    # remove all objects
+    object_tree.removeObjects()
+    assert(object_tree.CQ.childCount() == 0)
+
+    # add code wtih Shape, Workplane, Assy, Sketch
+    editor.set_text(code_show_all)
+
+    # Run and check if all are shown
+    debugger._actions['Run'][0].triggered.emit()
+
+    assert(object_tree.CQ.childCount() == 4)

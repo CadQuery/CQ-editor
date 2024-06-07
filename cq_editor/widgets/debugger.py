@@ -8,8 +8,8 @@ from bdb import BdbQuit
 import cadquery as cq
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QEventLoop, QAbstractTableModel
-from PyQt5.QtWidgets import (QAction,
-                             QTableView)
+from PyQt5.QtWidgets import QAction, QTableView
+
 from logbook import info
 from path import Path
 from pyqtgraph.parametertree import Parameter
@@ -19,7 +19,7 @@ from random import randrange as rrr,seed
 from ..cq_utils import find_cq_objects, reload_cq
 from ..mixins import ComponentMixin
 
-DUMMY_FILE = '<string>'
+DUMMY_FILE = '<cq_editor-string>'
 
 
 class DbgState(Enum):
@@ -165,16 +165,24 @@ class Debugger(QObject,ComponentMixin):
     def get_current_script(self):
 
         return self.parent().components['editor'].get_text_with_eol()
+    
+    def get_current_script_path(self):
+        
+        filename = self.parent().components["editor"].filename
+        if filename:
+            return Path(filename).abspath()
 
     def get_breakpoints(self):
 
         return self.parent().components['editor'].debugger.get_breakpoints()
 
-    def compile_code(self, cq_script):
+    def compile_code(self, cq_script, cq_script_path=None):
 
         try:
-            module = ModuleType('temp')
-            cq_code = compile(cq_script, '<string>', 'exec')
+            module = ModuleType('__cq_main__')
+            if cq_script_path:
+                module.__dict__["__file__"] = cq_script_path
+            cq_code = compile(cq_script, DUMMY_FILE, 'exec')
             return cq_code, module
         except Exception:
             self.sigTraceback.emit(sys.exc_info(), cq_script)
@@ -183,8 +191,7 @@ class Debugger(QObject,ComponentMixin):
     def _exec(self, code, locals_dict, globals_dict):
 
         with ExitStack() as stack:
-            fname = self.parent().components['editor'].filename
-            p = Path(fname if fname else '').abspath().dirname()
+            p = (self.get_current_script_path() or Path("")).abspath().dirname()
 
             if self.preferences['Add script dir to path'] and p.exists():
                 sys.path.insert(0,p)
@@ -251,7 +258,8 @@ class Debugger(QObject,ComponentMixin):
             reload_cq()
 
         cq_script = self.get_current_script()
-        cq_code,module = self.compile_code(cq_script)
+        cq_script_path = self.get_current_script_path()
+        cq_code,module = self.compile_code(cq_script, cq_script_path)
 
         if cq_code is None: return
 
@@ -292,7 +300,8 @@ class Debugger(QObject,ComponentMixin):
             self.state = DbgState.STEP
 
             self.script = self.get_current_script()
-            code,module = self.compile_code(self.script)
+            cq_script_path = self.get_current_script_path()
+            code,module = self.compile_code(self.script, cq_script_path)
 
             if code is None:
                 self.sigDebugging.emit(False)

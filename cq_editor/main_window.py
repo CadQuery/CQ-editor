@@ -32,6 +32,12 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.setWindowIcon(icon('app'))
 
+        # Windows workaround - makes the correct task bar icon show up.
+        if sys.platform == "win32":
+            import ctypes
+            myappid = 'cq-editor' # arbitrary string
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
         self.viewer = OCCViewer(self)
         self.setCentralWidget(self.viewer.canvas)
 

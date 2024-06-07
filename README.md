@@ -13,6 +13,7 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 
 ## Notable features
 
+* Automatic code reloading - you can use your favourite editor
 * OCCT based
 * Graphical debugger for CadQuery scripts
   * Step through script and watch how your model changes
@@ -25,27 +26,37 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 
 ## Installation - Pre-Built Packages (Recommended)
 
-### Release Packages
+~~### Release Packages~~
 
-Stable release builds which do not require Anaconda are attached to the [latest release](https://github.com/CadQuery/CQ-editor/releases). Download the zip file for your operating system, extract it, and run the CQ-editor script for your OS (CQ-editor.cmd for Windows, CQ-editor.sh for Linux and MacOS). On Windows you should be able to simply double-click on CQ-editor.cmd. On Linux and MacOS you may need to make the script executable with `chmod +x CQ-editor.sh` and run the script from the command line. The script contains an environment variable export that may be required to get CQ-editor to launch correctly on MacOS Big Sur, so it is better to use the script than to launch CQ-editor directly.
+~~Stable release builds which do not require Anaconda are attached to the [latest release](https://github.com/CadQuery/CQ-editor/releases). Download installer for your operating system, extract it, and run the CQ-editor script for your OS (CQ-editor.cmd for Windows, CQ-editor.sh for Linux and MacOS). On Windows you should be able to simply double-click on CQ-editor.cmd. On Linux and MacOS you may need to make the script executable with `chmod +x CQ-editor.sh` and run the script from the command line. The script contains an environment variable export that may be required to get CQ-editor to launch correctly on MacOS Big Sur, so it is better to use the script than to launch CQ-editor directly.~~
 
 ### Development Packages
 
-Development builds are also available, but can be unstable and should be used at your own risk. Click on the newest build with a green checkmark [here](https://github.com/jmwright/CQ-editor/actions?query=workflow%3Abuild), wait for the _Artifacts_ section at the bottom of the page to load, and then click on the appropriate download for your operating system. Extract the archive file and run the shell (Linux/MacOS) or cmd (Windows) script in the root CQ-editor directory. The CQ-editor window should launch.
+Development builds are also available, but can be unstable and should be used at your own risk. You can download the newest build [here](https://github.com/CadQuery/CQ-editor/releases/tag/nightly). Install and run the `run.sh` (Linux/MacOS) or `run.bat` (Windows) script in the root CQ-editor directory. The CQ-editor window should launch.
 
-## Installation (Anaconda)
+### MacOS workarounds
 
-Use conda to install:
+On later MacOS versions you may also need `xattr -r -d com.apple.quarantine path/to/CQ-editor-MacOS`.
+
+## Installation (conda/mamba)
+
+Use conda or mamba to install:
 ```
-conda install -c cadquery -c conda-forge cq-editor=master
+mamba install -c cadquery -c conda-forge cq-editor=master
 ```
 and then simply type `cq-editor` to run it. This installs the latest version built directly from the HEAD of this repository.
 
 Alternatively clone this git repository and set up the following conda environment:
 ```
-conda env create -f cqgui_env.yml -n cqgui
-conda activate cqgui
+mamba env create -f cqgui_env.yml -n cqgui
+mamba activate cqgui
 python run.py
+```
+
+If you are concerned about mamba/conda modifying your shell settings, you can use [micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html):
+```
+micromamba install -n base -c cadquery cq-editor
+micromamba run -n base cq-editor
 ```
 
 On some linux distributions (e.g. `Ubuntu 18.04`) it might be necessary to install additonal packages:
@@ -61,10 +72,10 @@ dnf install -y mesa-libGLU mesa-libGL mesa-libGLU-devel
 
 ### Showing Objects
 
-By default, CQ-editor will display a 3D representation of all `Workplane` objects in a script with a default color and alpha (transparency). To have more control over what is shown, and what the color and alpha settings are, the `show_object` method can be used. `show_object` tells CQ-editor to explicity display an object, and accepts the `options` parameter. The `options` parameter is a dictionary of rendering options named `alpha` and `color`. `alpha` is scaled between 0.0 and 1.0, with 0.0 being completely opaque and 1.0 being completely transparent. The color is set using R (red), G (green) and B (blue) values, and each one is scaled from 0 to 255. Either option or both can be omitted.
+By default, CQ-editor will display a 3D representation of all `Workplane` objects in a script with a default color and alpha (transparency). To have more control over what is shown, and what the color and alpha settings are, the `show_object` method can be used. `show_object` tells CQ-editor to explicity display an object, and accepts the `options` parameter. The `options` parameter is a dictionary of rendering options named `alpha` and `color`. `alpha` is scaled between 0.0 and 1.0, with 0.0 being completely opaque and 1.0 being completely transparent. The color is set using R (red), G (green) and B (blue) values, and each one is scaled from 0 to 255. Either option or both can be omitted. The `name` parameter can assign a custom name which will appear in the objects pane of CQ-editor.
 
 ```python
-show_object(result, options={"alpha":0.5, "color": (64, 164, 223)})
+show_object(result, name="somename", options={"alpha":0.5, "color": (64, 164, 223)})
 ```
 
 Note that `show_object` works for `Shape` and `TopoDS_Shape` objects too. In order to display objects from the embedded Python console use `show`.

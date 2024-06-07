@@ -401,24 +401,18 @@ def test_debug(main,mocker):
     assert(debugger._frames == [])
 
     #test step through
-    ev = event_loop([
-        lambda: (
-            assert_func(variables.model().rowCount() == 4),
-            assert_func(number_visible_items(viewer) == 3),
-            step.triggered.emit()),
-        lambda: (
-            assert_func(variables.model().rowCount() == 4),
-            assert_func(number_visible_items(viewer) == 3),
-            step.triggered.emit()),
-        lambda: (
-            assert_func(variables.model().rowCount() == 5),
-            assert_func(number_visible_items(viewer) == 3),
-            step.triggered.emit()),
-        lambda: (
-            assert_func(variables.model().rowCount() == 5),
-            assert_func(number_visible_items(viewer) == 4),
-            cont.triggered.emit())
-        ])
+    ev = event_loop([lambda: (assert_func(variables.model().rowCount() == 5),
+                              assert_func(number_visible_items(viewer) == 3),
+                              step.triggered.emit()),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
+                              assert_func(number_visible_items(viewer) == 3),
+                              step.triggered.emit()),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
+                              assert_func(number_visible_items(viewer) == 3),
+                              step.triggered.emit()),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
+                              assert_func(number_visible_items(viewer) == 4),
+                              cont.triggered.emit())])
 
     patch_debugger(debugger,ev)
 
@@ -431,7 +425,7 @@ def test_debug(main,mocker):
 
     #test exit debug
     ev = event_loop([lambda: (step.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 4),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 3),
                               debug.triggered.emit(False),)])
 
@@ -446,7 +440,7 @@ def test_debug(main,mocker):
 
     #test breakpoint
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -463,7 +457,7 @@ def test_debug(main,mocker):
 
     #test breakpoint without using singals
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -480,7 +474,7 @@ def test_debug(main,mocker):
 
     #test debug() without using singals
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -1526,3 +1520,29 @@ def test_show_all(main):
     debugger._actions['Run'][0].triggered.emit()
 
     assert(object_tree.CQ.childCount() == 4)
+
+code_randcolor = \
+"""import cadquery as cq
+b = cq.Workplane().box(8, 3, 4)
+for i in range(10):
+    show_object(b.translate((0,5*i,0)), options=rand_color(alpha=0))
+    show_object(b.translate((0,5*i,0)), options=rand_color(0, True))
+"""
+
+def test_randcolor(main):
+    
+    qtbot, win = main
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_randcolor)
+    debugger._actions['Run'][0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 2*10)

@@ -282,6 +282,7 @@ class MainWindow(QMainWindow,MainMixin):
         #CQ related items
         console.push_vars({'show' : obj_tree.addObject,
                            'show_object' : obj_tree.addObject,
+                           'rand_color' : self.components['debugger']._rand_color,
                            'cq' : cq,
                            'log' : Logger(self.name).info})
 

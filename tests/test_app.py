@@ -1526,6 +1526,7 @@ code_randcolor = \
 b = cq.Workplane().box(8, 3, 4)
 for i in range(10):
     show_object(b.translate((0,5*i,0)), options=rand_color(alpha=0))
+    show_object(b.translate((0,5*i,0)), options=rand_color(0, True))
 """
 
 def test_randcolor(main):
@@ -1544,4 +1545,4 @@ def test_randcolor(main):
     # check that object was rendered usin explicit show_object call
     editor.set_text(code_randcolor)
     debugger._actions['Run'][0].triggered.emit()
-    assert(obj_tree_comp.CQ.childCount() == 10)
+    assert(obj_tree_comp.CQ.childCount() == 2*10)

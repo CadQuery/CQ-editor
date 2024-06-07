@@ -1520,3 +1520,28 @@ def test_show_all(main):
     debugger._actions['Run'][0].triggered.emit()
 
     assert(object_tree.CQ.childCount() == 4)
+
+code_randcolor = \
+"""import cadquery as cq
+b = cq.Workplane().box(8, 3, 4)
+for i in range(10):
+    show_object(b.translate((0,5*i,0)), options=rand_color(alpha=0))
+"""
+
+def test_randcolor(main):
+    
+    qtbot, win = main
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_randcolor)
+    debugger._actions['Run'][0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 10)

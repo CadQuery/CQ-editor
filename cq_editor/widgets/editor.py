@@ -237,6 +237,7 @@ class Editor(CodeEditor,ComponentMixin):
         # neovim writes a file by removing it first so must re-add each time
         self._watch_paths()
         self.set_text_from_file(self._filename)
+        self.reset_modified()
         self.triggerRerender.emit(True)
 
     # Turn autoreload on/off.

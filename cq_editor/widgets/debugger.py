@@ -4,6 +4,7 @@ from enum import Enum, auto
 from types import SimpleNamespace, FrameType, ModuleType
 from typing import List
 from bdb import BdbQuit
+from inspect import currentframe
 
 import cadquery as cq
 from PyQt5 import QtCore
@@ -232,7 +233,17 @@ class Debugger(QObject,ComponentMixin):
             if name:
                 cq_objects.update({name : SimpleNamespace(shape=obj,options=options)})
             else:
-                cq_objects.update({str(id(obj)) : SimpleNamespace(shape=obj,options=options)})
+                #get locals of the enclosing scope
+                d = currentframe().f_back.f_locals
+
+                #try to find the name
+                try:
+                    name = list(d.keys())[list(d.values()).index(obj)]
+                except ValueError:
+                    #use id if not found
+                    name = str(id(obj))
+
+                cq_objects.update({name : SimpleNamespace(shape=obj,options=options)})
 
         def _debug(obj,name=None):
 

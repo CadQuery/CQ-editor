@@ -1546,3 +1546,39 @@ def test_randcolor(main):
     editor.set_text(code_randcolor)
     debugger._actions['Run'][0].triggered.emit()
     assert(obj_tree_comp.CQ.childCount() == 2*10)
+
+code_show_wo_name = \
+"""
+import cadquery as cq
+
+res = cq.Workplane().box(1,1,1)
+
+show_object(res)
+show_object(cq.Workplane().box(1,1,1))
+"""
+
+def test_show_without_name(main):
+
+    qtbot, win = main
+
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    object_tree = win.components['object_tree']
+
+    # remove all objects
+    object_tree.removeObjects()
+    assert(object_tree.CQ.childCount() == 0)
+
+    # add code wtih Shape, Workplane, Assy, Sketch
+    editor.set_text(code_show_wo_name)
+
+    # Run and check if all are shown
+    debugger._actions['Run'][0].triggered.emit()
+
+    assert(object_tree.CQ.childCount() == 2)
+
+    # Check the name of the first object
+    assert(object_tree.CQ.child(0).text(0) == "res")
+
+    # Check that the name of the seconf object is an int
+    int(object_tree.CQ.child(1).text(0))

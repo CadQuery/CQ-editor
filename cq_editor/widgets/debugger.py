@@ -186,7 +186,7 @@ class Debugger(QObject, ComponentMixin):
     def _exec(self, code, locals_dict, globals_dict):
         with ExitStack() as stack:
             fname = self.parent().components["editor"].filename
-            p = Path(fname if fname else "").abspath().dirname()
+            p = Path(fname if fname else "").absolute().dirname()
 
             if self.preferences["Add script dir to path"] and p.exists():
                 sys.path.insert(0, p)

@@ -18,11 +18,13 @@ jobs:
         environment-name: test
         environment-file: environment.yml
         init-shell: >-
-            bash
+          bash
+        create-args: >-
+          openssl==3.0.2
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
-        sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev openssl
+        sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev
         sudo apt install -y libxkbcommon0 libxkbcommon-x11-0 libxcb-xinerama0
         sudo apt install -y qtbase5-dev qt5-qmake
         micromamba info
@@ -44,7 +46,7 @@ jobs:
       run: |
         micromamba activate test
         micromamba info
-        pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
+        pyinstaller --log-level=DEBUG pyinstaller_pip.spec ${{ github.event.inputs.type }}
         cp /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
     - uses: actions/upload-artifact@v4
       with:

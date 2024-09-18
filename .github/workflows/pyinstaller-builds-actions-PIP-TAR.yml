@@ -45,6 +45,9 @@ jobs:
       run: |
         micromamba activate test
         micromamba info
+        echo $LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH=/home/runner/micromamba/envs/test/lib
+        echo $LD_LIBRARY_PATH
         pyinstaller --log-level=DEBUG pyinstaller_pip.spec ${{ github.event.inputs.type }}
         cp /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.sh /home/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
     - uses: actions/upload-artifact@v4

@@ -1,37 +1,29 @@
 import inspect
-
-
-def show_object(obj, name=None, options={}):
-    return __call("show_object", obj, name, options)
-
-
-def debug(obj, name=None):
-    return __call("debug", obj, name)
-
-
-def rand_color():
-    return __call("rand_color")
-
-
-def log(message):
-    return __call("log", message)
-
-
-def __call(key, *args, **kwargs):
-    f = __find(key)
-    if f:
-        f(*args, **kwargs)
+from typing import Any, Callable
 
 
 def __find(key):
-    while True:
-        f = inspect.currentframe()
-        if f is None:
-            return None
-        f = f.f_back
-        if f is None:
-            return None
-        if f.__module__ == "__cq_main__":
-            break
+    """
+    1. Iterates stacks to find `__cq_main__` module.
+    2. Returns a injected variable by given key.
+    """
+    for info in inspect.stack():
+        if info.frame.f_globals["__name__"] == "__cq_main__":
+            return info.frame.f_globals.get(key, None)
+    return None
 
-    return f.f_locals.get(key, None)
+
+def __bind(key) -> Any:
+    f = __find(key)
+
+    def wrapped(*args, **kwargs):
+        if f:
+            return f(*args, **kwargs)
+
+    return wrapped
+
+
+show_object: Callable = __bind("show_object")
+debug: Callable = __bind("debug")
+rand_color: Callable[[], Any] = __bind("rand_color")
+log: Callable[[Any], None] = __bind("log")

@@ -19,8 +19,7 @@ jobs:
         environment-file: environment.yml
         init-shell: >-
           bash
-        create-args: >-
-          openssl==3.0.2
+        # create-args: >-
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |

@@ -22,7 +22,7 @@ jobs:
     - name: pip install cadquery CQ-editor ... etc
       shell: bash --login {0}
       run: |
-        sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev libssl3
+        sudo apt install -y libblas-dev libblas3 libblas64-3 libblas64-dev openssl
         sudo apt install -y libxkbcommon0 libxkbcommon-x11-0 libxcb-xinerama0
         sudo apt install -y qtbase5-dev qt5-qmake
         micromamba info

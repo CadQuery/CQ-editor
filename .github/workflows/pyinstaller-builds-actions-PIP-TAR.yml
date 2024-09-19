@@ -54,118 +54,118 @@ jobs:
       with:
         name: CQ-editor-Linux-x86_64
         path: dist
-  # build-macos-x86_64:
-  #   runs-on: macos-13
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - uses: mamba-org/setup-micromamba@v1
-  #     with:
-  #       environment-name: test
-  #       environment-file: environment.yml
-  #       init-shell: >-
-  #           bash
-  #   - name: pip install cadquery CQ-editor ... etc
-  #     shell: bash --login {0}
-  #     run: |
-  #       micromamba info
-  #       pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-  #       pip install --pre git+https://github.com/cadquery/cadquery casadi
-  #       pip install pyinstaller>=5.6
-  #       pip install path
-  #       pip uninstall -y PyQt5
-  #       pip install PyQt5==5.15.7
-  #       pip install PyQtWebEngine==5.15.6
-  #       pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
-  #       pip install git+https://github.com/gumyr/bd_warehouse
-  #       pip install git+https://github.com/meadiode/cq_gears.git@main
-  #       pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
-  #       pip install git+https://github.com/gumyr/build123d
-  #       pip install git+https://github.com/JustinSDK/cqMore
-  #       pip list
-  #   - name: Run build
-  #     shell: bash --login {0}
-  #     run: |
-  #       micromamba activate test
-  #       micromamba info
-  #       pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
-  #       cp /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor-mac.sh /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/CQ-editor.sh
-  #   - uses: actions/upload-artifact@v4
-  #     with:
-  #       name: CQ-editor-MacOS-x86_64
-  #       path: dist
-  # build-macos-arm64:
-  #   runs-on: macos-14
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - uses: mamba-org/setup-micromamba@v1
-  #     with:
-  #       environment-name: test
-  #       environment-file: environment.yml
-  #       init-shell: >-
-  #           bash
-  #   - name: pip install cadquery CQ-editor ... etc
-  #     shell: bash --login {0}
-  #     run: |
-  #       micromamba info
-  #       pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-  #       pip install https://github.com/CadQuery/ocp-build-system/releases/download/7.7.2.0/cadquery_ocp-7.7.2-cp311-cp311-macosx_11_0_arm64.whl
-  #       pip install https://github.com/jdegenstein/nlopt-python/releases/download/2.7.1.3/nlopt-2.7.1-cp311-cp311-macosx_11_0_arm64.whl
-  #       pip install --pre git+https://github.com/cadquery/cadquery casadi
-  #       pip install pyinstaller>=5.6
-  #       pip install path
-  #       pip uninstall -y PyQt5
-  #       pip install PyQt5==5.15.10
-  #       pip install PyQtWebEngine==5.15.6
-  #       pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
-  #       pip install git+https://github.com/gumyr/bd_warehouse
-  #       pip install git+https://github.com/meadiode/cq_gears.git@main
-  #       pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
-  #       pip install git+https://github.com/gumyr/build123d
-  #       pip install git+https://github.com/JustinSDK/cqMore
-  #       pip list
-  #   - name: Run build
-  #     shell: bash --login {0}
-  #     run: |
-  #       micromamba activate test
-  #       micromamba info
-  #       pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
-  #       cp /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor-mac.sh /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/CQ-editor.sh
-  #   - uses: actions/upload-artifact@v4
-  #     with:
-  #       name: CQ-editor-MacOS-arm64
-  #       path: dist
-  # build-windows:
-  #   runs-on: windows-latest
-  #   steps:
-  #   - uses: actions/checkout@v4
-  #   - uses: mamba-org/setup-micromamba@v1
-  #     with:
-  #       environment-name: test
-  #       environment-file: environment.yml
-  #       init-shell: >-
-  #           bash
-  #   - name: pip install cadquery CQ-editor ... etc
-  #     shell: bash --login {0}
-  #     run: |
-  #       micromamba info
-  #       pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
-  #       pip install --pre git+https://github.com/cadquery/cadquery casadi
-  #       pip install pyinstaller>=5.6
-  #       pip install path
-  #       pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
-  #       pip install git+https://github.com/gumyr/bd_warehouse
-  #       pip install git+https://github.com/meadiode/cq_gears.git@main
-  #       pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
-  #       pip install git+https://github.com/gumyr/build123d
-  #       pip install git+https://github.com/JustinSDK/cqMore
-  #       pip list
-  #   - name: Run build
-  #     shell: bash --login {0}
-  #     run: |
-  #       micromamba activate test
-  #       micromamba info
-  #       pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
-  #       cp D:/a/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.cmd D:/a/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
+  build-macos-x86_64:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v4
+    - uses: mamba-org/setup-micromamba@v1
+      with:
+        environment-name: test
+        environment-file: environment.yml
+        init-shell: >-
+            bash
+    - name: pip install cadquery CQ-editor ... etc
+      shell: bash --login {0}
+      run: |
+        micromamba info
+        pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
+        pip install --pre git+https://github.com/cadquery/cadquery casadi
+        pip install pyinstaller>=5.6
+        pip install path
+        pip uninstall -y PyQt5
+        pip install PyQt5==5.15.7
+        pip install PyQtWebEngine==5.15.6
+        pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
+        pip install git+https://github.com/gumyr/bd_warehouse
+        pip install git+https://github.com/meadiode/cq_gears.git@main
+        pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
+        pip install git+https://github.com/gumyr/build123d
+        pip install git+https://github.com/JustinSDK/cqMore
+        pip list
+    - name: Run build
+      shell: bash --login {0}
+      run: |
+        micromamba activate test
+        micromamba info
+        pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
+        cp /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor-mac.sh /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/CQ-editor.sh
+    - uses: actions/upload-artifact@v4
+      with:
+        name: CQ-editor-MacOS-x86_64
+        path: dist
+  build-macos-arm64:
+    runs-on: macos-14
+    steps:
+    - uses: actions/checkout@v4
+    - uses: mamba-org/setup-micromamba@v1
+      with:
+        environment-name: test
+        environment-file: environment.yml
+        init-shell: >-
+            bash
+    - name: pip install cadquery CQ-editor ... etc
+      shell: bash --login {0}
+      run: |
+        micromamba info
+        pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
+        pip install https://github.com/CadQuery/ocp-build-system/releases/download/7.7.2.0/cadquery_ocp-7.7.2-cp311-cp311-macosx_11_0_arm64.whl
+        pip install https://github.com/jdegenstein/nlopt-python/releases/download/2.7.1.3/nlopt-2.7.1-cp311-cp311-macosx_11_0_arm64.whl
+        pip install --pre git+https://github.com/cadquery/cadquery casadi
+        pip install pyinstaller>=5.6
+        pip install path
+        pip uninstall -y PyQt5
+        pip install PyQt5==5.15.10
+        pip install PyQtWebEngine==5.15.6
+        pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
+        pip install git+https://github.com/gumyr/bd_warehouse
+        pip install git+https://github.com/meadiode/cq_gears.git@main
+        pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
+        pip install git+https://github.com/gumyr/build123d
+        pip install git+https://github.com/JustinSDK/cqMore
+        pip list
+    - name: Run build
+      shell: bash --login {0}
+      run: |
+        micromamba activate test
+        micromamba info
+        pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
+        cp /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor-mac.sh /Users/runner/work/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/CQ-editor.sh
+    - uses: actions/upload-artifact@v4
+      with:
+        name: CQ-editor-MacOS-arm64
+        path: dist
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: mamba-org/setup-micromamba@v1
+      with:
+        environment-name: test
+        environment-file: environment.yml
+        init-shell: >-
+            bash
+    - name: pip install cadquery CQ-editor ... etc
+      shell: bash --login {0}
+      run: |
+        micromamba info
+        pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
+        pip install --pre git+https://github.com/cadquery/cadquery casadi
+        pip install pyinstaller>=5.6
+        pip install path
+        pip install git+https://github.com/gumyr/cq_warehouse.git#egg=cq_warehouse
+        pip install git+https://github.com/gumyr/bd_warehouse
+        pip install git+https://github.com/meadiode/cq_gears.git@main
+        pip install -e "git+https://github.com/CadQuery/cadquery-plugins.git#egg=cq_cache&subdirectory=plugins/cq_cache"
+        pip install git+https://github.com/gumyr/build123d
+        pip install git+https://github.com/JustinSDK/cqMore
+        pip list
+    - name: Run build
+      shell: bash --login {0}
+      run: |
+        micromamba activate test
+        micromamba info
+        pyinstaller pyinstaller_pip.spec ${{ github.event.inputs.type }}
+        cp D:/a/jmwright-CQ-Editor/jmwright-CQ-Editor/pyinstaller/CQ-editor.cmd D:/a/jmwright-CQ-Editor/jmwright-CQ-Editor/dist/
 
     - name: 7zip artifact (workaround for too many files during artifact upload)
       shell: bash --login {0}

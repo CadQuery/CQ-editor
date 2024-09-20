@@ -48,7 +48,7 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.prepare_statusbar()
         self.prepare_actions()
-        
+
         self.components['object_tree'].addLines()
 
         self.prepare_console()
@@ -74,7 +74,7 @@ class MainWindow(QMainWindow,MainMixin):
         if self.components['editor'].document().isModified():
 
             rv = confirm(self, 'Confirm close', 'Close without saving?')
-            
+
             if rv:
                 event.accept()
                 super(MainWindow,self).closeEvent(event)
@@ -187,7 +187,7 @@ class MainWindow(QMainWindow,MainMixin):
             QAction(icon('about'),
                     'About',
                     self,triggered=self.about))
-        
+
         menu_help.addAction( \
             QAction('Check for CadQuery updates',
                     self,triggered=self.check_for_cq_updates))
@@ -221,6 +221,8 @@ class MainWindow(QMainWindow,MainMixin):
             .connect(self.components['variables_viewer'].update_frame)
         self.components['debugger'].sigLocals\
             .connect(self.components['console'].push_vars)
+        self.components['debugger'].sigRunCell\
+            .connect(self.run_cell)
 
         self.components['object_tree'].sigObjectsAdded[list]\
             .connect(self.components['viewer'].display_many)
@@ -275,7 +277,7 @@ class MainWindow(QMainWindow,MainMixin):
 
         console = self.components['console']
         obj_tree = self.components['object_tree']
-        
+
         #application related items
         console.push_vars({'self' : self})
 
@@ -285,6 +287,16 @@ class MainWindow(QMainWindow,MainMixin):
                            'rand_color' : self.components['debugger']._rand_color,
                            'cq' : cq,
                            'log' : Logger(self.name).info})
+
+
+    def run_cell(self):
+
+        cell_code, _ = self.components['editor'].get_cell_as_executable_code()
+        cell_code = cell_code.strip()
+        cell_code = f'{cell_code}\n' # add line break - workaround for not executing in some cases
+
+        self.components['console'].execute(cell_code, interactive=True)
+
 
     def fill_dummy(self):
 
@@ -323,12 +335,12 @@ class MainWindow(QMainWindow,MainMixin):
 
         about_dialog(
             self,
-            f'About CQ-editor',
+            'About CQ-editor',
             f'PyQt GUI for CadQuery.\nVersion: {__version__}.\nSource Code: https://github.com/CadQuery/CQ-editor',
         )
-        
+
     def check_for_cq_updates(self):
-        
+
         check_gtihub_for_updates(self,cq)
 
     def documentation(self):

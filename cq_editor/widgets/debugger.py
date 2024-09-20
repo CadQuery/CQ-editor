@@ -114,6 +114,7 @@ class Debugger(QObject,ComponentMixin):
     sigRendered = pyqtSignal(dict)
     sigLocals = pyqtSignal(dict)
     sigTraceback = pyqtSignal(object,str)
+    sigRunCell = pyqtSignal()
 
     sigFrameChanged = pyqtSignal(object)
     sigLineChanged = pyqtSignal(int)
@@ -137,6 +138,11 @@ class Debugger(QObject,ComponentMixin):
                                self,
                                shortcut='F5',
                                triggered=self.render),
+                      QAction(icon('cell'),
+                              'Run cell',
+                              self,
+                              shortcut='ctrl+shift+F5',
+                              triggered=self.sigRunCell.emit),
                       QAction(icon('debug'),
                              'Debug',
                              self,
@@ -166,9 +172,9 @@ class Debugger(QObject,ComponentMixin):
     def get_current_script(self):
 
         return self.parent().components['editor'].get_text_with_eol()
-    
+
     def get_current_script_path(self):
-        
+
         filename = self.parent().components["editor"].filename
         if filename:
             return Path(filename).absolute()
@@ -228,7 +234,7 @@ class Debugger(QObject,ComponentMixin):
 
         cq_objects = {}
 
-        def _show_object(obj,name=None, options={}):
+        def _show_object(obj, name=None, options={}):
 
             if name:
                 cq_objects.update({name : SimpleNamespace(shape=obj,options=options)})
@@ -243,13 +249,20 @@ class Debugger(QObject,ComponentMixin):
                     #use id if not found
                     name = str(id(obj))
 
-                cq_objects.update({name : SimpleNamespace(shape=obj,options=options)})
+                cq_objects.update(
+                    {name : SimpleNamespace(
+                        shape=obj if isinstance(obj, list) else [obj],
+                        options=options
+                        )
+                    }
+                )
 
         def _debug(obj,name=None):
 
             _show_object(obj,name,options=dict(color='red',alpha=0.2))
 
         module.__dict__['show_object'] = _show_object
+        module.__dict__['show'] = _show_object
         module.__dict__['debug'] = _debug
         module.__dict__['rand_color'] = self._rand_color
         module.__dict__['log'] = lambda x: info(str(x))

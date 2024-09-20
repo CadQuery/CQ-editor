@@ -203,27 +203,36 @@ class OCCViewer(QWidget,ComponentMixin):
 
         context = self._get_context()
         for ais in ais_list:
-            context.Display(ais,True)
+            for el in ais:
+                context.Display(el, False)
 
         if self.preferences['Fit automatically'] and fit is None:
             self.fit()
         elif fit:
             self.fit()
+        else:
+            self.redraw()
 
     @pyqtSlot(QTreeWidgetItem,int)
     def update_item(self,item,col):
 
         ctx = self._get_context()
         if item.checkState(0):
-            ctx.Display(item.ais,True)
+            for el in item.ais:
+                ctx.Display(el, False)
         else:
-            ctx.Erase(item.ais,True)
+            for el in item.ais:
+                ctx.Erase(el, False)
+
+        self.redraw()
 
     @pyqtSlot(list)
     def remove_items(self,ais_items):
 
         ctx = self._get_context()
-        for ais in ais_items: ctx.Erase(ais,True)
+        for ais in ais_items: ctx.Erase(ais, False)
+
+        self.redraw()
 
     @pyqtSlot()
     def redraw(self):

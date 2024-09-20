@@ -49,6 +49,9 @@ class ObjectTreeItem(QTreeWidgetItem):
                                            children=self.props)
 
         self.properties['Name'] = name
+
+        # use properties only of the first object
+        ais = ais[0]
         self.properties['Alpha'] = ais.Transparency()
         self.properties['Color'] = get_occ_color(ais) if ais and ais.HasColor() else get_occ_color(DEFAULT_FACE_COLOR)
         self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
@@ -57,18 +60,19 @@ class ObjectTreeItem(QTreeWidgetItem):
 
         changed_prop = changed[0][0]
 
-        self.setData(0,0,self.properties['Name'])
-        self.ais.SetTransparency(self.properties['Alpha'])
+        for ais in self.ais:
+            self.setData(0,0,self.properties['Name'])
+            ais.SetTransparency(self.properties['Alpha'])
 
-        if changed_prop.name() == 'Color':
-            set_color(self.ais, to_occ_color(self.properties['Color']))
+            if changed_prop.name() == 'Color':
+                set_color(ais, to_occ_color(self.properties['Color']))
 
-        self.ais.Redisplay()
+            ais.Redisplay()
 
-        if self.properties['Visible']:
-            self.setCheckState(0,Qt.Checked)
-        else:
-            self.setCheckState(0,Qt.Unchecked)
+            if self.properties['Visible']:
+                self.setCheckState(0,Qt.Checked)
+            else:
+                self.setCheckState(0,Qt.Unchecked)
 
         if self.sig:
             self.sig.emit()
@@ -129,7 +133,7 @@ class ObjectTree(QWidget,ComponentMixin):
         root = tree.invisibleRootItem()
         root.addChild(self.CQ)
         root.addChild(self.Helpers)
-        
+
         tree.expandToDepth(1)
 
         self._export_STL_action = \
@@ -209,11 +213,11 @@ class ObjectTree(QWidget,ComponentMixin):
                                        gp_Dir(*direction)))
             line = AIS_Line(line_placement)
             line.SetColor(to_occ_color(color))
-            
-            self.Helpers.addChild(ObjectTreeItem(name,
-                                                 ais=line))
 
-            ais_list.append(line)
+            self.Helpers.addChild(ObjectTreeItem(name,
+                                                 ais=[line]))
+
+            ais_list.append([line])
 
         self.sigObjectsAdded.emit(ais_list)
 
@@ -240,7 +244,7 @@ class ObjectTree(QWidget,ComponentMixin):
 
         request_fit_view = True if root.childCount() == 0 else False
         preserve_props = self.preferences['Preserve properties on reload']
-        
+
         if preserve_props:
             current_props = self._current_properties()
 
@@ -254,19 +258,19 @@ class ObjectTree(QWidget,ComponentMixin):
 
         for name,obj in objects_f.items():
             ais,shape_display = make_AIS(obj.shape,obj.options)
-            
+
             child = ObjectTreeItem(name,
                                    shape=obj.shape,
                                    shape_display=shape_display,
                                    ais=ais,
                                    sig=self.sigObjectPropertiesChanged)
-            
+
             if preserve_props and name in current_props:
                 self._restore_properties(child,current_props)
-            
+
             if child.properties['Visible']:
                 ais_list.append(ais)
-            
+
             root.addChild(child)
 
         if request_fit_view:
@@ -294,9 +298,9 @@ class ObjectTree(QWidget,ComponentMixin):
     def removeObjects(self,objects=None):
 
         if objects:
-            removed_items_ais = [self.CQ.takeChild(i).ais for i in objects]
+            removed_items_ais = [el for i in objects for el in self.CQ.takeChild(i).ais]
         else:
-            removed_items_ais = [ch.ais for ch in self.CQ.takeChildren()]
+            removed_items_ais = [el for ch in self.CQ.takeChildren() for el in ch.ais]
 
         self.sigObjectsRemoved.emit(removed_items_ais)
 
@@ -347,7 +351,7 @@ class ObjectTree(QWidget,ComponentMixin):
             return
 
         # emit list of all selected ais objects (might be empty)
-        ais_objects = [item.ais for item in items if item.parent() is self.CQ]
+        ais_objects = [el for item in items for el in item.ais if item.parent() is self.CQ]
         self.sigAISObjectsSelected.emit(ais_objects)
 
         # handle context menu and emit last selected CQ  object (if present)
@@ -379,7 +383,7 @@ class ObjectTree(QWidget,ComponentMixin):
         for i in range(CQ.childCount()):
             item = CQ.child(i)
             for shape in shapes:
-                if item.ais.Shape().IsEqual(shape):
+                if any(el.Shape().IsEqual(shape) for el in item.ais):
                     item.setSelected(True)
 
     @pyqtSlot(QTreeWidgetItem,int)

@@ -145,10 +145,10 @@ class Editor(CodeEditor,ComponentMixin):
         self.reset_modified()
 
     def open(self):
-        
+
         if not self.confirm_discard(): return
 
-        curr_dir = Path(self.filename).absolute().dirname()
+        curr_dir = Path(self.filename).abspath().dirname()
         fname = get_open_filename(self.EXTENSIONS, curr_dir)
         if fname != '':
             self.load_from_file(fname)
@@ -248,10 +248,10 @@ class Editor(CodeEditor,ComponentMixin):
     def reset_modified(self):
 
         self.document().setModified(False)
-        
+
     @property
     def modified(self):
-        
+
         return self.document().isModified()
 
     def saveComponentState(self,store):

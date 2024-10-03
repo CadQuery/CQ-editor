@@ -7,6 +7,8 @@ from bdb import BdbQuit
 from inspect import currentframe
 
 import cadquery as cq
+import cadquery.vis as cqvis
+
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, pyqtSlot, pyqtSignal, QEventLoop, QAbstractTableModel
 from PyQt5.QtWidgets import QAction, QTableView
@@ -177,7 +179,7 @@ class Debugger(QObject,ComponentMixin):
 
         filename = self.parent().components["editor"].filename
         if filename:
-            return Path(filename).absolute()
+            return Path(filename).abspath()
 
     def get_breakpoints(self):
 
@@ -198,7 +200,7 @@ class Debugger(QObject,ComponentMixin):
     def _exec(self, code, locals_dict, globals_dict):
 
         with ExitStack() as stack:
-            p = (self.get_current_script_path() or Path("")).absolute().dirname()
+            p = (self.get_current_script_path() or Path("")).abspath().dirname()
 
             if self.preferences['Add script dir to path'] and p.exists():
                 sys.path.insert(0,p)
@@ -268,11 +270,20 @@ class Debugger(QObject,ComponentMixin):
         module.__dict__['log'] = lambda x: info(str(x))
         module.__dict__['cq'] = cq
 
+        # overwrite cq.vis.show
+        self.old_show = cqvis.show
+        cqvis.show = _show_object
+
         return cq_objects, set(module.__dict__)-{'cq'}
 
     def _cleanup_locals(self,module,injected_names):
 
         for name in injected_names: module.__dict__.pop(name)
+
+        # restore cq.vis.show
+        self.old_show = cqvis.show
+        cqvis.show = self.old_show
+
 
     @pyqtSlot(bool)
     def render(self):
@@ -306,6 +317,7 @@ class Debugger(QObject,ComponentMixin):
             exc_info = sys.exc_info()
             sys.last_traceback = exc_info[-1]
             self.sigTraceback.emit(exc_info, cq_script)
+
 
     @property
     def breakpoints(self):

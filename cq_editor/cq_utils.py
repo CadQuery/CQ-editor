@@ -1,7 +1,7 @@
 import cadquery as cq
 from cadquery.occ_impl.assembly import toCAF
 
-from typing import List, Union, Any
+from typing import List, Union, Any, Optional
 from importlib import reload
 from types import SimpleNamespace
 
@@ -142,7 +142,7 @@ def make_trihedron(ax):
 def make_AIS(
     obj: Union[AISLike, AISLikeLists],
     options={},
-) -> List[AIS_InteractiveObject]:
+) -> Union[List[AIS_InteractiveObject], Optional[cq.Shape]]:
 
     shape = None
     ais = None

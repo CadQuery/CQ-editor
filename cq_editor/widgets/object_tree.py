@@ -10,7 +10,7 @@ from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
 from pyqtgraph.parametertree import Parameter, ParameterTree
 
-from OCP.AIS import AIS_Line
+from OCP.AIS import AIS_Line, AIS_InteractiveObject
 from OCP.Geom import Geom_Line
 from OCP.gp import gp_Dir, gp_Pnt, gp_Ax1
 
@@ -24,6 +24,7 @@ from ..cq_utils import (
     get_occ_color,
     set_color,
     ensure_showable,
+    Showable,
 )
 from .viewer import DEFAULT_FACE_COLOR
 from ..utils import splitter, layout, get_save_filename
@@ -36,6 +37,9 @@ class TopTreeItem(QTreeWidgetItem):
 
 
 class ObjectTreeItem(QTreeWidgetItem):
+
+    ais: list[AIS_InteractiveObject]
+    shape: Showable
 
     props = [
         {"name": "Name", "type": "str", "value": ""},

@@ -26,7 +26,7 @@ from pyqtgraph.parametertree import Parameter
 from spyder.utils.icon_manager import icon
 from random import randrange as rrr, seed
 
-from ..cq_utils import find_cq_objects, reload_cq
+from ..cq_utils import find_cq_objects, reload_cq, is_cq_obj
 from ..mixins import ComponentMixin
 
 DUMMY_FILE = "<cq_editor-string>"
@@ -270,11 +270,16 @@ class Debugger(QObject, ComponentMixin):
                 # get locals of the enclosing scope
                 d = currentframe().f_back.f_locals
 
-                # try to find the name
-                try:
-                    name = list(d.keys())[list(d.values()).index(obj)]
-                except ValueError:
-                    # use id if not found
+                # try to find the arg name
+                name = None
+
+                for k, v in d.items():
+                    if v is obj:
+                        name = k
+                        break
+
+                # use id if not found
+                if name is None:
                     name = str(id(obj))
 
                 cq_objects.update(

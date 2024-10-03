@@ -24,9 +24,9 @@ from logbook import info
 from path import Path
 from pyqtgraph.parametertree import Parameter
 from spyder.utils.icon_manager import icon
-from random import randrange as rrr, seed
+from random import randrange, seed
 
-from ..cq_utils import find_cq_objects, reload_cq, is_cq_obj
+from ..cq_utils import find_cq_objects, reload_cq, ensure_showable, Showable
 from ..mixins import ComponentMixin
 
 DUMMY_FILE = "<cq_editor-string>"
@@ -244,17 +244,17 @@ class Debugger(QObject, ComponentMixin):
         upper = 100  # not too high to keep color brightness in check
         if cfloat:  # for two output types depending on need
             return (
-                (rrr(lower, upper) / 255),
-                (rrr(lower, upper) / 255),
-                (rrr(lower, upper) / 255),
+                (randrange(lower, upper) / 255),
+                (randrange(lower, upper) / 255),
+                (randrange(lower, upper) / 255),
                 alpha,
             )
         return {
             "alpha": alpha,
             "color": (
-                rrr(lower, upper),
-                rrr(lower, upper),
-                rrr(lower, upper),
+                randrange(lower, upper),
+                randrange(lower, upper),
+                randrange(lower, upper),
             ),
         }
 
@@ -262,7 +262,10 @@ class Debugger(QObject, ComponentMixin):
 
         cq_objects = {}
 
-        def _show_object(obj, name=None, options={}):
+        def _show_object(obj: Showable, name=None, options={}):
+
+            # this throws
+            ensure_showable(obj)
 
             if name:
                 cq_objects.update({name: SimpleNamespace(shape=obj, options=options)})
@@ -291,7 +294,7 @@ class Debugger(QObject, ComponentMixin):
                     }
                 )
 
-        def _debug(obj, name=None):
+        def _debug(obj: Showable, name=None):
 
             _show_object(obj, name, options=dict(color="red", alpha=0.2))
 
@@ -342,6 +345,9 @@ class Debugger(QObject, ComponentMixin):
             # collect all CQ objects if no explicit show_object was called
             if len(cq_objects) == 0:
                 cq_objects = find_cq_objects(module.__dict__)
+
+            # check type
+
             self.sigRendered.emit(cq_objects)
             self.sigTraceback.emit(None, cq_script)
             self.sigLocals.emit(module.__dict__)

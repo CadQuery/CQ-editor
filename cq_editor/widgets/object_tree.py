@@ -23,6 +23,7 @@ from ..cq_utils import (
     is_obj_empty,
     get_occ_color,
     set_color,
+    ensure_showable,
 )
 from .viewer import DEFAULT_FACE_COLOR
 from ..utils import splitter, layout, get_save_filename
@@ -310,6 +311,9 @@ class ObjectTree(QWidget, ComponentMixin):
     def addObject(self, obj, name="", options={}):
 
         root = self.CQ
+
+        # this throws
+        ensure_showable(obj)
 
         ais, shape_display = make_AIS(obj, options)
 

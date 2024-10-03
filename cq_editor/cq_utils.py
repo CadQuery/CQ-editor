@@ -1,7 +1,7 @@
 import cadquery as cq
 from cadquery.occ_impl.assembly import toCAF
 
-from typing import List, Union
+from typing import List, Union, Any
 from importlib import reload
 from types import SimpleNamespace
 
@@ -9,11 +9,11 @@ from typish import instance_of as isinstance
 
 from OCP.XCAFPrs import XCAFPrs_AISObject
 from OCP.TopoDS import TopoDS_Shape
-from OCP.AIS import AIS_InteractiveObject, AIS_Shape, AIS_Trihedron
+from OCP.AIS import AIS_InteractiveObject, AIS_Shape, AIS_Trihedron, AIS_Point
 from OCP.Prs3d import Prs3d_DatumParts, Prs3d_DatumMode
 from OCP.TCollection import TCollection_ExtendedString
 from OCP.gp import gp_Ax2
-from OCP.Geom import Geom_Axis2Placement
+from OCP.Geom import Geom_Axis2Placement, Geom_CartesianPoint
 from OCP.Quantity import (
     Quantity_TOC_RGB as TOC_RGB,
     Quantity_Color,
@@ -33,6 +33,26 @@ DEFAULT_TRIHEDRON_SIZE = 0.1
 CompoundLike = Union[cq.Shape, cq.Workplane, cq.Sketch, cq.Assembly]
 AISLike = Union[CompoundLike, cq.Location, cq.Plane, cq.Vector, AIS_InteractiveObject]
 AISLikeLists = Union[tuple(List[T] for T in AISLike.__args__)]
+
+Showable = Union[AISLike, AISLikeLists]
+
+
+def is_showable(obj: Any) -> bool:
+    """
+    Check if object is showable.
+    """
+
+    return isinstance(obj, Showable)
+
+
+def ensure_showable(obj: Any):
+    """
+    Raise if object is not showable.
+    """
+
+    # validate
+    if not is_showable(obj):
+        raise ValueError(f"{obj} has incorrect type {type(obj)}.")
 
 
 def is_cq_obj(obj):
@@ -147,6 +167,9 @@ def make_AIS(
     elif isinstance(obj, CompoundLike):
         shape = to_compound(obj)
         ais = AIS_Shape(shape.wrapped)
+
+    elif isinstance(obj, cq.Vector):
+        ais = AIS_Point(Geom_CartesianPoint(obj.toPnt()))
 
     elif isinstance(obj, AISLikeLists):
         rv = [make_AIS(el, options)[0][0] for el in obj]

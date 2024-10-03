@@ -31,7 +31,7 @@ DEFAULT_MATERIAL = Graphic3d_MaterialAspect(Graphic3d_NOM_JADE)
 DEFAULT_TRIHEDRON_SIZE = 0.1
 
 CompoundLike = Union[cq.Shape, cq.Workplane, cq.Sketch, cq.Assembly]
-AISLike = Union[ CompoundLike, cq.Location, cq.Plane, cq.Vector, AIS_InteractiveObject]
+AISLike = Union[CompoundLike, cq.Location, cq.Plane, cq.Vector, AIS_InteractiveObject]
 AISLikeLists = Union[tuple(List[T] for T in AISLike.__args__)]
 
 
@@ -120,9 +120,7 @@ def make_trihedron(ax):
 
 
 def make_AIS(
-    obj: Union[
-        AISLike, AISLikeLists
-    ],
+    obj: Union[AISLike, AISLikeLists],
     options={},
 ) -> List[AIS_InteractiveObject]:
 

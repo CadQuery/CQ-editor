@@ -59,7 +59,7 @@ def is_cq_obj(obj):
 
     from cadquery import Workplane, Shape, Assembly, Sketch
 
-    return isinstance(obj, Workplane, Shape, Assembly, Sketch)
+    return isinstance(obj, Union[Workplane, Shape, Assembly, Sketch])
 
 
 def find_cq_objects(results: dict):
@@ -140,8 +140,7 @@ def make_trihedron(ax):
 
 
 def make_AIS(
-    obj: Union[AISLike, AISLikeLists],
-    options={},
+    obj: Union[AISLike, AISLikeLists], options={},
 ) -> Union[List[AIS_InteractiveObject], Optional[cq.Shape]]:
 
     shape = None
@@ -264,29 +263,29 @@ def set_transparency(ais: AIS_Shape, alpha: float) -> AIS_Shape:
 
 def reload_cq():
 
-    # NB: order of reloads is important
-    reload(cq.types)
-    reload(cq.occ_impl.geom)
-    reload(cq.occ_impl.shapes)
-    reload(cq.occ_impl.shapes)
-    reload(cq.occ_impl.importers.dxf)
-    reload(cq.occ_impl.importers)
-    reload(cq.occ_impl.solver)
-    reload(cq.occ_impl.assembly)
-    reload(cq.occ_impl.sketch_solver)
-    reload(cq.hull)
-    reload(cq.selectors)
-    reload(cq.sketch)
-    reload(cq.occ_impl.exporters.svg)
-    reload(cq.cq)
-    reload(cq.occ_impl.exporters.utils)
-    reload(cq.occ_impl.exporters.dxf)
-    reload(cq.occ_impl.exporters.amf)
-    reload(cq.occ_impl.exporters.json)
-    # reload(cq.occ_impl.exporters.assembly)
-    reload(cq.occ_impl.exporters)
-    reload(cq.assembly)
-    reload(cq)
+    # # NB: order of reloads is important
+    # reload(cq.types)
+    # reload(cq.occ_impl.geom)
+    # reload(cq.occ_impl.shapes)
+    # reload(cq.occ_impl.shapes)
+    # reload(cq.occ_impl.importers.dxf)
+    # reload(cq.occ_impl.importers)
+    # reload(cq.occ_impl.solver)
+    # reload(cq.occ_impl.assembly)
+    # reload(cq.occ_impl.sketch_solver)
+    # reload(cq.hull)
+    # reload(cq.selectors)
+    # reload(cq.sketch)
+    # reload(cq.occ_impl.exporters.svg)
+    # reload(cq.cq)
+    # reload(cq.occ_impl.exporters.dxf)
+    # reload(cq.occ_impl.exporters.amf)
+    # reload(cq.occ_impl.exporters.json)
+    # # reload(cq.occ_impl.exporters.assembly)
+    # reload(cq.occ_impl.exporters)
+    # reload(cq.assembly)
+    # reload(cq)
+    pass
 
 
 def is_obj_empty(obj: Union[cq.Workplane, cq.Shape]) -> bool:

@@ -169,7 +169,7 @@ class Editor(CodeEditor, ComponentMixin):
         if not self.confirm_discard():
             return
 
-        curr_dir = Path(self.filename).abspath().dirname()
+        curr_dir = Path(self.filename).absolute().dirname()
         fname = get_open_filename(self.EXTENSIONS, curr_dir)
         if fname != "":
             self.load_from_file(fname)

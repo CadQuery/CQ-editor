@@ -203,7 +203,7 @@ class Debugger(QObject, ComponentMixin):
 
         filename = self.parent().components["editor"].filename
         if filename:
-            return Path(filename).abspath()
+            return Path(filename).absolute()
 
     def get_breakpoints(self):
 
@@ -224,7 +224,7 @@ class Debugger(QObject, ComponentMixin):
     def _exec(self, code, locals_dict, globals_dict):
 
         with ExitStack() as stack:
-            p = (self.get_current_script_path() or Path("")).abspath().dirname()
+            p = (self.get_current_script_path() or Path("")).absolute().dirname()
 
             if self.preferences["Add script dir to path"] and p.exists():
                 sys.path.insert(0, p)

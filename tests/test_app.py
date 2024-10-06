@@ -370,6 +370,10 @@ def patch_debugger(debugger, event_loop_mock):
 
 def test_debug(main, mocker):
 
+    # magic numbers
+    N_variables = 6
+    N_visible = 3
+
     # store the tracing function
     trace_function = sys.gettrace()
 
@@ -413,23 +417,23 @@ def test_debug(main, mocker):
     ev = event_loop(
         [
             lambda: (
-                assert_func(variables.model().rowCount() == 5),
-                assert_func(number_visible_items(viewer) == 3),
+                assert_func(variables.model().rowCount() == N_variables),
+                assert_func(number_visible_items(viewer) == N_visible),
                 step.triggered.emit(),
             ),
             lambda: (
-                assert_func(variables.model().rowCount() == 5),
-                assert_func(number_visible_items(viewer) == 3),
+                assert_func(variables.model().rowCount() == N_variables),
+                assert_func(number_visible_items(viewer) == N_visible),
                 step.triggered.emit(),
             ),
             lambda: (
-                assert_func(variables.model().rowCount() == 6),
-                assert_func(number_visible_items(viewer) == 3),
+                assert_func(variables.model().rowCount() == N_variables + 1),
+                assert_func(number_visible_items(viewer) == N_visible),
                 step.triggered.emit(),
             ),
             lambda: (
-                assert_func(variables.model().rowCount() == 6),
-                assert_func(number_visible_items(viewer) == 4),
+                assert_func(variables.model().rowCount() == N_variables + 1),
+                assert_func(number_visible_items(viewer) == N_visible + 1),
                 cont.triggered.emit(),
             ),
         ]
@@ -442,15 +446,15 @@ def test_debug(main, mocker):
     check_no_error_occured()
 
     assert variables.model().rowCount() == 2
-    assert number_visible_items(viewer) == 4
+    assert number_visible_items(viewer) == N_visible + 1
 
     # test exit debug
     ev = event_loop(
         [
             lambda: (step.triggered.emit(),),
             lambda: (
-                assert_func(variables.model().rowCount() == 5),
-                assert_func(number_visible_items(viewer) == 3),
+                assert_func(variables.model().rowCount() == N_variables),
+                assert_func(number_visible_items(viewer) == N_visible),
                 debug.triggered.emit(False),
             ),
         ]
@@ -463,15 +467,15 @@ def test_debug(main, mocker):
     check_no_error_occured()
 
     assert variables.model().rowCount() == 1
-    assert number_visible_items(viewer) == 3
+    assert number_visible_items(viewer) == N_visible
 
     # test breakpoint
     ev = event_loop(
         [
             lambda: (cont.triggered.emit(),),
             lambda: (
-                assert_func(variables.model().rowCount() == 6),
-                assert_func(number_visible_items(viewer) == 4),
+                assert_func(variables.model().rowCount() == N_variables + 1),
+                assert_func(number_visible_items(viewer) == N_visible + 1),
                 cont.triggered.emit(),
             ),
         ]
@@ -486,15 +490,15 @@ def test_debug(main, mocker):
     check_no_error_occured()
 
     assert variables.model().rowCount() == 2
-    assert number_visible_items(viewer) == 4
+    assert number_visible_items(viewer) == N_visible + 1
 
     # test breakpoint without using singals
     ev = event_loop(
         [
             lambda: (cont.triggered.emit(),),
             lambda: (
-                assert_func(variables.model().rowCount() == 6),
-                assert_func(number_visible_items(viewer) == 4),
+                assert_func(variables.model().rowCount() == N_variables + 1),
+                assert_func(number_visible_items(viewer) == N_visible + 1),
                 cont.triggered.emit(),
             ),
         ]
@@ -509,15 +513,15 @@ def test_debug(main, mocker):
     check_no_error_occured()
 
     assert variables.model().rowCount() == 2
-    assert number_visible_items(viewer) == 4
+    assert number_visible_items(viewer) == N_visible + 1
 
     # test debug() without using singals
     ev = event_loop(
         [
             lambda: (cont.triggered.emit(),),
             lambda: (
-                assert_func(variables.model().rowCount() == 6),
-                assert_func(number_visible_items(viewer) == 4),
+                assert_func(variables.model().rowCount() == N_variables + 1),
+                assert_func(number_visible_items(viewer) == N_visible + 1),
                 cont.triggered.emit(),
             ),
         ]
@@ -540,7 +544,7 @@ def test_debug(main, mocker):
     assert r == 1.0
 
     assert variables.model().rowCount() == 2
-    assert number_visible_items(viewer) == 4
+    assert number_visible_items(viewer) == N_visible + 1
 
     # restore the tracing function
     sys.settrace(trace_function)

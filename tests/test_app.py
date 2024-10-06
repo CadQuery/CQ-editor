@@ -389,7 +389,7 @@ def test_debug(main, mocker):
 
     debugger = win.components["debugger"]
     actions = debugger._actions["Run"]
-    run, debug, step, step_in, cont = actions
+    run, run_cell, debug, step, step_in, cont = actions
 
     variables = win.components["variables_viewer"]
 
@@ -572,7 +572,7 @@ def test_traceback(main):
     traceback_view = win.components["traceback_viewer"]
 
     actions = debugger._actions["Run"]
-    run, debug, step, step_in, cont = actions
+    run, run_cell, debug, step, step_in, cont = actions
 
     editor.set_text(code_err1)
     run.triggered.emit()

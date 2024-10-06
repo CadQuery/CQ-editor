@@ -10,8 +10,7 @@ from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 
 from pyqtgraph.parametertree import Parameter, ParameterTree
 
-from OCP.AIS import AIS_Line, AIS_InteractiveObject
-from OCP.Geom import Geom_Line
+from OCP.AIS import AIS_InteractiveObject, AIS_Axis
 from OCP.gp import gp_Dir, gp_Pnt, gp_Ax1
 
 from ..mixins import ComponentMixin
@@ -242,8 +241,7 @@ class ObjectTree(QWidget, ComponentMixin):
             ("red", "lawngreen", "blue"),
             ((1, 0, 0), (0, 1, 0), (0, 0, 1)),
         ):
-            line_placement = Geom_Line(gp_Ax1(gp_Pnt(*origin), gp_Dir(*direction)))
-            line = AIS_Line(line_placement)
+            line = AIS_Axis(gp_Ax1(gp_Pnt(*origin), gp_Dir(*direction)), 10)
             line.SetColor(to_occ_color(color))
 
             self.Helpers.addChild(ObjectTreeItem(name, ais=[line]))
@@ -349,12 +347,12 @@ class ObjectTree(QWidget, ComponentMixin):
 
         if action:
             self._stash = self.CQ.takeChildren()
-            removed_items_ais = [ch.ais for ch in self._stash]
+            removed_items_ais = [el for ch in self._stash for el in ch.ais]
             self.sigObjectsRemoved.emit(removed_items_ais)
         else:
             self.removeObjects()
             self.CQ.addChildren(self._stash)
-            ais_list = [el.ais for el in self._stash]
+            ais_list = [obj.ais for obj in self._stash]
             self.sigObjectsAdded.emit(ais_list)
 
     @pyqtSlot()
@@ -392,7 +390,7 @@ class ObjectTree(QWidget, ComponentMixin):
 
         # emit list of all selected ais objects (might be empty)
         ais_objects = [
-            el for item in items for el in item.ais if item.parent() is self.CQ
+            el for item in items if item.parent() is self.CQ for el in item.ais
         ]
         self.sigAISObjectsSelected.emit(ais_objects)
 

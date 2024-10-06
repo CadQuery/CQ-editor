@@ -114,7 +114,7 @@ class CQObjectInspector(QTreeWidget, ComponentMixin):
                 ais = AIS_ColoredShape(obj.wrapped)
                 inspected_items.append(ais)
 
-        self.sigDisplayObjects.emit(inspected_items, False)
+        self.sigDisplayObjects.emit([[el] for el in inspected_items], False)
 
     @pyqtSlot(object)
     def setObject(self, cq_obj):

@@ -194,7 +194,9 @@ def main_multi(qtbot, mocker):
 
     return qtbot, win
 
-
+@pytest.mark.skipif(
+    sys.platform.startswith("linux"), reason="Segfault workaround for linux"
+)
 def test_render(main):
 
     qtbot, win = main

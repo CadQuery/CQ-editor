@@ -8,9 +8,7 @@ from .utils import splitter, layout
 
 class PreferencesTreeItem(QTreeWidgetItem):
     def __init__(
-        self,
-        name,
-        widget,
+        self, name, widget,
     ):
 
         super(PreferencesTreeItem, self).__init__(name)

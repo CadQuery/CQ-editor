@@ -32,9 +32,7 @@ _icons_specs = {
         ("fa.save", "fa.pencil"),
         {
             "options": [
-                {
-                    "scale_factor": 1,
-                },
+                {"scale_factor": 1,},
                 {"scale_factor": 0.8, "offset": (0.2, 0.2)},
             ]
         },
@@ -42,10 +40,7 @@ _icons_specs = {
     "run": (("fa.play",), {}),
     "delete": (("fa.trash",), {}),
     "delete-many": (
-        (
-            "fa.trash",
-            "fa.trash",
-        ),
+        ("fa.trash", "fa.trash",),
         {
             "options": [
                 {"scale_factor": 0.8, "offset": (0.2, 0.2), "color": "gray"},

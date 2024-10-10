@@ -102,14 +102,7 @@ class OCCViewer(QWidget, ComponentMixin):
 
         self.create_actions(self)
 
-        self.layout_ = layout(
-            self,
-            [
-                self.canvas,
-            ],
-            top_widget=self,
-            margin=0,
-        )
+        self.layout_ = layout(self, [self.canvas,], top_widget=self, margin=0,)
 
         self.setup_default_drawer()
         self.updatePreferences()

@@ -185,10 +185,10 @@ class ObjectTree(QWidget, ComponentMixin):
         )
 
         self._toolbar_actions = [
+            self._clear_current_action,
             QAction(
                 icon("delete-many"), "Clear all", self, triggered=self.removeObjects
             ),
-            self._clear_current_action,
         ]
 
         self.prepareMenu()

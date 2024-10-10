@@ -1,8 +1,8 @@
 from sys import platform
-
+from typing import Optional
 
 from PyQt5.QtWidgets import QWidget, QApplication
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QEvent
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QEvent, QPointF
 
 import OCP
 
@@ -14,11 +14,17 @@ from OCP.Quantity import Quantity_Color
 
 
 ZOOM_STEP = 0.9
+SELECT_MOVE_THRESHOLD = 2
 
 
 class OCCTWidget(QWidget):
 
     sigObjectSelected = pyqtSignal(list)
+
+    # auxiliary variables for handling selection and mouse
+    pending_select: bool
+    click_pos: Optional[QPointF]
+    previous_pos: Optional[QPointF]
 
     def __init__(self, parent=None):
 
@@ -41,6 +47,11 @@ class OCCTWidget(QWidget):
 
         # Trihedorn, lights, etc
         self.prepare_display()
+
+        # init state for handling selection and mouse
+        self.pending_select = False
+        self.click_pos = None
+        self.previous_pos = None
 
     def prepare_display(self):
 
@@ -77,10 +88,12 @@ class OCCTWidget(QWidget):
 
         if event.button() == Qt.LeftButton:
             self.view.StartRotation(pos.x(), pos.y())
+            self.pending_select = True
         elif event.button() == Qt.RightButton:
             self.view.StartZoomAtPoint(pos.x(), pos.y())
 
-        self.old_pos = pos
+        self.previous_pos = pos
+        self.click_pos = pos
 
     def mouseMoveEvent(self, event):
 
@@ -90,13 +103,19 @@ class OCCTWidget(QWidget):
         if event.buttons() == Qt.LeftButton:
             self.view.Rotation(x, y)
 
+            # if mouse was moved too much cancel selection
+            if (pos - self.click_pos).manhattanLength() > SELECT_MOVE_THRESHOLD:
+                self.pending_select = False
+
         elif event.buttons() == Qt.MiddleButton:
-            self.view.Pan(x - self.old_pos.x(), self.old_pos.y() - y, theToStart=True)
+            self.view.Pan(
+                x - self.previous_pos.x(), self.previous_pos.y() - y, theToStart=True
+            )
 
         elif event.buttons() == Qt.RightButton:
-            self.view.ZoomAtPoint(self.old_pos.x(), y, x, self.old_pos.y())
+            self.view.ZoomAtPoint(self.previous_pos.x(), y, x, self.previous_pos.y())
 
-        self.old_pos = pos
+        self.previous_pos = pos
 
     def mouseReleaseEvent(self, event):
 
@@ -104,11 +123,13 @@ class OCCTWidget(QWidget):
             pos = event.pos()
             x, y = pos.x(), pos.y()
 
-            self.context.MoveTo(x, y, self.view, True)
+            if self.pending_select:
+                self._handle_selection(x, y)
+                self.pending_select = False
 
-            self._handle_selection()
+    def _handle_selection(self, x: float, y: float):
 
-    def _handle_selection(self):
+        self.context.MoveTo(x, y, self.view, True)
 
         self.context.Select(True)
         self.context.InitSelected()

@@ -194,6 +194,7 @@ def main_multi(qtbot, mocker):
 
     return qtbot, win
 
+
 @pytest.mark.skipif(
     sys.platform.startswith("linux"), reason="Segfault workaround for linux"
 )
@@ -1339,6 +1340,7 @@ assy = cq.Assembly(result1)
 
 show_object(assy)
 """
+
 
 @pytest.mark.skipif(
     sys.platform.startswith("linux"), reason="Segfault workaround for linux"

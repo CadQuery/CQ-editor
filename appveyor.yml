@@ -45,10 +45,10 @@ test_script:
 on_success:
     - codecov
 
-#on_failure:
-#    - qtdiag
-#    - ls /cores/core.*
-#    - lldb --core `ls /cores/core.*` --batch --one-line "bt"
+on_failure:
+    - qtdiag
+    - ls /cores/core.*
+    - lldb --core `ls /cores/core.*` --batch --one-line "bt"
 
 on_finish:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))

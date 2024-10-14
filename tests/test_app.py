@@ -240,13 +240,13 @@ def test_render(main):
     console.execute(code_show_Workplane)
     assert obj_tree_comp.CQ.childCount() == 1
 
-    return
-
     obj_tree_comp._toolbar_actions[0].triggered.emit()
     assert obj_tree_comp.CQ.childCount() == 0
 
     console.execute(code_show_Shape)
     assert obj_tree_comp.CQ.childCount() == 1
+
+    return
 
     # check object rendering using show_object call with a name specified and
     # debug call

@@ -224,8 +224,6 @@ def test_render(main):
 
     assert obj_tree_comp.CQ.childCount() == 1
 
-    return
-
     obj_tree_comp._toolbar_actions[0].triggered.emit()
     assert obj_tree_comp.CQ.childCount() == 0
 
@@ -234,6 +232,8 @@ def test_render(main):
     debugger._actions["Run"][0].triggered.emit()
 
     assert obj_tree_comp.CQ.childCount() == 1
+
+    return
 
     obj_tree_comp._toolbar_actions[0].triggered.emit()
     assert obj_tree_comp.CQ.childCount() == 0

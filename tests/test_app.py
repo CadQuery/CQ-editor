@@ -246,8 +246,6 @@ def test_render(main):
     console.execute(code_show_Shape)
     assert obj_tree_comp.CQ.childCount() == 1
 
-    return
-
     # check object rendering using show_object call with a name specified and
     # debug call
     editor.set_text(code_show_Workplane_named)
@@ -256,6 +254,8 @@ def test_render(main):
     qtbot.wait(100)
     assert obj_tree_comp.CQ.child(0).text(0) == "test"
     assert "test" in log.toPlainText().splitlines()[-1]
+
+    return
 
     # cq reloading check
     obj_tree_comp._toolbar_actions[0].triggered.emit()

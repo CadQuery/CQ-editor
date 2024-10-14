@@ -255,14 +255,14 @@ def test_render(main):
     assert obj_tree_comp.CQ.child(0).text(0) == "test"
     assert "test" in log.toPlainText().splitlines()[-1]
 
-    return
-
     # cq reloading check
     obj_tree_comp._toolbar_actions[0].triggered.emit()
     assert obj_tree_comp.CQ.childCount() == 0
 
     editor.set_text(code_reload_issue)
     debugger._actions["Run"][0].triggered.emit()
+
+    return
 
     qtbot.wait(100)
     assert obj_tree_comp.CQ.childCount() == 3

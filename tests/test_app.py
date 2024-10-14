@@ -233,14 +233,14 @@ def test_render(main):
 
     assert obj_tree_comp.CQ.childCount() == 1
 
-    return
-
     obj_tree_comp._toolbar_actions[0].triggered.emit()
     assert obj_tree_comp.CQ.childCount() == 0
 
     # test rendering via console
     console.execute(code_show_Workplane)
     assert obj_tree_comp.CQ.childCount() == 1
+
+    return
 
     obj_tree_comp._toolbar_actions[0].triggered.emit()
     assert obj_tree_comp.CQ.childCount() == 0

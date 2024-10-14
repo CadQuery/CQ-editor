@@ -1342,9 +1342,9 @@ show_object(assy)
 """
 
 
-@pytest.mark.skipif(
-    sys.platform.startswith("linux"), reason="Segfault workaround for linux"
-)
+# @pytest.mark.skipif(
+#     sys.platform.startswith("linux"), reason="Segfault workaround for linux"
+# )
 def test_render_assy(main):
 
     qtbot, win = main

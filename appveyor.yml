@@ -13,11 +13,11 @@ environment:
 
 install:
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then sudo apt update; sudo apt -y --force-yes install libglu1-mesa xvfb libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev; fi
-    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then curl -fsSL -o miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh; fi
-    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then curl -fsSL -o miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-MacOSX-x86_64.sh; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then curl -fsSL -o miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then curl -fsSL -o miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-x86_64.sh; fi
     - sh: bash miniconda.sh -b -p $HOME/miniconda
     - sh: source $HOME/miniconda/bin/activate
-    - cmd: curl -fsSL -o miniconda.exe https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Windows-x86_64.exe
+    - cmd: curl -fsSL -o miniconda.exe https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe
     - cmd: miniconda.exe /S /InstallationType=JustMe /D=%MINICONDA_DIRNAME%
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
     - cmd: activate

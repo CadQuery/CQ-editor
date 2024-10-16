@@ -10,6 +10,8 @@ environment:
     CODECOV_TOKEN:
         secure: ZggK9wgDeFdTp0pu0MEV+SY4i/i1Ls0xrEC2MxSQOQ0JQV+TkpzJJzI4au7L8TpD
     MINICONDA_DIRNAME: C:\FreshMiniconda
+    APPVEYOR_SSH_KEY: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsgcwomtoEzSX+10ZVzey/IvTGv7FnWlonMzUmIpyE1buvSObrHfltfPbBhlPOa1/qvbz1T9IHfQ6oni/XZXjWO+ZCS45NJgjmX+h2cgvSLwDyr9FyxQYbaOMbI6Ta76lHRV2effB2bZb/YIDP7ZOZoFY2jQMBAMZM2HFBJRqEmI8CIQJQOwiVWph1h8nxK/mKauQ9GrZ7v/mApObIRLmoD/r+4iLW896yMgchHxOvUOeNZeZlFzk1kvMc6ez1+bQlJkK/RiNUQYer4X/rPtIh6egYQ7e7B3CeV4GtegeujPW+KAHMn2cr4V883h4mKZgrfcpindgKx7+GPVkjooJ9 lo-re@DESKTOP-I8IOEA1
+    APPVEYOR_SSH_BLOCK: true
 
 install:
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then sudo apt update; sudo apt -y --force-yes install libglu1-mesa xvfb libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev; fi
@@ -38,7 +40,6 @@ before_test:
 test_script:
     - sh: export PYTHONPATH=$(pwd)
     - cmd: set PYTHONPATH=%cd%
-    - sh: export APPVEYOR_SSH_BLOCK=true
     - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then xvfb-run -s '-screen 0 1920x1080x24 +iglx' pytest -v --cov=cq_editor; fi
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then pytest -v --cov=cq_editor; fi

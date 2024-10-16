@@ -1,6 +1,9 @@
 from path import Path
 import os, sys, asyncio
 
+import faulthandler
+faulthandler.enable()
+
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -1358,7 +1361,6 @@ def test_render_assy(main):
     qtbot.wait(500)
     assert obj_tree_comp.CQ.childCount() == 1
 
-    return
 
     # test rendering via console
     console.execute("show(assy)")

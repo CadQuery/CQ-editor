@@ -10,7 +10,7 @@ environment:
     CODECOV_TOKEN:
         secure: ZggK9wgDeFdTp0pu0MEV+SY4i/i1Ls0xrEC2MxSQOQ0JQV+TkpzJJzI4au7L8TpD
     MINICONDA_DIRNAME: C:\FreshMiniconda
-    APPVEYOR_SSH_KEY: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD2h9wAkQCGPSiAzOjPiI9mAGMk9/eRPlrSUab/CxcP7vtpMt6T6i7q5WEbyzSkSuDNzfQ2nbxpZi1qOrz8mKpP11LRvEvl8oae2pNuhKrPge+QJ49CFIjiUj0SL+OJtCWb3IogIYhsF6a0GDkDmTof5+RGJpFssVC3L21vujqKuJzgrUFLrWq61zhBmB13nw1G2jb+wfxHKXHn33ZHqodzyjipJ70MHcrpeezmSELoAVYyX/rmMXshMX3RWBg7T7mi0j4KbhTjV0eRaXXRAmFnRybMZy0KMsdBXAepa7N8D9sH1nUX1z/2Uq8SUC/lYknR2/btoT3FcH5JcvujJCbn
+    APPVEYOR_SSH_KEY: ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCuakRkp1nBMgt2ctzpDtMXYe9fH7LzGStxhpS+QFBE29gaVI1AnXGJwIa5ODyPq7bY7xCmYAHTYyUdHkCOytcF4oezqLpMTH1bZkD7pLbnZjCIs4ISB3RiHhbLsupzxQwEULG9Hj2PMfZ05lH9TGbROKzh+2Po+ubP8Xjf8aIOhkEZunDIFnrEPxFk8i5AacZlGLGncD1Pe/K//qsJyXxcyU887kntV0FX4+WjpW85NDuLROaEbWYsq98bVOvbe3cSf1Rbi/Uflp0GGWy9FUJwzZ4S76BtObThoHKbLDVUGtgBttbaXAAgYDBGKMDncWg7UeFHwPSA44cUfBys7CuX rsa-key-20241016
     APPVEYOR_SSH_BLOCK: true
 
 install:
@@ -41,6 +41,7 @@ test_script:
     - sh: export PYTHONPATH=$(pwd)
     - cmd: set PYTHONPATH=%cd%
     - sh: export APPVEYOR_SSH_BLOCK=true
+    - sh: echo $APPVEYOR_SSH_KEY
     - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then xvfb-run -s '-screen 0 1920x1080x24 +iglx' pytest -v --cov=cq_editor; fi
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then pytest -v --cov=cq_editor; fi

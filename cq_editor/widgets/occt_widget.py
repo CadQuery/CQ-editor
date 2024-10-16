@@ -1,8 +1,8 @@
 from sys import platform
-
+from typing import Optional
 
 from PyQt5.QtWidgets import QWidget, QApplication
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QEvent
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QEvent, QPointF
 
 import OCP
 
@@ -14,160 +14,179 @@ from OCP.Quantity import Quantity_Color
 
 
 ZOOM_STEP = 0.9
+SELECT_MOVE_THRESHOLD = 2
 
-   
+
 class OCCTWidget(QWidget):
-    
+
     sigObjectSelected = pyqtSignal(list)
-    
-    def __init__(self,parent=None):
-        
-        super(OCCTWidget,self).__init__(parent)
-        
+
+    # auxiliary variables for handling selection and mouse
+    pending_select: bool
+    click_pos: Optional[QPointF]
+    previous_pos: Optional[QPointF]
+
+    def __init__(self, parent=None):
+
+        super(OCCTWidget, self).__init__(parent)
+
         self.setAttribute(Qt.WA_NativeWindow)
         self.setAttribute(Qt.WA_PaintOnScreen)
         self.setAttribute(Qt.WA_NoSystemBackground)
-        
+
         self._initialized = False
         self._needs_update = False
-        
-        #OCCT secific things
+
+        # OCCT secific things
         self.display_connection = Aspect_DisplayConnection()
         self.graphics_driver = OpenGl_GraphicDriver(self.display_connection)
-        
+
         self.viewer = V3d_Viewer(self.graphics_driver)
         self.view = self.viewer.CreateView()
         self.context = AIS_InteractiveContext(self.viewer)
-        
-        #Trihedorn, lights, etc
+
+        # Trihedorn, lights, etc
         self.prepare_display()
-        
+
+        # init state for handling selection and mouse
+        self.pending_select = False
+        self.click_pos = None
+        self.previous_pos = None
+
     def prepare_display(self):
-        
+
         view = self.view
-        
+
         params = view.ChangeRenderingParams()
         params.NbMsaaSamples = 8
         params.IsAntialiasingEnabled = True
-        
+
         view.TriedronDisplay(
-            Aspect_TypeOfTriedronPosition.Aspect_TOTP_RIGHT_LOWER,
-            Quantity_Color(), 0.1)
-        
+            Aspect_TypeOfTriedronPosition.Aspect_TOTP_RIGHT_LOWER, Quantity_Color(), 0.1
+        )
+
         viewer = self.viewer
-        
+
         viewer.SetDefaultLights()
         viewer.SetLightOn()
-        
+
         ctx = self.context
-        
+
         ctx.SetDisplayMode(AIS_DisplayMode.AIS_Shaded, True)
         ctx.DefaultDrawer().SetFaceBoundaryDraw(True)
-        
+
     def wheelEvent(self, event):
-        
+
         delta = event.angleDelta().y()
-        factor = ZOOM_STEP if delta<0 else 1/ZOOM_STEP
-        
+        factor = ZOOM_STEP if delta < 0 else 1 / ZOOM_STEP
+
         self.view.SetZoom(factor)
-        
-    def mousePressEvent(self,event):
-        
+
+    def mousePressEvent(self, event):
+
         pos = event.pos()
-        
+
         if event.button() == Qt.LeftButton:
             self.view.StartRotation(pos.x(), pos.y())
+            self.pending_select = True
         elif event.button() == Qt.RightButton:
             self.view.StartZoomAtPoint(pos.x(), pos.y())
-        
-        self.old_pos = pos
-            
-    def mouseMoveEvent(self,event):
-        
+
+        self.previous_pos = pos
+        self.click_pos = pos
+
+    def mouseMoveEvent(self, event):
+
         pos = event.pos()
-        x,y = pos.x(),pos.y()
-        
+        x, y = pos.x(), pos.y()
+
         if event.buttons() == Qt.LeftButton:
-            self.view.Rotation(x,y)
-            
+            self.view.Rotation(x, y)
+
+            # if mouse was moved too much cancel selection
+            if (pos - self.click_pos).manhattanLength() > SELECT_MOVE_THRESHOLD:
+                self.pending_select = False
+
         elif event.buttons() == Qt.MiddleButton:
-            self.view.Pan(x - self.old_pos.x(),
-                          self.old_pos.y() - y, theToStart=True)
-            
+            self.view.Pan(
+                x - self.previous_pos.x(), self.previous_pos.y() - y, theToStart=True
+            )
+
         elif event.buttons() == Qt.RightButton:
-            self.view.ZoomAtPoint(self.old_pos.x(), y,
-                                  x, self.old_pos.y())
-        
-        self.old_pos = pos
-        
-    def mouseReleaseEvent(self,event):
-        
+            self.view.ZoomAtPoint(self.previous_pos.x(), y, x, self.previous_pos.y())
+
+        self.previous_pos = pos
+
+    def mouseReleaseEvent(self, event):
+
         if event.button() == Qt.LeftButton:
             pos = event.pos()
-            x,y = pos.x(),pos.y()
-            
-            self.context.MoveTo(x,y,self.view,True)
-            
-            self._handle_selection()
-            
-    def _handle_selection(self):
-        
+            x, y = pos.x(), pos.y()
+
+            if self.pending_select:
+                self._handle_selection(x, y)
+                self.pending_select = False
+
+    def _handle_selection(self, x: float, y: float):
+
+        self.context.MoveTo(x, y, self.view, True)
+
         self.context.Select(True)
         self.context.InitSelected()
-        
+
         selected = []
         if self.context.HasSelectedShape():
             selected.append(self.context.SelectedShape())
-        
+
         self.sigObjectSelected.emit(selected)
 
     def paintEngine(self):
-    
+
         return None
-    
+
     def paintEvent(self, event):
-        
+
         if not self._initialized:
             self._initialize()
         else:
             self.view.Redraw()
 
     def showEvent(self, event):
-    
-        super(OCCTWidget,self).showEvent(event)
-        
+
+        super(OCCTWidget, self).showEvent(event)
+
     def resizeEvent(self, event):
-        
-        super(OCCTWidget,self).resizeEvent(event)
-        
+
+        super(OCCTWidget, self).resizeEvent(event)
+
         self.view.MustBeResized()
-    
+
     def _initialize(self):
 
         wins = {
-            'darwin' : self._get_window_osx,
-            'linux'  : self._get_window_linux,
-            'win32': self._get_window_win           
+            "darwin": self._get_window_osx,
+            "linux": self._get_window_linux,
+            "win32": self._get_window_win,
         }
 
-        self.view.SetWindow(wins.get(platform,self._get_window_linux)(self.winId()))
+        self.view.SetWindow(wins.get(platform, self._get_window_linux)(self.winId()))
 
         self._initialized = True
-        
-    def _get_window_win(self,wid):
-    
+
+    def _get_window_win(self, wid):
+
         from OCP.WNT import WNT_Window
-        
+
         return WNT_Window(wid.ascapsule())
 
-    def _get_window_linux(self,wid):
-        
+    def _get_window_linux(self, wid):
+
         from OCP.Xw import Xw_Window
-        
-        return Xw_Window(self.display_connection,int(wid))
-    
-    def _get_window_osx(self,wid):
-        
+
+        return Xw_Window(self.display_connection, int(wid))
+
+    def _get_window_osx(self, wid):
+
         from OCP.Cocoa import Cocoa_Window
-        
+
         return Cocoa_Window(wid.ascapsule())

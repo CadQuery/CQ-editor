@@ -38,6 +38,8 @@ before_test:
 test_script:
     - sh: export PYTHONPATH=$(pwd)
     - cmd: set PYTHONPATH=%cd%
+    - sh: export APPVEYOR_SSH_BLOCK=true
+    - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-ssh.sh' | bash -e -
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then xvfb-run -s '-screen 0 1920x1080x24 +iglx' pytest -v --cov=cq_editor; fi
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then pytest -v --cov=cq_editor; fi
     - cmd: pytest -v --cov=cq_editor

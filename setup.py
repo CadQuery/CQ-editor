@@ -26,7 +26,7 @@ setup(
             "CQ-editor = cq_editor.__main__:main",
         ]
     },
-    python_requires=">=3.8,<3.12",
+    python_requires=">=3.10,<3.13",
     install_requires=[
         "logbook>=1",
         "ipython",
@@ -35,6 +35,6 @@ setup(
         "requests>=2,<3",
         "spyder>=5,<6",
         "pyqtgraph",
-        "numpy >= 1.24.1, <2",
+        "numpy >= 2, <3",
     ],
 )

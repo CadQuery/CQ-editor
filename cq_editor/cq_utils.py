@@ -213,7 +213,7 @@ def reload_cq():
     reload(cq.sketch)
     reload(cq.occ_impl.exporters.svg)
     reload(cq.cq)
-    reload(cq.occ_impl.exporters.utils)
+    # reload(cq.occ_impl.exporters.utils)
     reload(cq.occ_impl.exporters.dxf)
     reload(cq.occ_impl.exporters.amf)
     reload(cq.occ_impl.exporters.json)

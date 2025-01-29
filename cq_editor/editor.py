@@ -1,8 +1,5 @@
 import os
-<<<<<<< HEAD
-=======
 import spyder.utils.encoding
->>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
 from modulefinder import ModuleFinder
 
 from spyder.plugins.editor.widgets.codeeditor import CodeEditor
@@ -162,8 +159,6 @@ class Editor(CodeEditor,ComponentMixin):
         self.filename = fname
         self.reset_modified()
 
-<<<<<<< HEAD
-=======
     def determine_encoding(self, fname):
         if os.path.exists(fname):
             # this function returns the encoding spyder used to read the file
@@ -173,7 +168,6 @@ class Editor(CodeEditor,ComponentMixin):
         else:
             return 'utf-8'
 
->>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
     def save(self):
 
         if self._filename != '':
@@ -182,15 +176,10 @@ class Editor(CodeEditor,ComponentMixin):
                 self._file_watcher.blockSignals(True)
                 self._file_watch_timer.stop()
 
-<<<<<<< HEAD
-            with open(self._filename, 'w') as f:
-                f.write(self.toPlainText())
-=======
             encoding = self.determine_encoding(self._filename)
             encoded = self.toPlainText().encode(encoding)
             with open(self._filename, 'wb') as f:
                 f.write(encoded)
->>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
 
             if self.preferences['Autoreload']:
                 self._file_watcher.blockSignals(False)
@@ -205,14 +194,9 @@ class Editor(CodeEditor,ComponentMixin):
 
         fname = get_save_filename(self.EXTENSIONS)
         if fname != '':
-<<<<<<< HEAD
-            with open(fname,'w') as f:
-                f.write(self.toPlainText())
-=======
             encoded = self.toPlainText().encode('utf-8')
             with open(fname, 'wb') as f:
                 f.write(encoded)
->>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
                 self.filename = fname
 
             self.reset_modified()
@@ -253,10 +237,6 @@ class Editor(CodeEditor,ComponentMixin):
         # neovim writes a file by removing it first so must re-add each time
         self._watch_paths()
         self.set_text_from_file(self._filename)
-<<<<<<< HEAD
-=======
-        self.reset_modified()
->>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
         self.triggerRerender.emit(True)
 
     # Turn autoreload on/off.

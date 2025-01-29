@@ -10,7 +10,11 @@ from OCP.Aspect import Aspect_DisplayConnection, Aspect_TypeOfTriedronPosition
 from OCP.OpenGl import OpenGl_GraphicDriver
 from OCP.V3d import V3d_Viewer
 from OCP.AIS import AIS_InteractiveContext, AIS_DisplayMode
+<<<<<<< HEAD
+from OCP.Quantity import Quantity_Color, Quantity_TOC_RGB as TOC_RGB
+=======
 from OCP.Quantity import Quantity_Color
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
 
 
 ZOOM_STEP = 0.9
@@ -54,6 +58,11 @@ class OCCTWidget(QWidget):
             Aspect_TypeOfTriedronPosition.Aspect_TOTP_RIGHT_LOWER,
             Quantity_Color(), 0.1)
         
+<<<<<<< HEAD
+        view.ZBufferTriedronSetup(Quantity_Color(*(0.2, 0.0, 0.0), TOC_RGB))        
+
+=======
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
         viewer = self.viewer
         
         viewer.SetDefaultLights()
@@ -95,8 +104,13 @@ class OCCTWidget(QWidget):
                           self.old_pos.y() - y, theToStart=True)
             
         elif event.buttons() == Qt.RightButton:
+<<<<<<< HEAD
+            self.view.Pan(x - self.old_pos.x(),
+                          self.old_pos.y() - y, theToStart=True)
+=======
             self.view.ZoomAtPoint(self.old_pos.x(), y,
                                   x, self.old_pos.y())
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
         
         self.old_pos = pos
         

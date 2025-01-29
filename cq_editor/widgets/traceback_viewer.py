@@ -1,5 +1,8 @@
 from traceback import extract_tb, format_exception_only
+<<<<<<< HEAD
+=======
 from itertools import dropwhile
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
 
 from PyQt5.QtWidgets import (QWidget, QTreeWidget, QTreeWidgetItem, QAction,
                              QLabel)
@@ -56,16 +59,26 @@ class TracebackPane(QWidget,ComponentMixin):
             
             root = self.tree.root
             code = code.splitlines()
+<<<<<<< HEAD
+            tb = [t for t in extract_tb(tb) if '<string>' in t.filename] #ignore highest frames (debug, exec)
+            
+            for el in tb:
+=======
 
             for el in dropwhile(
               lambda el: 'string>' not in el.filename, extract_tb(tb)
             ):
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
                 #workaround of the traceback module
                 if el.line == '':
                     line = code[el.lineno-1].strip()
                 else:
                     line = el.line
+<<<<<<< HEAD
+                
+=======
 
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
                 root.addChild(QTreeWidgetItem([el.filename,
                                                str(el.lineno),
                                                line]))

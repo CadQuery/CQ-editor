@@ -1,12 +1,31 @@
 import logbook as logging
+<<<<<<< HEAD
+=======
 import sys
 import re
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
 
 from PyQt5.QtWidgets import QPlainTextEdit
 from PyQt5 import QtCore
 
 from ..mixins import ComponentMixin
 
+<<<<<<< HEAD
+class QtLogHandler(logging.Handler,logging.StringFormatterHandlerMixin):
+    
+    def __init__(self, log_widget,*args,**kwargs):
+
+        super(QtLogHandler,self).__init__(*args,**kwargs)
+
+        log_format_string = '[{record.time:%H:%M:%S.%f%z}] {record.level_name}: {record.message}'
+
+        logging.StringFormatterHandlerMixin.__init__(self,log_format_string)
+        self.log_widget = log_widget
+    
+    def emit(self, record):
+        
+        msg = self.format(record)
+=======
 def strip_escape_sequences(input_string):
     # Regular expression pattern to match ANSI escape codes
     escape_pattern = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
@@ -34,6 +53,7 @@ class QtLogHandler(logging.Handler,logging.StringFormatterHandlerMixin):
 
         msg = strip_escape_sequences(msg)
 
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
         QtCore.QMetaObject\
             .invokeMethod(self.log_widget,
                           'appendPlainText',

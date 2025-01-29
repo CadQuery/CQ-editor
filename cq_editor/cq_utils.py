@@ -2,7 +2,7 @@ import cadquery as cq
 from cadquery.occ_impl.assembly import toCAF
 
 from typing import List, Union
-from imp import reload
+from importlib import reload
 from types import SimpleNamespace
 
 from OCP.XCAFPrs import XCAFPrs_AISObject
@@ -31,7 +31,7 @@ def find_cq_objects(results: dict):
 
 
 def to_compound(
-    obj: Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Sketch]
+    obj: Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Sketch],
 ):
 
     vals = []

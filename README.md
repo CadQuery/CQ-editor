@@ -1,5 +1,6 @@
 # CadQuery editor
 
+<<<<<<< HEAD
 This is a fork of [jmwright's fork](https://github.com/jmwright/CQ-editor) of [CadQuery/CQ-editor](https://github.com/CadQuery/CQ-editor). This fork includes changes that enable dark mode for CQ-editor (see screenshot below). Under the GitHub Actions menu this fork also contains static builds of CQ-editor for Linux/MacOS/Windows that include the [cq_gears](https://github.com/meadiode/cq_gears), [cq_cache](https://github.com/CadQuery/cadquery-plugins/tree/main/plugins/cq_cache), [cq_more](https://github.com/JustinSDK/cqMore), [cq_warehouse](https://github.com/gumyr/cq_warehouse), [bd_warehouse](https://github.com/gumyr/bd_warehouse), and [build123d](https://github.com/gumyr/build123d) libraries. Note you need to change color preferences to enable dark mode for all panes (see Edit -> Preferences).
 
 This fork also contains additional changes to the `show_object` function in CQ-editor that make it easier to display and export build123d objects and object lists.
@@ -8,6 +9,8 @@ Running into issues? Please click here to join the [***CadQuery, CQ-Editor, and 
 
 ![image](https://user-images.githubusercontent.com/16868537/191054760-a2cac297-3488-48d4-b9f6-52747dffcce3.png)
 
+=======
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
 [![Build status](https://ci.appveyor.com/api/projects/status/g98rs7la393mgy91/branch/master?svg=true)](https://ci.appveyor.com/project/adam-urbanczyk/cq-editor/branch/master)
 [![codecov](https://codecov.io/gh/CadQuery/CQ-editor/branch/master/graph/badge.svg)](https://codecov.io/gh/CadQuery/CQ-editor)
 [![Build Status](https://dev.azure.com/cadquery/CQ-editor/_apis/build/status/CadQuery.CQ-editor?branchName=master)](https://dev.azure.com/cadquery/CQ-editor/_build/latest?definitionId=3&branchName=master)
@@ -21,6 +24,10 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 
 ## Notable features
 
+<<<<<<< HEAD
+=======
+* Automatic code reloading - you can use your favourite editor
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
 * OCCT based
 * Graphical debugger for CadQuery scripts
   * Step through script and watch how your model changes
@@ -33,6 +40,7 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 
 ## Installation - Pre-Built Packages (Recommended)
 
+<<<<<<< HEAD
 ### Release Packages
 
 Stable release builds which do not require Anaconda are attached to the [latest release](https://github.com/jdegenstein/jmwright-CQ-editor/releases). Download the zip file for your operating system, extract it, and run the CQ-editor script for your OS (CQ-editor.cmd for Windows, CQ-editor.sh for Linux and MacOS). On Windows you should be able to simply double-click on CQ-editor.cmd. On Linux and MacOS you may need to make the script executable with `chmod +x CQ-editor.sh` and run the script from the command line. On later MacOS versions you may also need `xattr -r -d com.apple.quarantine path/to/CQ-editor-MacOS`.  The script contains an environment variable export that may be required to get CQ-editor to launch correctly on MacOS Big Sur, so it is better to use the script than to launch CQ-editor directly.
@@ -52,6 +60,48 @@ All platforms (Windows/Mac/Linux):
 pip install git+https://github.com/jdegenstein/jmwright-CQ-Editor
 pip install --pre "cadquery>=2.2"
 pip install git+https://github.com/gumyr/build123d
+=======
+~~### Release Packages~~
+
+~~Stable release builds which do not require Anaconda are attached to the [latest release](https://github.com/CadQuery/CQ-editor/releases). Download installer for your operating system, extract it, and run the CQ-editor script for your OS (CQ-editor.cmd for Windows, CQ-editor.sh for Linux and MacOS). On Windows you should be able to simply double-click on CQ-editor.cmd. On Linux and MacOS you may need to make the script executable with `chmod +x CQ-editor.sh` and run the script from the command line. The script contains an environment variable export that may be required to get CQ-editor to launch correctly on MacOS Big Sur, so it is better to use the script than to launch CQ-editor directly.~~
+
+### Development Packages
+
+Development builds are also available, but can be unstable and should be used at your own risk. You can download the newest build [here](https://github.com/CadQuery/CQ-editor/releases/tag/nightly). Install and run the `run.sh` (Linux/MacOS) or `run.bat` (Windows) script in the root CQ-editor directory. The CQ-editor window should launch.
+
+### MacOS workarounds
+
+On later MacOS versions you may also need `xattr -r -d com.apple.quarantine path/to/CQ-editor-MacOS`.
+
+## Installation (conda/mamba)
+
+Use conda or mamba to install:
+```
+mamba install -c cadquery -c conda-forge cq-editor=master
+```
+and then simply type `cq-editor` to run it. This installs the latest version built directly from the HEAD of this repository.
+
+Alternatively clone this git repository and set up the following conda environment:
+```
+mamba env create -f cqgui_env.yml -n cqgui
+mamba activate cqgui
+python run.py
+```
+
+If you are concerned about mamba/conda modifying your shell settings, you can use [micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html):
+```
+micromamba install -n base -c cadquery cq-editor
+micromamba run -n base cq-editor
+```
+
+On some linux distributions (e.g. `Ubuntu 18.04`) it might be necessary to install additonal packages:
+```
+sudo apt install libglu1-mesa libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev
+```
+On Fedora 29 the packages can be installed as follows:
+```
+dnf install -y mesa-libGLU mesa-libGL mesa-libGLU-devel
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
 ```
 
 ## Usage
@@ -62,8 +112,11 @@ By default, CQ-editor will display a 3D representation of all `Workplane` object
 
 ```python
 show_object(result, name="somename", options={"alpha":0.5, "color": (64, 164, 223)})
+<<<<<<< HEAD
 # or using rand_color:
 show_object(result, name="somename", options=rand_color(alpha=.5))
+=======
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
 ```
 
 Note that `show_object` works for `Shape` and `TopoDS_Shape` objects too. In order to display objects from the embedded Python console use `show`.

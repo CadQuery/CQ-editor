@@ -5,9 +5,17 @@ channels:
 dependencies:
   - pyqt=5
   - pyqtgraph
+<<<<<<< HEAD
   - python=3.11
+=======
+  - python=3.10
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
   - spyder=5
   - path
   - logbook
   - requests
   - cadquery=master
+<<<<<<< HEAD
+=======
+  - qtconsole=5.4.1
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b

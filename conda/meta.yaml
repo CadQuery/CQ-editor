@@ -6,18 +6,31 @@ source:
   path: ..
 
 build:
+<<<<<<< HEAD
   string: {{ 'py'+environ.get('PYTHON_VERSION')}}
+=======
+  string: {{ GIT_DESCRIBE_TAG }}_{{ GIT_BUILD_STR }}
+  noarch: python
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
   script: python setup.py install --single-version-externally-managed --record=record.txt
   entry_points:
     - cq-editor = cq_editor.__main__:main
     - CQ-editor = cq_editor.__main__:main
 requirements:
   build:
+<<<<<<< HEAD
     - python {{ environ.get('PYTHON_VERSION') }}
     - setuptools
 
   run:
     - python {{ environ.get('PYTHON_VERSION') }}
+=======
+    - python >=3.8
+    - setuptools
+
+  run:
+    - python >=3.8
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
     - cadquery=master
     - ocp
     - logbook
@@ -27,7 +40,11 @@ requirements:
     - path
     - logbook
     - requests
+<<<<<<< HEAD
 
+=======
+    - qtconsole=5.4.1
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
 test:
   imports:
     - cq_editor

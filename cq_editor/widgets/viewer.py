@@ -22,6 +22,11 @@ from .occt_widget import OCCTWidget
 from pyqtgraph.parametertree import Parameter
 import qtawesome as qta
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
 DEFAULT_EDGE_COLOR = Quantity_Color(BLACK)
 DEFAULT_EDGE_WIDTH = 2
 
@@ -60,9 +65,16 @@ class OCCViewer(QWidget,ComponentMixin):
                              [self.canvas,],
                              top_widget=self,
                              margin=0)
+<<<<<<< HEAD
         self.setup_default_drawer() #misspelled in original
         self.updatePreferences()
         
+=======
+
+        self.setup_default_drawer()
+        self.updatePreferences()
+
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
     def setup_default_drawer(self):
 
         # set the default color and material
@@ -76,7 +88,11 @@ class OCCViewer(QWidget,ComponentMixin):
         line_aspect = self.canvas.context.DefaultDrawer().FaceBoundaryAspect()
         line_aspect.SetWidth(DEFAULT_EDGE_WIDTH)
         line_aspect.SetColor(DEFAULT_EDGE_COLOR)
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
     def updatePreferences(self,*args):
 
         color1 = to_occ_color(self.preferences['Background color'])
@@ -85,9 +101,15 @@ class OCCViewer(QWidget,ComponentMixin):
         if not self.preferences['Use gradient']:
             color2 = color1
         self.canvas.view.SetBgGradientColors(color1,color2,theToUpdate=True)
+<<<<<<< HEAD
         
         self.canvas.update()
         
+=======
+
+        self.canvas.update()
+
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
         ctx = self.canvas.context
         ctx.SetDeviationCoefficient(self.preferences['Deviation'])
         ctx.SetDeviationAngle(self.preferences['Angular deviation'])
@@ -252,13 +274,21 @@ class OCCViewer(QWidget,ComponentMixin):
     def front_view(self):
 
         v = self._get_view()
+<<<<<<< HEAD
         v.SetProj(0,-1,0)
+=======
+        v.SetProj(0,1,0)
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
         v.SetTwist(0)
 
     def back_view(self):
 
         v = self._get_view()
+<<<<<<< HEAD
         v.SetProj(0,1,0)
+=======
+        v.SetProj(0,-1,0)
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
         v.SetTwist(0)
 
     def left_view(self):

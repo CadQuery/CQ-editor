@@ -17,6 +17,7 @@ class ConsoleWidget(RichJupyterWidget,ComponentMixin):
 #            self.banner = customBanner
 
         self.font_size = 6
+<<<<<<< HEAD
         self.style_sheet = '''<style>
         QPlainTextEdit, QTextEdit {
             background-color: #3f3f3f;
@@ -37,6 +38,8 @@ class ConsoleWidget(RichJupyterWidget,ComponentMixin):
         '''
         self.syntax_style = 'zenburn' #CHANGES FOR DARKMODE
         
+=======
+>>>>>>> d746c8e8e6d80f53dc931ddc4910d4c791d7218b
         self.kernel_manager = kernel_manager = QtInProcessKernelManager()
         kernel_manager.start_kernel(show_banner=False)
         kernel_manager.kernel.gui = 'qt'

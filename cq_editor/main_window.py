@@ -1,10 +1,9 @@
 import sys
 
 from typing import Optional
-from PyQt5.QtCore import pyqtSlot, Qt
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar, QDockWidget, QAction, QApplication)
-
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import (QApplication, QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
+from logbook import Logger
 import cadquery as cq
 
 from .widgets.editor import Editor
@@ -28,12 +27,18 @@ class MainWindow(QMainWindow,MainMixin):
     name = 'CQ-Editor'
     org = 'CadQuery'
 
-    def __init__(self,parent=None):
+    def __init__(self,parent=None, filename=None):
 
         super(MainWindow,self).__init__(parent)
         MainMixin.__init__(self)
 
         self.setWindowIcon(icon('app'))
+
+        # Windows workaround - makes the correct task bar icon show up.
+        if sys.platform == "win32":
+            import ctypes
+            myappid = 'cq-editor' # arbitrary string
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
         self.viewer = OCCViewer(self)
         self.setCentralWidget(self.viewer.canvas)
@@ -56,6 +61,10 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.restorePreferences()
         self.restoreWindow()
+
+        if filename:
+            self.components['editor'].load_from_file(filename)
+
         self.restoreComponentState()
 
         self.on_idle()
@@ -279,14 +288,16 @@ class MainWindow(QMainWindow,MainMixin):
 
         console = self.components['console']
         obj_tree = self.components['object_tree']
-
+        
         #application related items
         console.push_vars({'self' : self})
 
         #CQ related items
         console.push_vars({'show' : obj_tree.addObject,
                            'show_object' : obj_tree.addObject,
-                           'cq' : cq})
+                           'rand_color' : self.components['debugger']._rand_color,
+                           'cq' : cq,
+                           'log' : Logger(self.name).info})
 
     def fill_dummy(self):
 

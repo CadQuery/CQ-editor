@@ -73,12 +73,31 @@ result1 = cq.Workplane("XY" ).box(3, 3, 0.5)
 result2 = cq.Workplane("XY" ).box(3, 3, 0.5).translate((0,15,0))
 '''
 
-def _modify_file(code):
-        with open('test.py', 'w', 1) as f:
-                    f.write(code)
+code_nested_top = """import test_nested_bottom
+"""
 
-def modify_file(code):
-    p = Process(target=_modify_file,args=(code,))
+code_nested_bottom = """a=1
+"""
+
+code_reload_issue = """wire0 = cq.Workplane().lineTo(5, 5).lineTo(10, 0).close().val()
+solid1 = cq.Solid.extrudeLinear(cq.Face.makeFromWires(wire0), cq.Vector(0, 0, 1))
+r1 = cq.Workplane(solid1).translate((10, 0, 0))
+"""
+
+code_show_all = """import cadquery as cq
+b = cq.Workplane().box(1,1,1)
+sh = b.val()
+a = cq.Assembly().add(sh)
+sk = cq.Sketch().rect(1,1)
+"""
+
+def _modify_file(code, path="test.py"):
+    with open(path, "w", 1) as f:
+        f.write(code)
+
+
+def modify_file(code, path="test.py"):
+    p = Process(target=_modify_file, args=(code,path))
     p.start()
     p.join()
 
@@ -98,11 +117,11 @@ def get_bottom_left(widget):
     return pos
 
 def get_rgba(ais):
-        
+
     alpha = ais.Transparency()
     color = get_occ_color(ais)
-        
-    return color.redF(),color.redF(),color.redF(),alpha
+
+    return color.redF(), color.greenF(), color.blueF(), alpha
 
 @pytest.fixture
 def main(qtbot,mocker):
@@ -132,7 +151,7 @@ def main_clean(qtbot,mocker):
 
     qtbot.addWidget(win)
     qtbot.waitForWindowShown(win)
-    
+
     editor = win.components['editor']
     editor.set_text(code)
 
@@ -148,7 +167,7 @@ def main_clean_do_not_close(qtbot,mocker):
 
     qtbot.addWidget(win)
     qtbot.waitForWindowShown(win)
-    
+
     editor = win.components['editor']
     editor.set_text(code)
 
@@ -165,7 +184,7 @@ def main_multi(qtbot,mocker):
 
     qtbot.addWidget(win)
     qtbot.waitForWindowShown(win)
-    
+
     editor = win.components['editor']
     editor.set_text(code_multi)
 
@@ -183,7 +202,7 @@ def test_render(main):
     debugger = win.components['debugger']
     console = win.components['console']
     log = win.components['log']
-    
+
     # enable CQ reloading
     debugger.preferences['Reload CQ'] = True
 
@@ -230,6 +249,20 @@ def test_render(main):
     qtbot.wait(100)
     assert(obj_tree_comp.CQ.child(0).text(0) == 'test')
     assert('test' in log.toPlainText().splitlines()[-1])
+
+    # cq reloading check
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    editor.set_text(code_reload_issue)
+    debugger._actions['Run'][0].triggered.emit()
+
+    qtbot.wait(100)
+    assert(obj_tree_comp.CQ.childCount() == 3)
+
+    debugger._actions['Run'][0].triggered.emit()
+    qtbot.wait(100)
+    assert(obj_tree_comp.CQ.childCount() == 3)
 
 def test_export(main,mocker):
 
@@ -351,6 +384,13 @@ def test_debug(main,mocker):
 
     variables = win.components['variables_viewer']
 
+    traceback_view = win.components['traceback_viewer']
+
+    def check_no_error_occured():
+        '''check that no error occured while stepping through the debugger
+        '''
+        assert( '' == traceback_view.current_exception.text())
+
     viewer = win.components['viewer']
     assert(number_visible_items(viewer) == 3)
 
@@ -361,28 +401,31 @@ def test_debug(main,mocker):
     assert(debugger._frames == [])
 
     #test step through
-    ev = event_loop([lambda: (assert_func(variables.model().rowCount() == 4),
-                              assert_func(number_visible_items(viewer) == 3),
-                              step.triggered.emit()),
-                     lambda: (assert_func(variables.model().rowCount() == 4),
+    ev = event_loop([lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 3),
                               step.triggered.emit()),
                      lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 3),
                               step.triggered.emit()),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
+                              assert_func(number_visible_items(viewer) == 3),
+                              step.triggered.emit()),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit())])
 
     patch_debugger(debugger,ev)
 
     debug.triggered.emit(True)
+
+    check_no_error_occured()
+
     assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 4)
 
     #test exit debug
     ev = event_loop([lambda: (step.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 1),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 3),
                               debug.triggered.emit(False),)])
 
@@ -390,12 +433,14 @@ def test_debug(main,mocker):
 
     debug.triggered.emit(True)
 
+    check_no_error_occured()
+
     assert(variables.model().rowCount() == 1)
     assert(number_visible_items(viewer) == 3)
 
     #test breakpoint
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -405,12 +450,14 @@ def test_debug(main,mocker):
 
     debug.triggered.emit(True)
 
+    check_no_error_occured()
+
     assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 4)
-    
+
     #test breakpoint without using singals
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -420,12 +467,14 @@ def test_debug(main,mocker):
 
     debugger.debug(True)
 
+    check_no_error_occured()
+
     assert(variables.model().rowCount() == 2)
     assert(number_visible_items(viewer) == 4)
-    
+
     #test debug() without using singals
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -435,9 +484,11 @@ def test_debug(main,mocker):
     editor.debugger.set_breakpoints([(4,None)])
 
     debugger.debug(True)
-    
+
+    check_no_error_occured()
+
     CQ = obj_tree.CQ
-    
+
     # object 1 (defualt color)
     r,g,b,a = get_rgba(CQ.child(0).ais)
     assert( a == pytest.approx(0.2) )
@@ -459,6 +510,10 @@ code_err2 = \
 '''import cadquery as cq
 result = cq.Workplane("XY" ).box(3, 3, 0.5).edges("|Z").fillet(0.125)
 f()
+'''
+code_err3 =\
+'''import cadquery as cq
+result = cq.Workplane("XY" ).box(3, 3, 0)
 '''
 
 def test_traceback(main):
@@ -490,22 +545,30 @@ def test_traceback(main):
 
     assert('NameError' in traceback_view.current_exception.text())
     assert(hasattr(sys, 'last_traceback'))
-    
+
     del sys.last_traceback
     assert(not hasattr(sys, 'last_traceback'))
-    
-    
+
+
     #test last_traceback with debug
     ev = event_loop([lambda: (cont.triggered.emit(),)])
     patch_debugger(debugger,ev)
-    
+
     debugger.debug(True)
-    
+
     assert('NameError' in traceback_view.current_exception.text())
     assert(hasattr(sys, 'last_traceback'))
+    assert(traceback_view.tree.root.childCount() == 1)
 
     # restore the tracing function
     sys.settrace(trace_function)
+
+    # check if errors deeper in CQ are reported too
+    editor.set_text(code_err3)
+    run.triggered.emit()
+
+    assert('Standard_DomainError' in traceback_view.current_exception.text())
+    assert(traceback_view.tree.root.childCount() == 3) # 1 in user code + 2 in CQ code
 
 @pytest.fixture
 def editor(qtbot):
@@ -518,7 +581,7 @@ def editor(qtbot):
     return qtbot, win
 
 def conv_line_ends(text):
-    
+
     return '\n'.join(text.splitlines())
 
 def test_editor(monkeypatch,editor):
@@ -646,6 +709,31 @@ def test_editor_autoreload(monkeypatch,editor):
     with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
         editor.save()
 
+def test_autoreload_nested(editor):
+
+    qtbot, editor = editor
+
+    TIMEOUT = 500
+
+    editor.autoreload(True)
+    editor.preferences['Autoreload: watch imported modules'] = True
+
+    with open('test_nested_top.py','w') as f:
+        f.write(code_nested_top)
+
+    with open('test_nested_bottom.py','w') as f:
+        f.write("")
+
+    assert(editor.get_text_with_eol() == '')
+
+    editor.load_from_file('test_nested_top.py')
+    assert(len(editor.get_text_with_eol()) > 0)
+
+    # wait for reload.
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+        # modify file - NB: separate process is needed to avoid Windows quirks
+        modify_file(code_nested_bottom, 'test_nested_bottom.py')
+
 def test_console(main):
 
     qtbot, win = main
@@ -710,8 +798,8 @@ def test_auto_fit_view(main_clean):
 
         return pytest.approx(eye+proj+(scale,))
 
-    qtbot, win = main_clean    
-    
+    qtbot, win = main_clean
+
     editor = win.components['editor']
     debugger = win.components['debugger']
     viewer = win.components['viewer']
@@ -813,7 +901,7 @@ def test_selection(main_multi,mocker):
     ctx = viewer._get_context()
     ctx.InitSelected()
     shapes = []
-    
+
     while ctx.MoreSelected():
         shapes.append(ctx.SelectedShape())
         ctx.NextSelected()
@@ -886,7 +974,7 @@ def test_screenshot(main,mocker):
     qtbot,win = main
 
     mocker.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.png',''))
-    
+
     viewer = win.components['viewer']
     viewer._actions['Tools'][0].triggered.emit()
 
@@ -894,9 +982,9 @@ def test_screenshot(main,mocker):
 
 def test_resize(main):
 
-    qtbot,win = main    
+    qtbot,win = main
     editor = win.components['editor']
-    
+
     editor.hide()
     qtbot.wait(50)
     editor.show()
@@ -962,18 +1050,17 @@ def test_render_colors(main_clean):
 
     editor.set_text(code_color)
     debugger._actions['Run'][0].triggered.emit()
-    
+
     CQ = obj_tree.CQ
-    
+
     # object 1 (defualt color)
-    r,g,b,a = get_rgba(CQ.child(0).ais)
-    assert( a == 0 )
-    assert( r != 1.0 )
-    
+    assert not CQ.child(0).ais.HasColor()
+
     # object 2
     r,g,b,a = get_rgba(CQ.child(1).ais)
     assert( a == 0.5 )
     assert( r == 1.0 )
+    assert( g == 0.0 )
 
     # object 3
     r,g,b,a = get_rgba(CQ.child(2).ais)
@@ -998,7 +1085,7 @@ def test_render_colors(main_clean):
     # check if error occured
     qtbot.wait(100)
     assert('Unknown color format' in log.toPlainText().splitlines()[-1])
-    
+
 def test_render_colors_console(main_clean):
 
     qtbot, win = main_clean
@@ -1009,20 +1096,11 @@ def test_render_colors_console(main_clean):
 
     console.execute_command(code_color)
 
-    def get_rgba(ais):
-        
-        alpha = ais.Transparency()
-        color = get_occ_color(ais)
-        
-        return color.redF(),color.redF(),color.redF(),alpha
-    
     CQ = obj_tree.CQ
-    
+
     # object 1 (defualt color)
-    r,g,b,a = get_rgba(CQ.child(0).ais)
-    assert( a == 0 )
-    assert( r != 1.0 )
-    
+    assert not CQ.child(0).ais.HasColor()
+
     # object 2
     r,g,b,a = get_rgba(CQ.child(1).ais)
     assert( a == 0.5 )
@@ -1047,11 +1125,41 @@ def test_render_colors_console(main_clean):
     r,g,b,a = get_rgba(CQ.child(5).ais)
     assert( a == 0.5 )
     assert( r == 1.0 )
-    
+
     # check if error occured
     qtbot.wait(100)
     assert('Unknown color format' in log.toPlainText().splitlines()[-1])
-    
+
+code_shading = \
+'''
+import cadquery as cq
+
+res1 = cq.Workplane('XY').box(5, 7, 5)
+res2 = cq.Workplane('XY').box(8, 5, 4)
+show_object(res1)
+show_object(res2,options={"alpha":0})
+'''
+
+def test_shading_aspect(main_clean):
+
+    qtbot, win = main_clean
+
+    obj_tree = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+
+    editor.set_text(code_shading)
+    debugger._actions['Run'][0].triggered.emit()
+
+    CQ = obj_tree.CQ
+
+    # get material aspects
+    ma1 = CQ.child(0).ais.Attributes().ShadingAspect().Material()
+    ma2 = CQ.child(1).ais.Attributes().ShadingAspect().Material()
+
+    # verify that they are the same
+    assert ma1.Shininess() == ma2.Shininess()
+
 def test_confirm_new(monkeypatch,editor):
 
     qtbot, editor = editor
@@ -1061,7 +1169,7 @@ def test_confirm_new(monkeypatch,editor):
 
     editor.document().setPlainText(code)
     assert(editor.modified == True)
-    
+
     #monkeypatch the confirmation dialog and run both scenarios
     def cancel(*args, **kwargs):
         return QMessageBox.No
@@ -1071,18 +1179,18 @@ def test_confirm_new(monkeypatch,editor):
 
     monkeypatch.setattr(QMessageBox, 'question',
                         staticmethod(cancel))
-    
+
     editor.new()
     assert(editor.modified == True)
     assert(conv_line_ends(editor.get_text_with_eol()) == code)
-    
+
     monkeypatch.setattr(QMessageBox, 'question',
                         staticmethod(ok))
-    
+
     editor.new()
     assert(editor.modified == False)
     assert(editor.get_text_with_eol() == '')
-    
+
 code_show_topods = \
 '''
 import cadquery as cq
@@ -1111,16 +1219,16 @@ def test_render_topods(main):
     editor.set_text(code_show_topods)
     debugger._actions['Run'][0].triggered.emit()
     assert(obj_tree_comp.CQ.childCount() == 1)
-    
+
     # test rendering of topods object via console
     console.execute('show(result.val().wrapped)')
     assert(obj_tree_comp.CQ.childCount() == 2)
-    
+
     # test rendering of list of topods object via console
     console.execute('show([result.val().wrapped,result.val().wrapped])')
     assert(obj_tree_comp.CQ.childCount() == 3)
-    
-    
+
+
 code_show_shape_list = \
 '''
 import cadquery as cq
@@ -1134,7 +1242,7 @@ show_object([result1,result2])
 def test_render_shape_list(main):
 
     qtbot, win = main
-    
+
     log = win.components['log']
 
     obj_tree_comp = win.components['object_tree']
@@ -1150,7 +1258,7 @@ def test_render_shape_list(main):
     editor.set_text(code_show_shape_list)
     debugger._actions['Run'][0].triggered.emit()
     assert(obj_tree_comp.CQ.childCount() == 2)
-    
+
     # test rendering of Shape via console
     console.execute('show(result1)')
     console.execute('show([result1,result2])')
@@ -1229,7 +1337,41 @@ def test_render_ais(main):
     console.execute('show(ais)')
     qtbot.wait(500)
     assert(obj_tree_comp.CQ.childCount() == 2)
-    
+
+code_show_sketch = \
+'''import cadquery as cq
+
+s1 = cq.Sketch().rect(1,1)
+s2 = cq.Sketch().segment((0,0), (0,3.),"s1")
+
+show_object(s1)
+show_object(s2)
+'''
+
+def test_render_sketch(main):
+
+    qtbot, win = main
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_show_sketch)
+    debugger._actions['Run'][0].triggered.emit()
+    qtbot.wait(500)
+    assert(obj_tree_comp.CQ.childCount() == 2)
+
+    # test rendering via console
+    console.execute('show(s1); show(s2)')
+    qtbot.wait(500)
+    assert(obj_tree_comp.CQ.childCount() == 4)
+
 def test_window_title(monkeypatch, main):
 
     fname = 'test_window_title.py'
@@ -1253,3 +1395,190 @@ def test_window_title(monkeypatch, main):
     win.components["editor"].new()
     # I don't really care what the title is, as long as it's not a filename
     assert(not win.windowTitle().endswith('.py'))
+
+def test_module_discovery(tmp_path, editor):
+
+    qtbot, editor = editor
+    with open(tmp_path.joinpath('main.py'), 'w') as f:
+        f.write('import b')
+
+    assert editor.get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == []
+
+    tmp_path.joinpath('b.py').touch()
+
+    assert editor.get_imported_module_paths(str(tmp_path.joinpath('main.py'))) == [str(tmp_path.joinpath('b.py'))]
+
+def test_launch_syntax_error(tmp_path):
+
+    # verify app launches when input file is bad
+    win = MainWindow()
+
+    inputfile = Path(tmp_path).joinpath("syntax_error.py")
+    modify_file("print(", inputfile)
+    editor = win.components["editor"]
+    editor.autoreload(True)
+    editor.preferences["Autoreload: watch imported modules"] = True
+    editor.load_from_file(inputfile)
+
+    win.show()
+    assert(win.isVisible())
+
+code_import_module_makebox = \
+"""
+from module_makebox import *
+z = 1
+r = makebox(z)
+"""
+
+code_module_makebox = \
+"""
+import cadquery as cq
+def makebox(z):
+    zval = z + 1
+    return cq.Workplane().box(1, 1, zval)
+"""
+
+def test_reload_import_handle_error(tmp_path, main):
+
+    TIMEOUT = 500
+    qtbot, win = main
+    editor = win.components["editor"]
+    debugger = win.components["debugger"]
+    traceback_view = win.components["traceback_viewer"]
+
+    editor.autoreload(True)
+    editor.preferences["Autoreload: watch imported modules"] = True
+
+    # save the module and top level script files
+    module_file = Path(tmp_path).joinpath("module_makebox.py")
+    script = Path(tmp_path).joinpath("main.py")
+    modify_file(code_module_makebox, module_file)
+    modify_file(code_import_module_makebox, script)
+
+    # run, verify that no exception was generated
+    editor.load_from_file(script)
+    debugger._actions["Run"][0].triggered.emit()
+    assert(traceback_view.current_exception.text()  == "")
+
+    # save the module with an error
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+        lines = code_module_makebox.splitlines()
+        lines.remove("    zval = z + 1") # introduce NameError
+        lines = "\n".join(lines)
+        modify_file(lines, module_file)
+
+    # verify NameError is generated
+    debugger._actions["Run"][0].triggered.emit()
+    assert("NameError" in traceback_view.current_exception.text())
+
+    # revert the error, verify rerender is triggered
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+        modify_file(code_module_makebox, module_file)
+
+    # verify that no exception was generated
+    debugger._actions["Run"][0].triggered.emit()
+    assert(traceback_view.current_exception.text()  == "")
+
+def test_modulefinder(tmp_path, main):
+
+    TIMEOUT = 500
+    qtbot, win = main
+    editor = win.components["editor"]
+    debugger = win.components["debugger"]
+    traceback_view = win.components["traceback_viewer"]
+    log = win.components['log']
+
+    editor.autoreload(True)
+    editor.preferences["Autoreload: watch imported modules"] = True
+
+    script = Path(tmp_path).joinpath("main.py")
+    Path(tmp_path).joinpath("emptydir").mkdir()
+    modify_file("#import emptydir", script)
+    editor.load_from_file(script)
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+        modify_file("import emptydir", script)
+
+    qtbot.wait(100)
+    assert("Cannot determine imported modules" in log.toPlainText().splitlines()[-1])
+
+def test_show_all(main):
+
+    qtbot, win = main
+
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    object_tree = win.components['object_tree']
+
+    # remove all objects
+    object_tree.removeObjects()
+    assert(object_tree.CQ.childCount() == 0)
+
+    # add code wtih Shape, Workplane, Assy, Sketch
+    editor.set_text(code_show_all)
+
+    # Run and check if all are shown
+    debugger._actions['Run'][0].triggered.emit()
+
+    assert(object_tree.CQ.childCount() == 4)
+
+code_randcolor = \
+"""import cadquery as cq
+b = cq.Workplane().box(8, 3, 4)
+for i in range(10):
+    show_object(b.translate((0,5*i,0)), options=rand_color(alpha=0))
+    show_object(b.translate((0,5*i,0)), options=rand_color(0, True))
+"""
+
+def test_randcolor(main):
+    
+    qtbot, win = main
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_randcolor)
+    debugger._actions['Run'][0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 2*10)
+
+code_show_wo_name = \
+"""
+import cadquery as cq
+
+res = cq.Workplane().box(1,1,1)
+
+show_object(res)
+show_object(cq.Workplane().box(1,1,1))
+"""
+
+def test_show_without_name(main):
+
+    qtbot, win = main
+
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    object_tree = win.components['object_tree']
+
+    # remove all objects
+    object_tree.removeObjects()
+    assert(object_tree.CQ.childCount() == 0)
+
+    # add code wtih Shape, Workplane, Assy, Sketch
+    editor.set_text(code_show_wo_name)
+
+    # Run and check if all are shown
+    debugger._actions['Run'][0].triggered.emit()
+
+    assert(object_tree.CQ.childCount() == 2)
+
+    # Check the name of the first object
+    assert(object_tree.CQ.child(0).text(0) == "res")
+
+    # Check that the name of the seconf object is an int
+    int(object_tree.CQ.child(1).text(0))

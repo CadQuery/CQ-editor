@@ -1,33 +1,32 @@
-# -*- coding: utf-8 -*-
+from PyQt5.QtWidgets import QWidget, QDialog, QTreeWidgetItem, QApplication, QAction
 
-from typing import List, Optional
-from PyQt5.QtWidgets import (QWidget, QPushButton, QDialog, QTreeWidget,
-                             QTreeWidgetItem, QVBoxLayout, QFileDialog,
-                             QHBoxLayout, QFrame, QLabel, QApplication,
-                             QToolBar, QAction)
-
-from PyQt5.QtCore import QSize, pyqtSlot, pyqtSignal, QMetaObject, Qt
+from typing import Optional, List
+from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from PyQt5.QtGui import QIcon
 
-from OCP.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, \
-    AIS_Axis, AIS_Line
-from OCP.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular, Aspect_GFM_VER
-from OCP.Quantity import Quantity_NOC_BLACK as BLACK, \
-    Quantity_TOC_RGB as TOC_RGB, Quantity_Color
-from OCP.Geom import Geom_CylindricalSurface, Geom_Plane, Geom_Circle,\
-     Geom_TrimmedCurve, Geom_Axis1Placement, Geom_Axis2Placement, Geom_Line
-from OCP.gp import gp_Trsf, gp_Vec, gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
+from OCP.Graphic3d import Graphic3d_Camera, Graphic3d_StereoMode, Graphic3d_NOM_JADE,\
+    Graphic3d_MaterialAspect
+from OCP.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, AIS_Axis
+from OCP.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular
+from OCP.Quantity import Quantity_NOC_BLACK as BLACK, Quantity_TOC_RGB as TOC_RGB,\
+    Quantity_Color
+from OCP.Geom import Geom_Axis1Placement
+from OCP.gp import gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
 
 from ..utils import layout, get_save_filename
 from ..mixins import ComponentMixin
 from ..icons import icon
-from ..cq_utils import to_occ_color, make_AIS
+from ..cq_utils import to_occ_color, make_AIS, DEFAULT_FACE_COLOR
 
 from .occt_widget import OCCTWidget
 
 from pyqtgraph.parametertree import Parameter
 import qtawesome as qta
 
+
+
+DEFAULT_EDGE_COLOR = Quantity_Color(BLACK)
+DEFAULT_EDGE_WIDTH = 2
 
 class OCCViewer(QWidget,ComponentMixin):
 
@@ -38,11 +37,14 @@ class OCCViewer(QWidget,ComponentMixin):
         {'name': 'Use gradient', 'type': 'bool', 'value': False},
         {'name': 'Background color', 'type': 'color', 'value': (95,95,95)},
         {'name': 'Background color (aux)', 'type': 'color', 'value': (30,30,30)},
-        {'name': 'Default object color', 'type': 'color', 'value': "FF0"},
+        {'name': 'Default object color', 'type': 'color', 'value': "#FF0"},
         {'name': 'Deviation', 'type': 'float', 'value': 1e-5, 'dec': True, 'step': 1},
-        {'name': 'Angular deviation', 'type': 'float', 'value': 0.1, 'dec': True, 'step': 1}])
-         
-
+        {'name': 'Angular deviation', 'type': 'float', 'value': 0.1, 'dec': True, 'step': 1},
+        {'name': 'Projection Type', 'type': 'list', 'value': 'Orthographic',
+         'values': ['Orthographic', 'Perspective', 'Stereo', 'MonoLeftEye', 'MonoRightEye']},
+        {'name': 'Stereo Mode', 'type': 'list', 'value': 'QuadBuffer',
+         'values': ['QuadBuffer', 'Anaglyph', 'RowInterlaced', 'ColumnInterlaced',
+                    'ChessBoard', 'SideBySide', 'OverUnder']}])
     IMAGE_EXTENSIONS = 'png'
 
     sigObjectSelected = pyqtSignal(list)
@@ -62,8 +64,23 @@ class OCCViewer(QWidget,ComponentMixin):
                              [self.canvas,],
                              top_widget=self,
                              margin=0)
-        
+
+        self.setup_default_drawer()
         self.updatePreferences()
+
+    def setup_default_drawer(self):
+
+        # set the default color and material
+        material = Graphic3d_MaterialAspect(Graphic3d_NOM_JADE)
+
+        shading_aspect = self.canvas.context.DefaultDrawer().ShadingAspect()
+        shading_aspect.SetMaterial(material)
+        shading_aspect.SetColor(DEFAULT_FACE_COLOR)
+
+        # face edge lw
+        line_aspect = self.canvas.context.DefaultDrawer().FaceBoundaryAspect()
+        line_aspect.SetWidth(DEFAULT_EDGE_WIDTH)
+        line_aspect.SetColor(DEFAULT_EDGE_COLOR)
 
     def updatePreferences(self,*args):
 
@@ -73,55 +90,77 @@ class OCCViewer(QWidget,ComponentMixin):
         if not self.preferences['Use gradient']:
             color2 = color1
         self.canvas.view.SetBgGradientColors(color1,color2,theToUpdate=True)
-        
+
         self.canvas.update()
-        
+
         ctx = self.canvas.context
         ctx.SetDeviationCoefficient(self.preferences['Deviation'])
         ctx.SetDeviationAngle(self.preferences['Angular deviation'])
+
+        v = self._get_view()
+        camera = v.Camera()
+        projection_type = self.preferences['Projection Type']
+        camera.SetProjectionType(getattr(Graphic3d_Camera, f'Projection_{projection_type}',
+                                         Graphic3d_Camera.Projection_Orthographic))
+
+        # onle relevant for stereo projection
+        stereo_mode = self.preferences['Stereo Mode']
+        params = v.ChangeRenderingParams()
+        params.StereoMode = getattr(Graphic3d_StereoMode, f'Graphic3d_StereoMode_{stereo_mode}',
+                                    Graphic3d_StereoMode.Graphic3d_StereoMode_QuadBuffer)
 
     def create_actions(self,parent):
 
         self._actions =  \
                 {'View' : [QAction(qta.icon('fa.arrows-alt'),
-                                   'Fit',
+                                   'Fit (Shift+F1)',
                                    parent,
+                                   shortcut='shift+F1',
                                    triggered=self.fit),
                           QAction(QIcon(':/images/icons/isometric_view.svg'),
-                                  'Iso',
+                                  'Iso (Shift+F2)',
                                   parent,
+                                  shortcut='shift+F2',
                                   triggered=self.iso_view),
                           QAction(QIcon(':/images/icons/top_view.svg'),
-                                  'Top',
+                                  'Top (Shift+F3)',
                                   parent,
+                                  shortcut='shift+F3',
                                   triggered=self.top_view),
                           QAction(QIcon(':/images/icons/bottom_view.svg'),
-                                  'Bottom',
+                                  'Bottom (Shift+F4)',
                                   parent,
+                                  shortcut='shift+F4',
                                   triggered=self.bottom_view),
                           QAction(QIcon(':/images/icons/front_view.svg'),
-                                  'Front',
+                                  'Front (Shift+F5)',
                                   parent,
+                                  shortcut='shift+F5',
                                   triggered=self.front_view),
                           QAction(QIcon(':/images/icons/back_view.svg'),
-                                  'Back',
+                                  'Back (Shift+F6)',
                                   parent,
+                                  shortcut='shift+F6',
                                   triggered=self.back_view),
                           QAction(QIcon(':/images/icons/left_side_view.svg'),
-                                  'Left',
+                                  'Left (Shift+F7)',
                                   parent,
+                                  shortcut='shift+F7',
                                   triggered=self.left_view),
                           QAction(QIcon(':/images/icons/right_side_view.svg'),
-                                  'Right',
+                                  'Right (Shift+F8)',
                                   parent,
+                                  shortcut='shift+F8',
                                   triggered=self.right_view),
                           QAction(qta.icon('fa.square-o'),
-                                  'Wireframe',
+                                  'Wireframe (Shift+F9)',
                                   parent,
+                                  shortcut='shift+F9',
                                   triggered=self.wireframe_view),
                                   QAction(qta.icon('fa.square'),
-                                          'Shaded',
+                                          'Shaded (Shift+F10)',
                                           parent,
+                                          shortcut='shift+F10',
                                           triggered=self.shaded_view)],
                  'Tools' : [QAction(icon('screenshot'),
                                    'Screenshot',

@@ -747,9 +747,10 @@ def test_console(main):
     assert(len(a) == 1)
 
     # test print_text
-    pos_orig = console._prompt_pos
-    console.print_text('a')
-    assert(console._prompt_pos == pos_orig + len('a'))
+    text_before = console._control.document().toPlainText()
+    console.print_text('foo')
+    text_after = console._control.document().toPlainText()
+    assert text_after == text_before + 'foo'
 
 def test_viewer(main):
 

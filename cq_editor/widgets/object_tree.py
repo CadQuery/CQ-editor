@@ -97,7 +97,7 @@ class ObjectTree(QWidget,ComponentMixin):
         {'name': 'Clear all before each run', 'type': 'bool', 'value': True},
         {'name': 'STL precision','type': 'float', 'value': .1}])
 
-    sigObjectsAdded = pyqtSignal([list],[list,bool])
+    sigObjectsAdded = pyqtSignal([list, list],[list, bool, list])
     sigObjectsRemoved = pyqtSignal(list)
     sigCQObjectSelected = pyqtSignal(object)
     sigAISObjectsSelected = pyqtSignal(list)
@@ -201,6 +201,7 @@ class ObjectTree(QWidget,ComponentMixin):
 
         origin = (0,0,0)
         ais_list = []
+        names = []
 
         for name,color,direction in zip(('X','Y','Z'),
                                         ('red','lawngreen','blue'),
@@ -214,8 +215,9 @@ class ObjectTree(QWidget,ComponentMixin):
                                                  ais=line))
 
             ais_list.append(line)
+            names.append(name)
 
-        self.sigObjectsAdded.emit(ais_list)
+        self.sigObjectsAdded.emit(ais_list, names)
 
     def _current_properties(self):
 
@@ -248,6 +250,7 @@ class ObjectTree(QWidget,ComponentMixin):
             self.removeObjects()
 
         ais_list = []
+        names = []
 
         #remove empty objects
         objects_f = {k:v for k,v in objects.items() if not is_obj_empty(v.shape)}
@@ -266,13 +269,14 @@ class ObjectTree(QWidget,ComponentMixin):
             
             if child.properties['Visible']:
                 ais_list.append(ais)
-            
+                names.append(name)
+
             root.addChild(child)
 
         if request_fit_view:
-            self.sigObjectsAdded[list,bool].emit(ais_list,True)
+            self.sigObjectsAdded[list, bool, list].emit(ais_list, True, names)
         else:
-            self.sigObjectsAdded[list].emit(ais_list)
+            self.sigObjectsAdded[list, list].emit(ais_list, names)
 
     @pyqtSlot(object,str,object)
     def addObject(self,obj,name='',options=None):
@@ -281,7 +285,7 @@ class ObjectTree(QWidget,ComponentMixin):
 
         root = self.CQ
 
-        ais,shape_display = make_AIS(obj, options)
+        ais, shape_display = make_AIS(obj, options)
 
         root.addChild(ObjectTreeItem(name,
                                      shape=obj,
@@ -289,7 +293,7 @@ class ObjectTree(QWidget,ComponentMixin):
                                      ais=ais,
                                      sig=self.sigObjectPropertiesChanged))
 
-        self.sigObjectsAdded.emit([ais])
+        self.sigObjectsAdded.emit([ais], [name])
 
     @pyqtSlot(list)
     @pyqtSlot()
@@ -313,7 +317,7 @@ class ObjectTree(QWidget,ComponentMixin):
             self.removeObjects()
             self.CQ.addChildren(self._stash)
             ais_list = [el.ais for el in self._stash]
-            self.sigObjectsAdded.emit(ais_list)
+            self.sigObjectsAdded.emit(ais_list, [''] * len(ais_list))
 
     @pyqtSlot()
     def removeSelected(self):

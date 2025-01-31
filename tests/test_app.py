@@ -84,6 +84,13 @@ solid1 = cq.Solid.extrudeLinear(cq.Face.makeFromWires(wire0), cq.Vector(0, 0, 1)
 r1 = cq.Workplane(solid1).translate((10, 0, 0))
 """
 
+code_show_all = """import cadquery as cq
+b = cq.Workplane().box(1,1,1)
+sh = b.val()
+a = cq.Assembly().add(sh)
+sk = cq.Sketch().rect(1,1)
+"""
+
 def _modify_file(code, path="test.py"):
     with open(path, "w", 1) as f:
         f.write(code)
@@ -251,11 +258,11 @@ def test_render(main):
     debugger._actions['Run'][0].triggered.emit()
 
     qtbot.wait(100)
-    assert(obj_tree_comp.CQ.childCount() == 1)
+    assert(obj_tree_comp.CQ.childCount() == 3)
 
     debugger._actions['Run'][0].triggered.emit()
     qtbot.wait(100)
-    assert(obj_tree_comp.CQ.childCount() == 1)
+    assert(obj_tree_comp.CQ.childCount() == 3)
 
 def test_export(main,mocker):
 
@@ -394,24 +401,18 @@ def test_debug(main,mocker):
     assert(debugger._frames == [])
 
     #test step through
-    ev = event_loop([
-        lambda: (
-            assert_func(variables.model().rowCount() == 4),
-            assert_func(number_visible_items(viewer) == 3),
-            step.triggered.emit()),
-        lambda: (
-            assert_func(variables.model().rowCount() == 4),
-            assert_func(number_visible_items(viewer) == 3),
-            step.triggered.emit()),
-        lambda: (
-            assert_func(variables.model().rowCount() == 5),
-            assert_func(number_visible_items(viewer) == 3),
-            step.triggered.emit()),
-        lambda: (
-            assert_func(variables.model().rowCount() == 5),
-            assert_func(number_visible_items(viewer) == 4),
-            cont.triggered.emit())
-        ])
+    ev = event_loop([lambda: (assert_func(variables.model().rowCount() == 5),
+                              assert_func(number_visible_items(viewer) == 3),
+                              step.triggered.emit()),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
+                              assert_func(number_visible_items(viewer) == 3),
+                              step.triggered.emit()),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
+                              assert_func(number_visible_items(viewer) == 3),
+                              step.triggered.emit()),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
+                              assert_func(number_visible_items(viewer) == 4),
+                              cont.triggered.emit())])
 
     patch_debugger(debugger,ev)
 
@@ -424,7 +425,7 @@ def test_debug(main,mocker):
 
     #test exit debug
     ev = event_loop([lambda: (step.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 4),
+                     lambda: (assert_func(variables.model().rowCount() == 5),
                               assert_func(number_visible_items(viewer) == 3),
                               debug.triggered.emit(False),)])
 
@@ -439,7 +440,7 @@ def test_debug(main,mocker):
 
     #test breakpoint
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -456,7 +457,7 @@ def test_debug(main,mocker):
 
     #test breakpoint without using singals
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -473,7 +474,7 @@ def test_debug(main,mocker):
 
     #test debug() without using singals
     ev = event_loop([lambda: (cont.triggered.emit(),),
-                     lambda: (assert_func(variables.model().rowCount() == 5),
+                     lambda: (assert_func(variables.model().rowCount() == 6),
                               assert_func(number_visible_items(viewer) == 4),
                               cont.triggered.emit(),)])
 
@@ -509,6 +510,10 @@ code_err2 = \
 '''import cadquery as cq
 result = cq.Workplane("XY" ).box(3, 3, 0.5).edges("|Z").fillet(0.125)
 f()
+'''
+code_err3 =\
+'''import cadquery as cq
+result = cq.Workplane("XY" ).box(3, 3, 0)
 '''
 
 def test_traceback(main):
@@ -553,9 +558,17 @@ def test_traceback(main):
 
     assert('NameError' in traceback_view.current_exception.text())
     assert(hasattr(sys, 'last_traceback'))
+    assert(traceback_view.tree.root.childCount() == 1)
 
     # restore the tracing function
     sys.settrace(trace_function)
+
+    # check if errors deeper in CQ are reported too
+    editor.set_text(code_err3)
+    run.triggered.emit()
+
+    assert('Standard_DomainError' in traceback_view.current_exception.text())
+    assert(traceback_view.tree.root.childCount() == 3) # 1 in user code + 2 in CQ code
 
 @pytest.fixture
 def editor(qtbot):
@@ -1488,3 +1501,84 @@ def test_modulefinder(tmp_path, main):
     qtbot.wait(100)
     assert("Cannot determine imported modules" in log.toPlainText().splitlines()[-1])
 
+def test_show_all(main):
+
+    qtbot, win = main
+
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    object_tree = win.components['object_tree']
+
+    # remove all objects
+    object_tree.removeObjects()
+    assert(object_tree.CQ.childCount() == 0)
+
+    # add code wtih Shape, Workplane, Assy, Sketch
+    editor.set_text(code_show_all)
+
+    # Run and check if all are shown
+    debugger._actions['Run'][0].triggered.emit()
+
+    assert(object_tree.CQ.childCount() == 4)
+
+code_randcolor = \
+"""import cadquery as cq
+b = cq.Workplane().box(8, 3, 4)
+for i in range(10):
+    show_object(b.translate((0,5*i,0)), options=rand_color(alpha=0))
+    show_object(b.translate((0,5*i,0)), options=rand_color(0, True))
+"""
+
+def test_randcolor(main):
+    
+    qtbot, win = main
+
+    obj_tree_comp = win.components['object_tree']
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    console = win.components['console']
+
+    # check that object was removed
+    obj_tree_comp._toolbar_actions[0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 0)
+
+    # check that object was rendered usin explicit show_object call
+    editor.set_text(code_randcolor)
+    debugger._actions['Run'][0].triggered.emit()
+    assert(obj_tree_comp.CQ.childCount() == 2*10)
+
+code_show_wo_name = \
+"""
+import cadquery as cq
+
+res = cq.Workplane().box(1,1,1)
+
+show_object(res)
+show_object(cq.Workplane().box(1,1,1))
+"""
+
+def test_show_without_name(main):
+
+    qtbot, win = main
+
+    editor = win.components['editor']
+    debugger = win.components['debugger']
+    object_tree = win.components['object_tree']
+
+    # remove all objects
+    object_tree.removeObjects()
+    assert(object_tree.CQ.childCount() == 0)
+
+    # add code wtih Shape, Workplane, Assy, Sketch
+    editor.set_text(code_show_wo_name)
+
+    # Run and check if all are shown
+    debugger._actions['Run'][0].triggered.emit()
+
+    assert(object_tree.CQ.childCount() == 2)
+
+    # Check the name of the first object
+    assert(object_tree.CQ.child(0).text(0) == "res")
+
+    # Check that the name of the seconf object is an int
+    int(object_tree.CQ.child(1).text(0))

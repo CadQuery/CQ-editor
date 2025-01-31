@@ -36,6 +36,12 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.setWindowIcon(icon('app'))
 
+        # Windows workaround - makes the correct task bar icon show up.
+        if sys.platform == "win32":
+            import ctypes
+            myappid = 'cq-editor' # arbitrary string
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+
         self.viewer = OCCViewer(self)
         self.setCentralWidget(self.viewer.canvas)
 
@@ -286,6 +292,7 @@ class MainWindow(QMainWindow,MainMixin):
         #CQ related items
         console.push_vars({'show' : obj_tree.addObject,
                            'show_object' : obj_tree.addObject,
+                           'rand_color' : self.components['debugger']._rand_color,
                            'cq' : cq,
                            'log' : Logger(self.name).info})
 

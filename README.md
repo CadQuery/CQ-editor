@@ -26,9 +26,9 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 
 ## Installation - Pre-Built Packages (Recommended)
 
-### Release Packages
+~~### Release Packages~~
 
-Stable release builds which do not require Anaconda are attached to the [latest release](https://github.com/CadQuery/CQ-editor/releases). Download installer for your operating system, extract it, and run the CQ-editor script for your OS (CQ-editor.cmd for Windows, CQ-editor.sh for Linux and MacOS). On Windows you should be able to simply double-click on CQ-editor.cmd. On Linux and MacOS you may need to make the script executable with `chmod +x CQ-editor.sh` and run the script from the command line. The script contains an environment variable export that may be required to get CQ-editor to launch correctly on MacOS Big Sur, so it is better to use the script than to launch CQ-editor directly.
+~~Stable release builds which do not require Anaconda are attached to the [latest release](https://github.com/CadQuery/CQ-editor/releases). Download installer for your operating system, extract it, and run the CQ-editor script for your OS (CQ-editor.cmd for Windows, CQ-editor.sh for Linux and MacOS). On Windows you should be able to simply double-click on CQ-editor.cmd. On Linux and MacOS you may need to make the script executable with `chmod +x CQ-editor.sh` and run the script from the command line. The script contains an environment variable export that may be required to get CQ-editor to launch correctly on MacOS Big Sur, so it is better to use the script than to launch CQ-editor directly.~~
 
 ### Development Packages
 

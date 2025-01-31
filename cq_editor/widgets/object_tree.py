@@ -293,7 +293,7 @@ class ObjectTree(QWidget,ComponentMixin):
                                      ais=ais,
                                      sig=self.sigObjectPropertiesChanged))
 
-        self.sigObjectsAdded.emit([ais], name)
+        self.sigObjectsAdded.emit([ais], [name])
 
     @pyqtSlot(list)
     @pyqtSlot()

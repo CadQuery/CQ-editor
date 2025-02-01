@@ -30,6 +30,9 @@ classifiers = [
   "Programming Language :: Python"
 ]
 
+[project.scripts]
+CQ-editor = "cq_editor.cqe_run:main"
+
 [project.optional-dependencies]
 test = [
     "pytest",

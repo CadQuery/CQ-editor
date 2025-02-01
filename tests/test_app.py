@@ -1,6 +1,8 @@
 from path import Path
 import os, sys, asyncio
 
+from pytestqt.qtbot import QtBot
+
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -124,7 +126,7 @@ def get_rgba(ais):
     return color.redF(), color.greenF(), color.blueF(), alpha
 
 @pytest.fixture
-def main(qtbot,mocker):
+def main(qtbot: QtBot, mocker):
 
     mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
 
@@ -142,15 +144,14 @@ def main(qtbot,mocker):
     return qtbot, win
 
 @pytest.fixture
-def main_clean(qtbot,mocker):
+def main_clean(qtbot: QtBot, mocker):
 
     mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
 
     win = MainWindow()
-    win.show()
-
     qtbot.addWidget(win)
-    qtbot.waitForWindowShown(win)
+    with qtbot.waitExposed(win):
+        win.show()
 
     editor = win.components['editor']
     editor.set_text(code)
@@ -158,15 +159,14 @@ def main_clean(qtbot,mocker):
     return qtbot, win
 
 @pytest.fixture
-def main_clean_do_not_close(qtbot,mocker):
+def main_clean_do_not_close(qtbot: QtBot, mocker):
 
     mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.No)
 
     win = MainWindow()
-    win.show()
-
     qtbot.addWidget(win)
-    qtbot.waitForWindowShown(win)
+    with qtbot.waitExposed(win):
+        win.show()
 
     editor = win.components['editor']
     editor.set_text(code)
@@ -174,16 +174,15 @@ def main_clean_do_not_close(qtbot,mocker):
     return qtbot, win
 
 @pytest.fixture
-def main_multi(qtbot,mocker):
+def main_multi(qtbot: QtBot, mocker):
 
     mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
     mocker.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.step',''))
 
     win = MainWindow()
-    win.show()
-
     qtbot.addWidget(win)
-    qtbot.waitForWindowShown(win)
+    with qtbot.waitExposed(win):
+        win.show()
 
     editor = win.components['editor']
     editor.set_text(code_multi)
@@ -571,7 +570,7 @@ def test_traceback(main):
     assert(traceback_view.tree.root.childCount() == 3) # 1 in user code + 2 in CQ code
 
 @pytest.fixture
-def editor(qtbot):
+def editor(qtbot: QtBot):
 
     win = Editor()
     win.show()

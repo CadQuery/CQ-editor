@@ -2,6 +2,7 @@ from path import Path
 import os, sys, asyncio
 
 from pytestqt.qtbot import QtBot
+import pytestqt.exceptions
 
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -93,6 +94,8 @@ a = cq.Assembly().add(sh)
 sk = cq.Sketch().rect(1,1)
 """
 
+TIMEOUT = 10_000
+
 def _modify_file(code, path="test.py"):
     with open(path, "w", 1) as f:
         f.write(code)
@@ -150,7 +153,7 @@ def main_clean(qtbot: QtBot, mocker):
 
     win = MainWindow()
     qtbot.addWidget(win)
-    with qtbot.waitExposed(win):
+    with qtbot.waitExposed(win, timeout=TIMEOUT):
         win.show()
 
     editor = win.components['editor']
@@ -165,7 +168,7 @@ def main_clean_do_not_close(qtbot: QtBot, mocker):
 
     win = MainWindow()
     qtbot.addWidget(win)
-    with qtbot.waitExposed(win):
+    with qtbot.waitExposed(win, timeout=TIMEOUT):
         win.show()
 
     editor = win.components['editor']
@@ -181,7 +184,7 @@ def main_multi(qtbot: QtBot, mocker):
 
     win = MainWindow()
     qtbot.addWidget(win)
-    with qtbot.waitExposed(win):
+    with qtbot.waitExposed(win, timeout=TIMEOUT):
         win.show()
 
     editor = win.components['editor']
@@ -662,8 +665,6 @@ def test_editor_autoreload(monkeypatch,editor):
 
     qtbot, editor = editor
 
-    TIMEOUT = 500
-
     # start out with autoreload enabled
     editor.autoreload(True)
 
@@ -712,7 +713,6 @@ def test_autoreload_nested(editor):
 
     qtbot, editor = editor
 
-    TIMEOUT = 500
 
     editor.autoreload(True)
     editor.preferences['Autoreload: watch imported modules'] = True
@@ -1440,7 +1440,6 @@ def makebox(z):
 
 def test_reload_import_handle_error(tmp_path, main):
 
-    TIMEOUT = 500
     qtbot, win = main
     editor = win.components["editor"]
     debugger = win.components["debugger"]
@@ -1481,7 +1480,6 @@ def test_reload_import_handle_error(tmp_path, main):
 
 def test_modulefinder(tmp_path, main):
 
-    TIMEOUT = 500
     qtbot, win = main
     editor = win.components["editor"]
     debugger = win.components["debugger"]

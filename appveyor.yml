@@ -43,7 +43,7 @@ test_script:
     - cmd: pytest -v --cov=cq_editor
 
 on_success:
-    - codecov
+    - codecov -X "cq_editor/cqe_run.py"
 
 #on_failure:
 #    - qtdiag

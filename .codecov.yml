@@ -1,4 +1,0 @@
-codecov:
-  exclude:
-    - "run.py"
-    - "cq_editor/cqe_run.py"

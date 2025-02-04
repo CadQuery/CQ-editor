@@ -289,7 +289,7 @@ class MainWindow(QMainWindow,MainMixin):
     def fill_dummy(self):
 
         self.components['editor']\
-            .set_text('import cadquery as cq\nresult = cq.Workplane("XY" ).box(3, 3, 0.5).edges("|Z").fillet(0.125)')
+            .set_text('import cadquery as cq\nresult = cq.Workplane("XY" ).box(3, 3, 0.5).edges("|Z").fillet(0.125)\nshow_object(result)')
 
     def setup_logging(self):
 

@@ -1,6 +1,9 @@
 from path import Path
 import os, sys, asyncio
 
+from pytestqt.qtbot import QtBot
+import pytestqt.exceptions
+
 if sys.platform == 'win32':
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
@@ -91,6 +94,8 @@ a = cq.Assembly().add(sh)
 sk = cq.Sketch().rect(1,1)
 """
 
+TIMEOUT = 10_000
+
 def _modify_file(code, path="test.py"):
     with open(path, "w", 1) as f:
         f.write(code)
@@ -124,7 +129,7 @@ def get_rgba(ais):
     return color.redF(), color.greenF(), color.blueF(), alpha
 
 @pytest.fixture
-def main(qtbot,mocker):
+def main(qtbot: QtBot, mocker):
 
     mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
 
@@ -142,15 +147,14 @@ def main(qtbot,mocker):
     return qtbot, win
 
 @pytest.fixture
-def main_clean(qtbot,mocker):
+def main_clean(qtbot: QtBot, mocker):
 
     mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
 
     win = MainWindow()
-    win.show()
-
     qtbot.addWidget(win)
-    qtbot.waitForWindowShown(win)
+    with qtbot.waitExposed(win, timeout=TIMEOUT):
+        win.show()
 
     editor = win.components['editor']
     editor.set_text(code)
@@ -158,15 +162,14 @@ def main_clean(qtbot,mocker):
     return qtbot, win
 
 @pytest.fixture
-def main_clean_do_not_close(qtbot,mocker):
+def main_clean_do_not_close(qtbot: QtBot, mocker):
 
     mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.No)
 
     win = MainWindow()
-    win.show()
-
     qtbot.addWidget(win)
-    qtbot.waitForWindowShown(win)
+    with qtbot.waitExposed(win, timeout=TIMEOUT):
+        win.show()
 
     editor = win.components['editor']
     editor.set_text(code)
@@ -174,16 +177,15 @@ def main_clean_do_not_close(qtbot,mocker):
     return qtbot, win
 
 @pytest.fixture
-def main_multi(qtbot,mocker):
+def main_multi(qtbot: QtBot, mocker):
 
     mocker.patch.object(QMessageBox, 'question', return_value=QMessageBox.Yes)
     mocker.patch.object(QFileDialog, 'getSaveFileName', return_value=('out.step',''))
 
     win = MainWindow()
-    win.show()
-
     qtbot.addWidget(win)
-    qtbot.waitForWindowShown(win)
+    with qtbot.waitExposed(win, timeout=TIMEOUT):
+        win.show()
 
     editor = win.components['editor']
     editor.set_text(code_multi)
@@ -571,7 +573,7 @@ def test_traceback(main):
     assert(traceback_view.tree.root.childCount() == 3) # 1 in user code + 2 in CQ code
 
 @pytest.fixture
-def editor(qtbot):
+def editor(qtbot: QtBot):
 
     win = Editor()
     win.show()
@@ -663,8 +665,6 @@ def test_editor_autoreload(monkeypatch,editor):
 
     qtbot, editor = editor
 
-    TIMEOUT = 500
-
     # start out with autoreload enabled
     editor.autoreload(True)
 
@@ -713,7 +713,6 @@ def test_autoreload_nested(editor):
 
     qtbot, editor = editor
 
-    TIMEOUT = 500
 
     editor.autoreload(True)
     editor.preferences['Autoreload: watch imported modules'] = True
@@ -747,9 +746,10 @@ def test_console(main):
     assert(len(a) == 1)
 
     # test print_text
-    pos_orig = console._prompt_pos
-    console.print_text('a')
-    assert(console._prompt_pos == pos_orig + len('a'))
+    text_before = console._control.document().toPlainText()
+    console.print_text('foo')
+    text_after = console._control.document().toPlainText()
+    assert text_after == text_before + 'foo'
 
 def test_viewer(main):
 
@@ -1440,7 +1440,6 @@ def makebox(z):
 
 def test_reload_import_handle_error(tmp_path, main):
 
-    TIMEOUT = 500
     qtbot, win = main
     editor = win.components["editor"]
     debugger = win.components["debugger"]
@@ -1481,7 +1480,6 @@ def test_reload_import_handle_error(tmp_path, main):
 
 def test_modulefinder(tmp_path, main):
 
-    TIMEOUT = 500
     qtbot, win = main
     editor = win.components["editor"]
     debugger = win.components["debugger"]

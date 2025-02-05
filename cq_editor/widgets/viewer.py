@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QDialog, QTreeWidgetItem, QApplication, QAction
 
+from typing import Optional, List
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from PyQt5.QtGui import QIcon
 
@@ -47,6 +48,7 @@ class OCCViewer(QWidget,ComponentMixin):
     IMAGE_EXTENSIONS = 'png'
 
     sigObjectSelected = pyqtSignal(list)
+    sigDisplayProgress = pyqtSignal(int, int, str)
 
     def __init__(self,parent=None):
 
@@ -179,31 +181,23 @@ class OCCViewer(QWidget,ComponentMixin):
         context.PurgeDisplay()
         context.RemoveAll(True)
 
-    def _display(self,shape):
-
-        ais = make_AIS(shape)
-        self.canvas.context.Display(shape,True)
-
-        self.displayed_shapes.append(shape)
-        self.displayed_ais.append(ais)
-
-        #self.canvas._display.Repaint()
-
     @pyqtSlot(object)
-    def display(self,ais):
-
-        context = self._get_context()
-        context.Display(ais,True)
-
-        if self.preferences['Fit automatically']: self.fit()
+    def display(self, ais):
+        self.display_many([ais])
 
     @pyqtSlot(list)
-    @pyqtSlot(list,bool)
-    def display_many(self,ais_list,fit=None):
+    @pyqtSlot(list, bool, list)
+    def display_many(self, ais_list, fit: Optional[bool] = None, names: Optional[List] = None):
+        if names is None:
+            names = [None] * len(ais_list)
+        assert len(ais_list) == len(names)
 
         context = self._get_context()
-        for ais in ais_list:
-            context.Display(ais,True)
+        num_objects = len(ais_list)
+        for i, (ais, name) in enumerate(zip(ais_list, names)):
+            self.sigDisplayProgress.emit(i, num_objects, name)
+            context.Display(ais, True)
+        self.sigDisplayProgress.emit(num_objects, num_objects, None)
 
         if self.preferences['Fit automatically'] and fit is None:
             self.fit()
@@ -223,7 +217,8 @@ class OCCViewer(QWidget,ComponentMixin):
     def remove_items(self,ais_items):
 
         ctx = self._get_context()
-        for ais in ais_items: ctx.Erase(ais,True)
+        for ais in ais_items:
+            ctx.Erase(ais,True)
 
     @pyqtSlot()
     def redraw(self):

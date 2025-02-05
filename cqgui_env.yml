@@ -6,7 +6,7 @@ dependencies:
   - pyqt=5
   - pyqtgraph
   - python=3.10
-  - spyder=5
+  - spyder >=5.5.6,<6
   - path
   - logbook
   - requests

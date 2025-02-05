@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "CQ-editor"
-version = "0.3.0"
+version = "0.4.dev0"
 dependencies = [
   "cadquery",
   "pyqtgraph",

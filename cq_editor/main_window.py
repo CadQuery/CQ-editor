@@ -1,8 +1,6 @@
 import sys
 
-from typing import Optional
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import (QApplication, QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
+from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
 from logbook import Logger
 import cadquery as cq
 
@@ -66,8 +64,6 @@ class MainWindow(QMainWindow,MainMixin):
             self.components['editor'].load_from_file(filename)
 
         self.restoreComponentState()
-
-        self.on_idle()
 
     def closeEvent(self,event):
 
@@ -206,7 +202,7 @@ class MainWindow(QMainWindow,MainMixin):
         self.toolbar = QToolBar('Main toolbar',self,objectName='Main toolbar')
 
         for c in self.components.values():
-            add_actions(self.toolbar, c.toolbarActions())
+            add_actions(self.toolbar,c.toolbarActions())
 
         self.addToolBar(self.toolbar)
 
@@ -217,25 +213,18 @@ class MainWindow(QMainWindow,MainMixin):
 
     def prepare_actions(self):
 
-        self.components['debugger'].sigRenderStarted \
-            .connect(self.on_render_start)
         self.components['debugger'].sigRendered\
             .connect(self.components['object_tree'].addObjects)
         self.components['debugger'].sigTraceback\
             .connect(self.components['traceback_viewer'].addTraceback)
-        self.components['debugger'].sigRendered \
-            .connect(lambda _: self.on_idle())
-        self.components['debugger'].sigTraceback \
-            .connect(lambda _: self.on_idle())
-
         self.components['debugger'].sigLocals\
             .connect(self.components['variables_viewer'].update_frame)
         self.components['debugger'].sigLocals\
             .connect(self.components['console'].push_vars)
 
-        self.components['object_tree'].sigObjectsAdded[list, list]\
-            .connect(lambda objects, names: self.components['viewer'].display_many(objects, None, names))
-        self.components['object_tree'].sigObjectsAdded[list, bool, list]\
+        self.components['object_tree'].sigObjectsAdded[list]\
+            .connect(self.components['viewer'].display_many)
+        self.components['object_tree'].sigObjectsAdded[list,bool]\
             .connect(self.components['viewer'].display_many)
         self.components['object_tree'].sigItemChanged.\
             connect(self.components['viewer'].update_item)
@@ -250,8 +239,6 @@ class MainWindow(QMainWindow,MainMixin):
 
         self.components['viewer'].sigObjectSelected\
             .connect(self.components['object_tree'].handleGraphicalSelection)
-        self.components['viewer'].sigDisplayProgress \
-            .connect(self.on_display_progress)
 
         self.components['traceback_viewer'].sigHighlightLine\
             .connect(self.components['editor'].go_to_line)
@@ -357,27 +344,6 @@ class MainWindow(QMainWindow,MainMixin):
         new_title = fname if fname else "*"
         self.setWindowTitle(f"{self.name}: {new_title}")
 
-    def on_idle(self):
-        self.components['debugger'].set_rendering_state(False)
-        self.set_status_message('Idle', '#000000')
+if __name__ == "__main__":
 
-    @pyqtSlot()
-    def on_render_start(self):
-        self.components['debugger'].set_rendering_state(True)
-        self.set_status_message('Rendering...', '#ff0000')
-
-    @pyqtSlot(int, int, str)
-    def on_display_progress(self, current: int, total: int, name: Optional[str]):
-        if current == total:
-            self.on_idle()
-        else:
-            message = f'Displaying Shape {current + 1} / {total}'
-            if name:
-                message += f' ({name})'
-            self.set_status_message(message, '#0000ff')
-
-    def set_status_message(self, message: str, color: str):
-        self.statusBar().showMessage(message)
-        self.statusBar().setStyleSheet(f'color: {color}')
-        # required because rendering is currently done on the main thread
-        QApplication.processEvents()
+    pass

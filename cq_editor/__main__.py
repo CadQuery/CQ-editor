@@ -1,3 +1,4 @@
+import signal
 import sys
 import argparse
 
@@ -18,7 +19,10 @@ def main():
 
     args = parser.parse_args(app.arguments()[1:])
 
+    signal.signal(signal.SIGINT, signal.SIG_DFL)  # handle Ctrl+C
+
     win = MainWindow(filename=args.filename if args.filename else None)
+
     win.show()
     sys.exit(app.exec_())
 

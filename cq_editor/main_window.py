@@ -171,6 +171,12 @@ class MainWindow(QMainWindow,MainMixin):
 
         menu_edit.addAction( \
             QAction(icon('preferences'),
+                    'Toggle Comment',
+                    self,
+                    shortcut='ctrl+/',
+                    triggered=self.components['editor'].toggle_comment))
+        menu_edit.addAction( \
+            QAction(icon('preferences'),
                     'Preferences',
                     self,triggered=self.edit_preferences))
 

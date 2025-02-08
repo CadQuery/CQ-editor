@@ -171,8 +171,8 @@ class Editor(CodeEditor,ComponentMixin):
                 f.write(self.toPlainText())
 
             if self.preferences['Autoreload']:
-                self._file_watcher.blockSignals(False)
                 self.triggerRerender.emit(True)
+                # self._file_watcher.blockSignals(False)
 
             self.reset_modified()
 

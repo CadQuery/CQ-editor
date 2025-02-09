@@ -1,5 +1,6 @@
 import sys
 
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
 from logbook import Logger
 import cadquery as cq
@@ -136,6 +137,12 @@ class MainWindow(QMainWindow,MainMixin):
 
         for d in self.docks.values():
             d.show()
+
+        # Handle the stdout redirection
+        self.output_redirector = OutputRedirector()
+        sys.stdout = self.output_redirector
+        self.output_redirector.printOccurred.connect(self.components['log'].appendPlainText)
+
 
     def prepare_menubar(self):
 
@@ -349,6 +356,41 @@ class MainWindow(QMainWindow,MainMixin):
 
         new_title = fname if fname else "*"
         self.setWindowTitle(f"{self.name}: {new_title}")
+
+
+class OutputRedirector(QObject):
+    """
+    Mimics stdout so that we can redirect print statement output to the log viewer.
+    """
+
+    printOccurred = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+        self.buffer = ""
+
+    def write(self, text):
+        """
+        Append text to the buffer and emit the signal if a newline is detected.
+        """
+        self.buffer += text
+
+        # This buffer methods eliminates extra newlines that are injected due to this redirect
+        if '\n' in self.buffer:
+            lines = self.buffer.splitlines(True)
+            for line in lines:
+                if line.endswith('\n'):
+                    self.printOccurred.emit(line.rstrip('\n'))
+            self.buffer = ""
+
+    def flush(self):
+        """
+        Emit the signal if there is anything in the buffer.
+        """
+        if self.buffer:
+            self.printOccurred.emit(self.buffer)
+            self.buffer = ""
+
 
 if __name__ == "__main__":
 

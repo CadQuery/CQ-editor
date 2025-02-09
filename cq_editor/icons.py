@@ -46,7 +46,8 @@ _icons_specs = {
                          {'options' : \
                           [{'scale_factor': 0.8},
                            {'scale_factor': 0.8,
-                            'offset': (.2,.2)}]})
+                            'offset': (.2,.2)}]}),
+    'toggle-comment' : (('fa.hashtag',),{}),
 }
 
 def icon(name):

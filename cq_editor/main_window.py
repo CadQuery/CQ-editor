@@ -170,7 +170,7 @@ class MainWindow(QMainWindow,MainMixin):
             menu_view.addAction(t.toggleViewAction())
 
         menu_edit.addAction( \
-            QAction(icon('preferences'),
+            QAction(icon('toggle-comment'),
                     'Toggle Comment',
                     self,
                     shortcut='ctrl+/',

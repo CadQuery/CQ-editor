@@ -61,6 +61,9 @@ class MainWindow(QMainWindow,MainMixin):
         self.restorePreferences()
         self.restoreWindow()
 
+        # Let the user know when the file has been modified
+        self.components['editor'].document().modificationChanged.connect(self.update_window_title)
+
         if filename:
             self.components['editor'].load_from_file(filename)
 
@@ -357,6 +360,14 @@ class MainWindow(QMainWindow,MainMixin):
         new_title = fname if fname else "*"
         self.setWindowTitle(f"{self.name}: {new_title}")
 
+    def update_window_title(self, modified):
+        """
+        Allows updating the window title to show that the document has been modified.
+        """
+        title = self.windowTitle().rstrip('*')
+        if modified:
+            title += '*'
+        self.setWindowTitle(title)
 
 class OutputRedirector(QObject):
     """

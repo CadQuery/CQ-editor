@@ -172,7 +172,7 @@ class Editor(CodeEditor,ComponentMixin):
 
             if self.preferences['Autoreload']:
                 self.triggerRerender.emit(True)
-                # self._file_watcher.blockSignals(False)
+                self._file_watcher.blockSignals(False)
 
             self.reset_modified()
 

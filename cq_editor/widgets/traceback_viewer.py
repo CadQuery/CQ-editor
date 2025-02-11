@@ -4,6 +4,7 @@ from itertools import dropwhile
 from PyQt5.QtWidgets import (QWidget, QTreeWidget, QTreeWidgetItem, QAction,
                              QLabel)
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
+from PyQt5.QtGui import QFontMetrics
 
 from ..mixins import ComponentMixin
 from ..utils import layout
@@ -37,7 +38,7 @@ class TracebackPane(QWidget,ComponentMixin):
         self.tree = TracebackTree(self)
         self.current_exception = QLabel(self)
         self.current_exception.setStyleSheet(\
-            "QLabel {color : red; }");
+            "QLabel {color : red; }")
         
         layout(self,
                (self.current_exception,
@@ -45,7 +46,16 @@ class TracebackPane(QWidget,ComponentMixin):
                self)
                
         self.tree.currentItemChanged.connect(self.handleSelection)
-        
+
+    def truncate_text(self, text, max_length=100):
+        """
+        Used to prevent the label from expanding the window width off the screen.
+        """
+        metrics = QFontMetrics(self.current_exception.font())
+        elided_text = metrics.elidedText(text, Qt.ElideRight, self.current_exception.width() - 75)
+
+        return elided_text
+
     @pyqtSlot(object,str)
     def addTraceback(self,exc_info,code):
         
@@ -74,8 +84,9 @@ class TracebackPane(QWidget,ComponentMixin):
             exc_msg = str(exc)
             exc_msg = exc_msg.replace('<', '&lt;').replace('>', '&gt;') #replace <> 
 
-            self.current_exception.\
-                setText('<b>{}</b>: {}'.format(exc_name,exc_msg))
+            truncated_msg = self.truncate_text(exc_msg)
+            self.current_exception.setText('<b>{}</b>: {}'.format(exc_name,truncated_msg))
+            self.current_exception.setToolTip(exc_msg)
             
             # handle the special case of a SyntaxError
             if t is SyntaxError: 
@@ -86,6 +97,7 @@ class TracebackPane(QWidget,ComponentMixin):
                 ))
         else:
             self.current_exception.setText('')
+            self.current_exception.setToolTip('')
 
     @pyqtSlot(QTreeWidgetItem,QTreeWidgetItem)          
     def handleSelection(self,item,*args):

@@ -171,8 +171,8 @@ class Editor(CodeEditor,ComponentMixin):
                 f.write(self.toPlainText())
 
             if self.preferences['Autoreload']:
-                self._file_watcher.blockSignals(False)
                 self.triggerRerender.emit(True)
+                self._file_watcher.blockSignals(False)
 
             self.reset_modified()
 
@@ -188,6 +188,13 @@ class Editor(CodeEditor,ComponentMixin):
                 self.filename = fname
 
             self.reset_modified()
+
+    def toggle_comment(self):
+        """
+        Allows us to mark the document as modified when the user toggles a comment.
+        """
+        super(Editor,self).toggle_comment()
+        self.document().setModified(True)
 
     def _update_filewatcher(self):
         if self._watched_file and (self._watched_file != self.filename or not self.preferences['Autoreload']):

@@ -31,12 +31,11 @@ class OCCViewer(QWidget,ComponentMixin):
 
     name = '3D Viewer'
 
-    preferences = Parameter.create(name='Pref',children=[
+    preferences = Parameter.create(name='Pref', children=[
         {'name': 'Fit automatically', 'type': 'bool', 'value': True},
         {'name': 'Use gradient', 'type': 'bool', 'value': False},
         {'name': 'Background color', 'type': 'color', 'value': (95,95,95)},
         {'name': 'Background color (aux)', 'type': 'color', 'value': (30,30,30)},
-        {'name': 'Default object color', 'type': 'color', 'value': "#FF0"},
         {'name': 'Deviation', 'type': 'float', 'value': 1e-5, 'dec': True, 'step': 1},
         {'name': 'Angular deviation', 'type': 'float', 'value': 0.1, 'dec': True, 'step': 1},
         {'name': 'Projection Type', 'type': 'list', 'value': 'Orthographic',
@@ -200,7 +199,6 @@ class OCCViewer(QWidget,ComponentMixin):
     @pyqtSlot(list)
     @pyqtSlot(list,bool)
     def display_many(self,ais_list,fit=None):
-
         context = self._get_context()
         for ais in ais_list:
             context.Display(ais,True)

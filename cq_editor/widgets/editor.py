@@ -26,7 +26,7 @@ class Editor(CodeEditor,ComponentMixin):
     triggerRerender = pyqtSignal(bool)
     sigFilenameChanged = pyqtSignal(str)
 
-    preferences = Parameter.create(name='Preferences',children=[
+    preferences = Parameter.create(name='Preferences', children=[
         {'name': 'Font size', 'type': 'int', 'value': 12},
         {'name': 'Autoreload', 'type': 'bool', 'value': False},
         {'name': 'Autoreload delay', 'type': 'int', 'value': 50},

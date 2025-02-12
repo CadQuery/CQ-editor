@@ -143,21 +143,16 @@ class MainWindow(QMainWindow,MainMixin):
             d.show()
 
         # Handle the stdout redirection
-        self.output_redirector = OutputRedirector()
-        stdout_buffer = sys.stdout.buffer
-        sys.stdout = self.output_redirector
+        original_stdout_write = sys.stdout.write
 
-        def append_to_log_viewer(text):
+        def new_stdout_write(text):
+            original_stdout_write(text)
+
             log_viewer = self.components['log']
             log_viewer.moveCursor(QtGui.QTextCursor.End)
             log_viewer.insertPlainText(text)
 
-        def write_to_stdout_buffer(text):
-            stdout_buffer.write(text.encode())
-            stdout_buffer.flush()
-
-        self.output_redirector.writeOccurred.connect(append_to_log_viewer)
-        self.output_redirector.writeOccurred.connect(write_to_stdout_buffer)
+        sys.stdout.write = new_stdout_write
 
 
     def prepare_menubar(self):
@@ -381,22 +376,6 @@ class MainWindow(QMainWindow,MainMixin):
         if modified:
             title += '*'
         self.setWindowTitle(title)
-
-class OutputRedirector(QObject):
-    """
-    Mimics stdout so that we can redirect print statement output to the log viewer.
-    """
-
-    writeOccurred = pyqtSignal(str)
-
-    def __init__(self):
-        super().__init__()
-
-    def write(self, text):
-        self.writeOccurred.emit(text)
-
-    def flush(self):
-        pass
 
 
 if __name__ == "__main__":

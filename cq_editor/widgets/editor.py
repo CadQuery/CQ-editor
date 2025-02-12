@@ -160,20 +160,16 @@ class Editor(CodeEditor,ComponentMixin):
         self.reset_modified()
 
     def save(self):
+        """
+        Saves the current document to the current filename if it exists, otherwise it triggers a
+        save-as dialog.
+        """
 
         if self._filename != '':
-
-            if self.preferences['Autoreload']:
-                self._file_watcher.blockSignals(True)
-                self._file_watch_timer.stop()
-
             with open(self._filename, 'w', encoding='utf-8') as f:
                 f.write(self.toPlainText())
 
-            if self.preferences['Autoreload']:
-                self.triggerRerender.emit(True)
-                self._file_watcher.blockSignals(False)
-
+            # Let the editor and the rest of the app know that the file is no longer dirty
             self.reset_modified()
 
         else:

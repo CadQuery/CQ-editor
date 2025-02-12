@@ -1,5 +1,6 @@
 import sys
 
+from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
 from logbook import Logger
@@ -143,8 +144,20 @@ class MainWindow(QMainWindow,MainMixin):
 
         # Handle the stdout redirection
         self.output_redirector = OutputRedirector()
+        stdout_buffer = sys.stdout.buffer
         sys.stdout = self.output_redirector
-        self.output_redirector.printOccurred.connect(self.components['log'].appendPlainText)
+
+        def append_to_log_viewer(text):
+            log_viewer = self.components['log']
+            log_viewer.moveCursor(QtGui.QTextCursor.End)
+            log_viewer.insertPlainText(text)
+
+        def write_to_stdout_buffer(text):
+            stdout_buffer.write(text.encode())
+            stdout_buffer.flush()
+
+        self.output_redirector.writeOccurred.connect(append_to_log_viewer)
+        self.output_redirector.writeOccurred.connect(write_to_stdout_buffer)
 
 
     def prepare_menubar(self):
@@ -374,33 +387,16 @@ class OutputRedirector(QObject):
     Mimics stdout so that we can redirect print statement output to the log viewer.
     """
 
-    printOccurred = pyqtSignal(str)
+    writeOccurred = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
-        self.buffer = ""
 
     def write(self, text):
-        """
-        Append text to the buffer and emit the signal if a newline is detected.
-        """
-        self.buffer += text
-
-        # This buffer methods eliminates extra newlines that are injected due to this redirect
-        if '\n' in self.buffer:
-            lines = self.buffer.splitlines(True)
-            for line in lines:
-                if line.endswith('\n'):
-                    self.printOccurred.emit(line.rstrip('\n'))
-            self.buffer = ""
+        self.writeOccurred.emit(text)
 
     def flush(self):
-        """
-        Emit the signal if there is anything in the buffer.
-        """
-        if self.buffer:
-            self.printOccurred.emit(self.buffer)
-            self.buffer = ""
+        pass
 
 
 if __name__ == "__main__":

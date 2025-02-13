@@ -87,14 +87,14 @@ class OCCTWidget(QWidget):
         pos = event.pos()
         x,y = pos.x(),pos.y()
         
-        if event.buttons() == Qt.LeftButton:
+        if event.buttons() == Qt.LeftButton and event.modifiers() not in (Qt.ShiftModifier, Qt.ControlModifier):
             self.view.Rotation(x,y)
             
-        elif event.buttons() == Qt.MiddleButton:
+        elif event.buttons() == Qt.MiddleButton or (event.buttons() == Qt.LeftButton and event.modifiers() == Qt.ControlModifier):
             self.view.Pan(x - self.old_pos.x(),
                           self.old_pos.y() - y, theToStart=True)
             
-        elif event.buttons() == Qt.RightButton:
+        elif event.buttons() == Qt.RightButton or (event.buttons() == Qt.LeftButton and event.modifiers() == Qt.ShiftModifier):
             self.view.ZoomAtPoint(self.old_pos.x(), y,
                                   x, self.old_pos.y())
         

@@ -27,6 +27,8 @@ class MainWindow(QMainWindow,MainMixin):
     name = 'CQ-Editor'
     org = 'CadQuery'
 
+    sigStdoutWrite = pyqtSignal(str)
+
     def __init__(self,parent=None, filename=None):
 
         super(MainWindow,self).__init__(parent)
@@ -147,12 +149,16 @@ class MainWindow(QMainWindow,MainMixin):
 
         def new_stdout_write(text):
             original_stdout_write(text)
+            self.sigStdoutWrite.emit(text)
 
+        sys.stdout.write = new_stdout_write
+
+        def append_to_log_viewer(text):
             log_viewer = self.components['log']
             log_viewer.moveCursor(QtGui.QTextCursor.End)
             log_viewer.insertPlainText(text)
-
-        sys.stdout.write = new_stdout_write
+        
+        self.sigStdoutWrite.connect(append_to_log_viewer)
 
 
     def prepare_menubar(self):

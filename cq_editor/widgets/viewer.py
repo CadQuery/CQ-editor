@@ -3,14 +3,15 @@ from PyQt5.QtWidgets import QWidget, QDialog, QTreeWidgetItem, QApplication, QAc
 from PyQt5.QtCore import pyqtSlot, pyqtSignal
 from PyQt5.QtGui import QIcon
 
-from OCP.Graphic3d import Graphic3d_Camera, Graphic3d_StereoMode, Graphic3d_NOM_JADE,\
-    Graphic3d_MaterialAspect
+from OCP.Graphic3d import Graphic3d_Camera, Graphic3d_ClipPlane, Graphic3d_StereoMode, Graphic3d_NOM_JADE,\
+    Graphic3d_MaterialAspect, Graphic3d_Texture2Dplane
 from OCP.AIS import AIS_Shaded,AIS_WireFrame, AIS_ColoredShape, AIS_Axis
-from OCP.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular
-from OCP.Quantity import Quantity_NOC_BLACK as BLACK, Quantity_TOC_RGB as TOC_RGB,\
+from OCP.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular, Aspect_HS_GRID
+from OCP.TCollection import TCollection_AsciiString
+from OCP.Quantity import Quantity_NOC_BLACK as BLACK, Quantity_NOC_WHITE as WHITE, Quantity_TOC_RGB as TOC_RGB,\
     Quantity_Color
 from OCP.Geom import Geom_Axis1Placement
-from OCP.gp import gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
+from OCP.gp import gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1, gp_Pln
 
 from ..utils import layout, get_save_filename
 from ..mixins import ComponentMixin
@@ -55,6 +56,14 @@ class OCCViewer(QWidget,ComponentMixin):
         self.canvas = OCCTWidget()
         self.canvas.sigObjectSelected.connect(self.handle_selection)
 
+
+        self.x_clipping_plane = self.setup_clipping_plane(gp_Pln(-1, 0.0, 0.0, 100))
+        self.y_clipping_plane = self.setup_clipping_plane(gp_Pln(0.0, -1, 0.0, 100))
+        self.z_clipping_plane = self.setup_clipping_plane(gp_Pln(0.0, 0.0, -1, 100))
+        self.canvas.view.AddClipPlane(self.x_clipping_plane)
+        self.canvas.view.AddClipPlane(self.y_clipping_plane)
+        self.canvas.view.AddClipPlane(self.z_clipping_plane)
+
         self.create_actions(self)
 
         self.layout_ = layout(self,
@@ -64,6 +73,16 @@ class OCCViewer(QWidget,ComponentMixin):
 
         self.setup_default_drawer()
         self.updatePreferences()
+
+    def setup_clipping_plane(self, eq):
+        cp = Graphic3d_ClipPlane()
+        cp.SetEquation(eq)
+        cp.SetCapping(True)
+        cp.SetUseObjectMaterial(True)
+        # cp.SetCappingTexture(Graphic3d_Texture2Dplane(TCollection_AsciiString("./clip-texture.png")))
+        cp.SetOn(False)
+
+        return cp
 
     def setup_default_drawer(self):
 
@@ -367,6 +386,19 @@ class OCCViewer(QWidget,ComponentMixin):
 
         self.redraw()
 
+    @pyqtSlot(str,bool,int,bool)
+    def update_clipping_plane(self,plane,enabled,val,inverted):
+        if plane == "X":
+            self.x_clipping_plane.SetEquation(gp_Pln(1 if inverted else -1, 0.0, 0.0, val))
+            self.x_clipping_plane.SetOn(enabled)
+        elif plane == "Y":
+            self.y_clipping_plane.SetEquation(gp_Pln(0.0, 1 if inverted else -1, 0.0, val))
+            self.y_clipping_plane.SetOn(enabled)
+        elif plane == "Z":
+            self.z_clipping_plane.SetEquation(gp_Pln(0.0, 0.0, 1 if inverted else -1, val))
+            self.z_clipping_plane.SetOn(enabled)
+
+        self.redraw()
 
 if __name__ == "__main__":
 

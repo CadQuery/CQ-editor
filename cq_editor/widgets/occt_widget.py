@@ -1,8 +1,8 @@
 from sys import platform
-
+import sys
 
 from PyQt5.QtWidgets import QWidget, QApplication
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QEvent
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QEvent, QTimer
 
 import OCP
 
@@ -11,6 +11,12 @@ from OCP.OpenGl import OpenGl_GraphicDriver
 from OCP.V3d import V3d_Viewer
 from OCP.AIS import AIS_InteractiveContext, AIS_DisplayMode
 from OCP.Quantity import Quantity_Color
+
+# pyspacemouse is an optional dependency, so don't fail if it isn't present
+try:
+    import pyspacemouse
+except:
+    pass
 
 
 ZOOM_STEP = 0.9
@@ -41,6 +47,33 @@ class OCCTWidget(QWidget):
         
         #Trihedorn, lights, etc
         self.prepare_display()
+
+        self._spacemouse_connected = False
+        if 'pyspacemouse' in sys.modules:
+            # TODO: this currently checks for 3d mouse presence once at
+            # initialization, which means that if you plug in your mouse after
+            # starting cq-editor it won't work. We should instead periodically
+            # check to see if a mouse was newly-connected.
+
+            # TODO: the callback-based approach seems better than polling, but
+            # it didn't work. Probably something threading-related. The
+            # callback api works for me in a standalone script.
+            #
+            # self._spacemouse_connected = pyspacemouse.open(callback=self.spacemouse_callback, dof_callback=self.spacemouse_dof_callback, button_callback=self.spacemouse_button_callback)
+
+            self._spacemouse_connected = pyspacemouse.open()
+            if self._spacemouse_connected:
+                print("3DConnexion SpaceNavigator 3d mouse detected")
+                print(self._spacemouse_connected)
+
+                # setup a timer to periodically read the 3d mouse state and
+                # update the view
+                self._spacemouse_timer = QTimer(self)
+                self._spacemouse_timer.setInterval(10) # milliseconds
+                self._spacemouse_timer.setSingleShot(False)
+                self._spacemouse_timer.timeout.connect(self._update_from_spacemouse)
+                self._spacemouse_timer.start()
+
         
     def prepare_display(self):
         
@@ -171,3 +204,51 @@ class OCCTWidget(QWidget):
         from OCP.Cocoa import Cocoa_Window
         
         return Cocoa_Window(wid.ascapsule())
+
+    # def spacemouse_callback(self, state):
+    #     print("spacemouse_callback: ", state)
+
+    # def spacemouse_dof_callback(self, state):
+    #     print("spacemouse_dof_callback: ", state)
+
+    # def spacemouse_button_callback(self, state):
+    #     print("spacemouse_button_callback: ", state)
+
+    # called periodically to read new values from the 3d mouse and update the
+    # view
+    def _update_from_spacemouse(self):
+        state = pyspacemouse.read()
+        # print(state)
+
+        # axis values less than this are ignored
+        threshold = 0.05
+
+        if abs(state.y) > threshold:
+            # if state.y < 0:
+            self.view.SetZoom(1-state.y/20)
+
+        # TODO: roll and pitch should also factor into rotation
+        # if abs(state.yaw) > threshold:
+        #     angle_rad = state.yaw
+        #     # TODO: this rotates about the "current axis". Whatever the current
+        #     # axis is, it doesn't seem to be what we want
+        #     self.view.Rotate(angle_rad,False)
+
+        pan_x = 0
+        pan_y = 0
+        if abs(state.x) > threshold:
+            pan_x = int(state.x*100)
+        if abs(state.z) > threshold:
+            pan_y = int(state.z*100)
+        if pan_x != 0 or pan_y != 0:
+            self.view.Pan(pan_x, pan_y, theToStart=True)
+
+
+    # Override QWidget.destroy to cleanup 3d mouse connection
+    # TODO: this doesn't seem to get called... use __del__() instead?
+    def destroy(self, destroyWindow, destroySubWindows):
+        super().destroy(destroyWindow, destroySubWindows)
+        print("DEBUG: OcctWidget.destroy() called")
+        if self._spacemouse_connected:
+            pyspacemouse.close()
+            self._spacemouse_timer.stop()

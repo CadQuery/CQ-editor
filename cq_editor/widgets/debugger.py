@@ -198,7 +198,7 @@ class Debugger(QObject,ComponentMixin):
                 sys.path.insert(0,p)
                 stack.callback(sys.path.remove, p)
             if self.preferences['Change working dir to script dir'] and p.exists():
-                stack.enter_context(p)
+                stack.enter_context(open(p))
             if self.preferences['Reload imported modules']:
                 stack.enter_context(module_manager())
 

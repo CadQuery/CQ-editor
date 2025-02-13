@@ -22,12 +22,27 @@ from .icons import icon
 from .preferences import PreferencesWidget
 
 
+class PrintRedirectorSingleton(QObject):
+    sigStdoutWrite = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+
+        original_stdout_write = sys.stdout.write
+
+        def new_stdout_write(text):
+            original_stdout_write(text)
+            self.sigStdoutWrite.emit(text)
+
+        sys.stdout.write = new_stdout_write
+
+
+PRINT_REDIRECTOR = PrintRedirectorSingleton()
+
 class MainWindow(QMainWindow,MainMixin):
 
     name = 'CQ-Editor'
     org = 'CadQuery'
-
-    sigStdoutWrite = pyqtSignal(str)
 
     def __init__(self,parent=None, filename=None):
 
@@ -144,21 +159,12 @@ class MainWindow(QMainWindow,MainMixin):
         for d in self.docks.values():
             d.show()
 
-        # Handle the stdout redirection
-        original_stdout_write = sys.stdout.write
-
-        def new_stdout_write(text):
-            original_stdout_write(text)
-            self.sigStdoutWrite.emit(text)
-
-        sys.stdout.write = new_stdout_write
-
         def append_to_log_viewer(text):
             log_viewer = self.components['log']
             log_viewer.moveCursor(QtGui.QTextCursor.End)
             log_viewer.insertPlainText(text)
-        
-        self.sigStdoutWrite.connect(append_to_log_viewer)
+
+        PRINT_REDIRECTOR.sigStdoutWrite.connect(append_to_log_viewer)
 
 
     def prepare_menubar(self):

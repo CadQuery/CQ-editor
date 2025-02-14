@@ -1582,3 +1582,17 @@ def test_show_without_name(main):
 
     # Check that the name of the seconf object is an int
     int(object_tree.CQ.child(1).text(0))
+
+
+def test_print_redirect(main):
+    qtbot, win = main
+
+    editor = win.components["editor"]
+    debugger = win.components["debugger"]
+    log = win.components["log"]
+
+    editor.set_text(r"""print("\x1b[1mfoo\x1b[0m\nbar")""")
+    debugger._actions["Run"][0].triggered.emit()
+
+    qtbot.wait(100)
+    assert "foo\nbar" in log.toPlainText()

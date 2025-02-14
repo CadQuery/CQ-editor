@@ -1,6 +1,5 @@
 import sys
 
-from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import (QLabel, QMainWindow, QToolBar, QDockWidget, QAction)
 from logbook import Logger
@@ -21,6 +20,27 @@ from .mixins import MainMixin
 from .icons import icon
 from .preferences import PreferencesWidget
 
+
+class _PrintRedirectorSingleton(QObject):
+    """This class monkey-patches `sys.stdout.write` to emit a signal.
+    It is instanciated as `.main_window.PRINT_REDIRECTOR` and should not be instanciated again.
+    """
+
+    sigStdoutWrite = pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+
+        original_stdout_write = sys.stdout.write
+
+        def new_stdout_write(text: str):
+            self.sigStdoutWrite.emit(text)
+            return original_stdout_write(text)
+
+        sys.stdout.write = new_stdout_write
+
+
+PRINT_REDIRECTOR = _PrintRedirectorSingleton()
 
 class MainWindow(QMainWindow,MainMixin):
 
@@ -142,22 +162,7 @@ class MainWindow(QMainWindow,MainMixin):
         for d in self.docks.values():
             d.show()
 
-        # Handle the stdout redirection
-        self.output_redirector = OutputRedirector()
-        stdout_buffer = sys.stdout.buffer
-        sys.stdout = self.output_redirector
-
-        def append_to_log_viewer(text):
-            log_viewer = self.components['log']
-            log_viewer.moveCursor(QtGui.QTextCursor.End)
-            log_viewer.insertPlainText(text)
-
-        def write_to_stdout_buffer(text):
-            stdout_buffer.write(text.encode())
-            stdout_buffer.flush()
-
-        self.output_redirector.writeOccurred.connect(append_to_log_viewer)
-        self.output_redirector.writeOccurred.connect(write_to_stdout_buffer)
+        PRINT_REDIRECTOR.sigStdoutWrite.connect(lambda text: self.components['log'].append(text))
 
 
     def prepare_menubar(self):
@@ -381,22 +386,6 @@ class MainWindow(QMainWindow,MainMixin):
         if modified:
             title += '*'
         self.setWindowTitle(title)
-
-class OutputRedirector(QObject):
-    """
-    Mimics stdout so that we can redirect print statement output to the log viewer.
-    """
-
-    writeOccurred = pyqtSignal(str)
-
-    def __init__(self):
-        super().__init__()
-
-    def write(self, text):
-        self.writeOccurred.emit(text)
-
-    def flush(self):
-        pass
 
 
 if __name__ == "__main__":

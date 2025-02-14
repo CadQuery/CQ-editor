@@ -3,18 +3,18 @@ import argparse
 
 from PyQt5.QtWidgets import QApplication
 
-NAME = 'CQ-editor'
+NAME = "CQ-editor"
 
-#need to initialize QApp here, otherewise svg icons do not work on windows
-app = QApplication(sys.argv,
-                   applicationName=NAME)
+# need to initialize QApp here, otherewise svg icons do not work on windows
+app = QApplication(sys.argv, applicationName=NAME)
 
 from .main_window import MainWindow
+
 
 def main():
 
     parser = argparse.ArgumentParser(description=NAME)
-    parser.add_argument('filename',nargs='?',default=None)
+    parser.add_argument("filename", nargs="?", default=None)
 
     args = parser.parse_args(app.arguments()[1:])
 

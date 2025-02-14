@@ -22,7 +22,11 @@ from .icons import icon
 from .preferences import PreferencesWidget
 
 
-class PrintRedirectorSingleton(QObject):
+class _PrintRedirectorSingleton(QObject):
+    """This class monkey-patches `sys.stdout.write` to emit a signal.
+    It is instanciated as `.main_window.PRINT_REDIRECTOR` and should not be instanciated again.
+    """
+
     sigStdoutWrite = pyqtSignal(str)
 
     def __init__(self):
@@ -30,14 +34,14 @@ class PrintRedirectorSingleton(QObject):
 
         original_stdout_write = sys.stdout.write
 
-        def new_stdout_write(text):
-            original_stdout_write(text)
+        def new_stdout_write(text: str):
             self.sigStdoutWrite.emit(text)
+            return original_stdout_write(text)
 
         sys.stdout.write = new_stdout_write
 
 
-PRINT_REDIRECTOR = PrintRedirectorSingleton()
+PRINT_REDIRECTOR = _PrintRedirectorSingleton()
 
 class MainWindow(QMainWindow,MainMixin):
 

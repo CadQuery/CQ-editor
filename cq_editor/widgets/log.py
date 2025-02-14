@@ -1,9 +1,9 @@
 import logbook as logging
-import sys
 import re
 
+from PyQt5 import QtGui
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QPlainTextEdit
-from PyQt5 import QtCore
 
 from ..mixins import ComponentMixin
 
@@ -16,6 +16,10 @@ def strip_escape_sequences(input_string):
 
     return clean_string
 
+class _QtLogHandlerQObject(QObject):
+    sigRecordEmit = pyqtSignal(str)
+
+
 class QtLogHandler(logging.Handler,logging.StringFormatterHandlerMixin):
     
     def __init__(self, log_widget,*args,**kwargs):
@@ -26,19 +30,11 @@ class QtLogHandler(logging.Handler,logging.StringFormatterHandlerMixin):
         
         logging.StringFormatterHandlerMixin.__init__(self,log_format_string)
         
-        self.log_widget = log_widget
+        self._qobject = _QtLogHandlerQObject()
+        self._qobject.sigRecordEmit.connect(log_widget.append)
 
     def emit(self, record):
-        
-        msg = self.format(record)
-
-        msg = strip_escape_sequences(msg)
-
-        QtCore.QMetaObject\
-            .invokeMethod(self.log_widget,
-                          'appendPlainText',
-                          QtCore.Qt.QueuedConnection,
-                          QtCore.Q_ARG(str, msg))
+        self._qobject.sigRecordEmit.emit(self.format(record) + "\n")
 
 class LogViewer(QPlainTextEdit, ComponentMixin):
     
@@ -56,5 +52,6 @@ class LogViewer(QPlainTextEdit, ComponentMixin):
         self.handler = QtLogHandler(self)
         
     def append(self,msg):
-        
-        self.appendPlainText(msg)
+        """Append text to the panel with ANSI escape sequences stipped."""
+        self.moveCursor(QtGui.QTextCursor.End)
+        self.insertPlainText(strip_escape_sequences(msg))

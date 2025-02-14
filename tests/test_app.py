@@ -1591,7 +1591,7 @@ def test_print_redirect(main):
     debugger = win.components["debugger"]
     log = win.components["log"]
 
-    editor.set_text(r"""print('foo\nbar')""")
+    editor.set_text(r"""print("\x1b[1mfoo\x1b[0m\nbar")""")
     debugger._actions["Run"][0].triggered.emit()
 
     qtbot.wait(100)

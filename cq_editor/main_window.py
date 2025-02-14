@@ -13,7 +13,7 @@ from .widgets.object_tree import ObjectTree
 from .widgets.traceback_viewer import TracebackPane
 from .widgets.debugger import Debugger, LocalsView
 from .widgets.cq_object_inspector import CQObjectInspector
-from .widgets.log import LogViewer
+from .widgets.log import LogViewer, strip_escape_sequences
 
 from . import __version__
 from .utils import dock, add_actions, open_url, about_dialog, check_gtihub_for_updates, confirm
@@ -166,7 +166,7 @@ class MainWindow(QMainWindow,MainMixin):
         def append_to_log_viewer(text):
             log_viewer = self.components['log']
             log_viewer.moveCursor(QtGui.QTextCursor.End)
-            log_viewer.insertPlainText(text)
+            log_viewer.insertPlainText(strip_escape_sequences(text))
 
         PRINT_REDIRECTOR.sigStdoutWrite.connect(append_to_log_viewer)
 

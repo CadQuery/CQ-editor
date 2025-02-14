@@ -8,8 +8,11 @@ from types import SimpleNamespace
 from OCP.XCAFPrs import XCAFPrs_AISObject
 from OCP.TopoDS import TopoDS_Shape
 from OCP.AIS import AIS_InteractiveObject, AIS_Shape
-from OCP.Quantity import \
-    Quantity_TOC_RGB as TOC_RGB, Quantity_Color, Quantity_NOC_GOLD as GOLD
+from OCP.Quantity import (
+    Quantity_TOC_RGB as TOC_RGB,
+    Quantity_Color,
+    Quantity_NOC_GOLD as GOLD,
+)
 from OCP.Graphic3d import Graphic3d_NOM_JADE, Graphic3d_MaterialAspect
 
 from PyQt5.QtGui import QColor
@@ -25,26 +28,33 @@ def is_cq_obj(obj):
     return isinstance(obj, (Workplane, Shape, Assembly, Sketch))
 
 
-def find_cq_objects(results : dict):
+def find_cq_objects(results: dict):
 
-    return {k:SimpleNamespace(shape=v,options={}) for k,v in results.items() if is_cq_obj(v)}
+    return {
+        k: SimpleNamespace(shape=v, options={})
+        for k, v in results.items()
+        if is_cq_obj(v)
+    }
 
 
-def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Sketch]):
+def to_compound(
+    obj: Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Sketch],
+):
 
     vals = []
 
-    if isinstance(obj,cq.Workplane):
+    if isinstance(obj, cq.Workplane):
         vals.extend(obj.vals())
-    elif isinstance(obj,cq.Shape):
+    elif isinstance(obj, cq.Shape):
         vals.append(obj)
-    elif isinstance(obj,list) and isinstance(obj[0],cq.Workplane):
-        for o in obj: vals.extend(o.vals())
-    elif isinstance(obj,list) and isinstance(obj[0],cq.Shape):
+    elif isinstance(obj, list) and isinstance(obj[0], cq.Workplane):
+        for o in obj:
+            vals.extend(o.vals())
+    elif isinstance(obj, list) and isinstance(obj[0], cq.Shape):
         vals.extend(obj)
     elif isinstance(obj, TopoDS_Shape):
         vals.append(cq.Shape.cast(obj))
-    elif isinstance(obj,list) and isinstance(obj[0],TopoDS_Shape):
+    elif isinstance(obj, list) and isinstance(obj[0], TopoDS_Shape):
         vals.extend(cq.Shape.cast(o) for o in obj)
     elif isinstance(obj, cq.Sketch):
         if obj._faces:
@@ -52,21 +62,32 @@ def to_compound(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.
         else:
             vals.extend(obj._edges)
     else:
-        raise ValueError(f'Invalid type {type(obj)}')
+        raise ValueError(f"Invalid type {type(obj)}")
 
     return cq.Compound.makeCompound(vals)
 
 
-def to_workplane(obj : cq.Shape):
+def to_workplane(obj: cq.Shape):
 
-    rv = cq.Workplane('XY')
-    rv.objects = [obj,]
+    rv = cq.Workplane("XY")
+    rv.objects = [
+        obj,
+    ]
 
     return rv
 
 
-def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Shape], cq.Assembly, AIS_InteractiveObject],
-             options={}):
+def make_AIS(
+    obj: Union[
+        cq.Workplane,
+        List[cq.Workplane],
+        cq.Shape,
+        List[cq.Shape],
+        cq.Assembly,
+        AIS_InteractiveObject,
+    ],
+    options={},
+):
 
     shape = None
 
@@ -82,28 +103,29 @@ def make_AIS(obj : Union[cq.Workplane, List[cq.Workplane], cq.Shape, List[cq.Sha
     set_material(ais, DEFAULT_MATERIAL)
     set_color(ais, DEFAULT_FACE_COLOR)
 
-    if 'alpha' in options:
-        set_transparency(ais, options['alpha'])
-    if 'color' in options:
-        set_color(ais, to_occ_color(options['color']))
-    if 'rgba' in options:
-        r,g,b,a = options['rgba']
-        set_color(ais, to_occ_color((r,g,b)))
+    if "alpha" in options:
+        set_transparency(ais, options["alpha"])
+    if "color" in options:
+        set_color(ais, to_occ_color(options["color"]))
+    if "rgba" in options:
+        r, g, b, a = options["rgba"]
+        set_color(ais, to_occ_color((r, g, b)))
         set_transparency(ais, a)
 
-    return ais,shape
+    return ais, shape
 
 
-def export(obj : Union[cq.Workplane, List[cq.Workplane]], type : str,
-           file, precision=1e-1):
+def export(
+    obj: Union[cq.Workplane, List[cq.Workplane]], type: str, file, precision=1e-1
+):
 
     comp = to_compound(obj)
 
-    if type == 'stl':
+    if type == "stl":
         comp.exportStl(file, tolerance=precision)
-    elif type == 'step':
+    elif type == "step":
         comp.exportStep(file)
-    elif type == 'brep':
+    elif type == "brep":
         comp.exportBrep(file)
 
 
@@ -116,17 +138,14 @@ def to_occ_color(color) -> Quantity_Color:
             elif isinstance(color[0], float):
                 color = QColor.fromRgbF(*color)
             else:
-                raise ValueError('Unknown color format')
+                raise ValueError("Unknown color format")
         else:
             color = QColor(color)
 
-    return Quantity_Color(color.redF(),
-                          color.greenF(),
-                          color.blueF(),
-                          TOC_RGB)
+    return Quantity_Color(color.redF(), color.greenF(), color.blueF(), TOC_RGB)
 
 
-def get_occ_color(obj : Union[AIS_InteractiveObject, Quantity_Color]) -> QColor:
+def get_occ_color(obj: Union[AIS_InteractiveObject, Quantity_Color]) -> QColor:
 
     if isinstance(obj, AIS_InteractiveObject):
         color = Quantity_Color()
@@ -137,7 +156,7 @@ def get_occ_color(obj : Union[AIS_InteractiveObject, Quantity_Color]) -> QColor:
     return QColor.fromRgbF(color.Red(), color.Green(), color.Blue())
 
 
-def set_color(ais : AIS_Shape, color : Quantity_Color) -> AIS_Shape:
+def set_color(ais: AIS_Shape, color: Quantity_Color) -> AIS_Shape:
 
     drawer = ais.Attributes()
     drawer.SetupOwnShadingAspect()
@@ -146,7 +165,7 @@ def set_color(ais : AIS_Shape, color : Quantity_Color) -> AIS_Shape:
     return ais
 
 
-def set_material(ais : AIS_Shape, material: Graphic3d_MaterialAspect) -> AIS_Shape:
+def set_material(ais: AIS_Shape, material: Graphic3d_MaterialAspect) -> AIS_Shape:
 
     drawer = ais.Attributes()
     drawer.SetupOwnShadingAspect()
@@ -155,7 +174,7 @@ def set_material(ais : AIS_Shape, material: Graphic3d_MaterialAspect) -> AIS_Sha
     return ais
 
 
-def set_transparency(ais : AIS_Shape, alpha: float) -> AIS_Shape:
+def set_transparency(ais: AIS_Shape, alpha: float) -> AIS_Shape:
 
     drawer = ais.Attributes()
     drawer.SetupOwnShadingAspect()
@@ -184,13 +203,13 @@ def reload_cq():
     reload(cq.occ_impl.exporters.dxf)
     reload(cq.occ_impl.exporters.amf)
     reload(cq.occ_impl.exporters.json)
-    #reload(cq.occ_impl.exporters.assembly)
+    # reload(cq.occ_impl.exporters.assembly)
     reload(cq.occ_impl.exporters)
     reload(cq.assembly)
     reload(cq)
 
 
-def is_obj_empty(obj : Union[cq.Workplane,cq.Shape]) -> bool:
+def is_obj_empty(obj: Union[cq.Workplane, cq.Shape]) -> bool:
 
     rv = False
 

@@ -1,7 +1,8 @@
 import sys
 
 from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtWidgets import QLabel, QMainWindow, QToolBar, QDockWidget, QAction
+from PyQt5.QtGui import QPalette, QColor
+from PyQt5.QtWidgets import QLabel, QMainWindow, QToolBar, QDockWidget, QAction, QApplication
 from logbook import Logger
 import cadquery as cq
 
@@ -25,6 +26,7 @@ from .utils import (
 )
 from .mixins import MainMixin
 from .icons import icon
+from pyqtgraph.parametertree import Parameter
 from .preferences import PreferencesWidget
 
 
@@ -54,6 +56,21 @@ class MainWindow(QMainWindow, MainMixin):
 
     name = "CQ-Editor"
     org = "CadQuery"
+
+    preferences = Parameter.create(
+        name="Preferences",
+        children=[
+            {
+                "name": "Light/Dark Theme",
+                "type": "list",
+                "value": "Light",
+                "values": [
+                    "Light",
+                    "Dark",
+                ],
+            },
+        ],
+    )
 
     def __init__(self, parent=None, filename=None):
 
@@ -88,6 +105,9 @@ class MainWindow(QMainWindow, MainMixin):
 
         self.setup_logging()
 
+        # Allows us to react to the top-level settings for this window being changed
+        self.preferences.sigTreeStateChanged.connect(self.preferencesChanged)
+
         self.restorePreferences()
         self.restoreWindow()
 
@@ -100,6 +120,56 @@ class MainWindow(QMainWindow, MainMixin):
             self.components["editor"].load_from_file(filename)
 
         self.restoreComponentState()
+
+
+    def preferencesChanged(self, param, changes):
+        """
+        Triggered when the preferences for this window are changed.
+        """
+
+        # Use the default light theme/palette
+        if self.preferences['Light/Dark Theme'] == 'Light':
+            QApplication.instance().setStyleSheet("")
+            QApplication.instance().setPalette(QApplication.style().standardPalette())
+
+            # The console theme needs to be changed separately
+            self.components['console'].app_theme_changed('Light')
+        # Use the dark theme/palette
+        elif self.preferences['Light/Dark Theme'] == 'Dark':
+            QApplication.instance().setStyle("Fusion")
+
+            # Now use a palette to switch to dark colors:
+            white_color = QColor(255, 255, 255)
+            black_color = QColor(0, 0, 0)
+            red_color = QColor(255, 0, 0)
+            palette = QPalette()
+            palette.setColor(QPalette.Window, QColor(53, 53, 53))
+            palette.setColor(QPalette.WindowText, white_color)
+            palette.setColor(QPalette.Base, QColor(25, 25, 25))
+            palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+            palette.setColor(QPalette.ToolTipBase, black_color)
+            palette.setColor(QPalette.ToolTipText, white_color)
+            palette.setColor(QPalette.Text, white_color)
+            palette.setColor(QPalette.Button, QColor(53, 53, 53))
+            palette.setColor(QPalette.ButtonText, white_color)
+            palette.setColor(QPalette.BrightText, red_color)
+            palette.setColor(QPalette.Link, QColor(42, 130, 218))
+            palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+            palette.setColor(QPalette.HighlightedText, black_color)
+            QApplication.instance().setPalette(palette)
+
+            # The console theme needs to be changed separately
+            self.components['console'].app_theme_changed('Dark')
+
+        # We alter the color of the toolbar separately to avoid having separate dark theme icons
+        p = self.toolbar.palette()
+        if self.preferences['Light/Dark Theme'] == 'Dark':
+            p.setColor(QPalette.Button, QColor(120, 120, 120))
+            p.setColor(QPalette.Background, QColor(120, 120, 120))
+        else:
+            p = QApplication.instance().style().standardPalette()
+
+        self.toolbar.setPalette(p)
 
     def closeEvent(self, event):
 

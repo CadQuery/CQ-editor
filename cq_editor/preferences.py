@@ -88,6 +88,9 @@ class PreferencesWidget(QDialog):
                             "OverUnder",
                         ]
                     )
+                # Fill the light/dark theme in the general settings
+                elif child.name() == "Light/Dark Theme":
+                    child.setLimits(["Light", "Dark"])
 
     @pyqtSlot(QTreeWidgetItem, QTreeWidgetItem)
     def handleSelection(self, item, *args):

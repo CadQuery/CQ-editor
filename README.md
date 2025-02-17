@@ -26,10 +26,6 @@ CadQuery GUI editor based on PyQT supports Linux, Windows and Mac.
 
 ## Installation - Pre-Built Packages (Recommended)
 
-~~### Release Packages~~
-
-~~Stable release builds which do not require Anaconda are attached to the [latest release](https://github.com/CadQuery/CQ-editor/releases). Download installer for your operating system, extract it, and run the CQ-editor script for your OS (CQ-editor.cmd for Windows, CQ-editor.sh for Linux and MacOS). On Windows you should be able to simply double-click on CQ-editor.cmd. On Linux and MacOS you may need to make the script executable with `chmod +x CQ-editor.sh` and run the script from the command line. The script contains an environment variable export that may be required to get CQ-editor to launch correctly on MacOS Big Sur, so it is better to use the script than to launch CQ-editor directly.~~
-
 ### Development Packages
 
 Development builds are also available, but can be unstable and should be used at your own risk. You can download the newest build [here](https://github.com/CadQuery/CQ-editor/releases/tag/nightly). Install and run the `run.sh` (Linux/MacOS) or `run.bat` (Windows) script in the root CQ-editor directory. The CQ-editor window should launch.
@@ -59,13 +55,21 @@ micromamba install -n base -c cadquery cq-editor
 micromamba run -n base cq-editor
 ```
 
-On some linux distributions (e.g. `Ubuntu 18.04`) it might be necessary to install additonal packages:
+On some linux distributions (e.g. `Ubuntu 18.04`+) it might be necessary to install additonal packages:
 ```
 sudo apt install libglu1-mesa libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev
 ```
 On Fedora 29 the packages can be installed as follows:
 ```
 dnf install -y mesa-libGLU mesa-libGL mesa-libGLU-devel
+```
+
+## Installation (pip)
+
+A newer installation option (starting with 0.3.0) is to install via pip. Being a newer option, there may be issues that are not present with the conda installation method. It has worked well in testing so far though.
+
+```
+pip install CQ-editor
 ```
 
 ## Usage

@@ -2,7 +2,14 @@ import sys
 
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QLabel, QMainWindow, QToolBar, QDockWidget, QAction, QApplication
+from PyQt5.QtWidgets import (
+    QLabel,
+    QMainWindow,
+    QToolBar,
+    QDockWidget,
+    QAction,
+    QApplication,
+)
 from logbook import Logger
 import cadquery as cq
 
@@ -121,21 +128,20 @@ class MainWindow(QMainWindow, MainMixin):
 
         self.restoreComponentState()
 
-
     def preferencesChanged(self, param, changes):
         """
         Triggered when the preferences for this window are changed.
         """
 
         # Use the default light theme/palette
-        if self.preferences['Light/Dark Theme'] == 'Light':
+        if self.preferences["Light/Dark Theme"] == "Light":
             QApplication.instance().setStyleSheet("")
             QApplication.instance().setPalette(QApplication.style().standardPalette())
 
             # The console theme needs to be changed separately
-            self.components['console'].app_theme_changed('Light')
+            self.components["console"].app_theme_changed("Light")
         # Use the dark theme/palette
-        elif self.preferences['Light/Dark Theme'] == 'Dark':
+        elif self.preferences["Light/Dark Theme"] == "Dark":
             QApplication.instance().setStyle("Fusion")
 
             # Now use a palette to switch to dark colors:
@@ -159,11 +165,11 @@ class MainWindow(QMainWindow, MainMixin):
             QApplication.instance().setPalette(palette)
 
             # The console theme needs to be changed separately
-            self.components['console'].app_theme_changed('Dark')
+            self.components["console"].app_theme_changed("Dark")
 
         # We alter the color of the toolbar separately to avoid having separate dark theme icons
         p = self.toolbar.palette()
-        if self.preferences['Light/Dark Theme'] == 'Dark':
+        if self.preferences["Light/Dark Theme"] == "Dark":
             p.setColor(QPalette.Button, QColor(120, 120, 120))
             p.setColor(QPalette.Background, QColor(120, 120, 120))
         else:

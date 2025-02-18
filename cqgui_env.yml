@@ -10,6 +10,5 @@ dependencies:
   - path
   - logbook
   - requests
-  - cadquery=master
-  - ocp=7.8.1.1
+  - cadquery
   - qtconsole >=5.5.1,<5.6.0

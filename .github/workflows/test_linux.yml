@@ -1,0 +1,30 @@
+name: Test Linux
+
+on: [push, pull_request]
+
+jobs:
+  test-linux:
+    name: Test Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Check out the repo"
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update && sudo apt install -y libgl1 libglx-mesa0
+
+      - name: Install nimble packages and dev tools
+        run: |
+          pip install -e .[dev]
+          pip list
+
+      - name: Run tests
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: pytest

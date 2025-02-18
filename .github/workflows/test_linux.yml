@@ -21,7 +21,8 @@ jobs:
 
       - name: Install nimble packages and dev tools
         run: |
-          pip install -e .[dev]
+          pip install -e .
+          pip install .[test]
           pip list
 
       - name: Run tests

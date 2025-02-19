@@ -1664,3 +1664,34 @@ def test_print_redirect(main):
 
     qtbot.wait(100)
     assert "foo\nbar" in log.toPlainText()
+
+
+def test_light_dark_mode(main):
+    """
+    Tests that the app does switch between light and dark mode.
+    """
+    from PyQt5.QtGui import QPalette
+
+    qtbot, win = main
+
+    # Change to dark mode
+    win.preferences["Light/Dark Theme"] = "Dark"
+    win.preferencesChanged(None, None)
+
+    # Retireve the toolbar so that we can check its style
+    toolbar = win.toolbar
+
+    # Get the dark mode stylesheet for the toolbar
+    dark_pal = win.toolbar.palette()
+    dark_bg = dark_pal.color(QPalette.Background).rgb()
+
+    # Change to light mode
+    win.preferences["Light/Dark Theme"] = "Light"
+    win.preferencesChanged(None, None)
+
+    # Get the light mode stylesheet for the toolbar
+    light_pal = win.toolbar.palette()
+    light_bg = light_pal.color(QPalette.Background).rgb()
+
+    # Check that the dark mode stylesheet is different from the light mode stylesheet
+    assert dark_bg != light_bg

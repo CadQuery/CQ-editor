@@ -5,7 +5,7 @@ from modulefinder import ModuleFinder
 from spyder.plugins.editor.widgets.codeeditor import CodeEditor
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer
 from PyQt5.QtWidgets import QAction, QFileDialog
-from PyQt5.QtGui import QFontDatabase
+from PyQt5.QtGui import QFontDatabase, QTextCursor
 from path import Path
 
 import sys
@@ -254,7 +254,21 @@ class Editor(CodeEditor, ComponentMixin):
     def _file_changed(self):
         # neovim writes a file by removing it first so must re-add each time
         self._watch_paths()
+
+        # Save the current cursor position and selection
+        cursor = self.textCursor()
+        cursor_position = cursor.position()
+        anchor_position = cursor.anchor()
+
+        # Reload the file in case it was modified by an external editor
         self.set_text_from_file(self._filename)
+
+        # Restore the cursor position and selection
+        cursor.setPosition(anchor_position)
+        cursor.setPosition(cursor_position, QTextCursor.KeepAnchor)
+        self.setTextCursor(cursor)
+
+        # Reset the dirty state and trigger a 3D render
         self.reset_modified()
         self.triggerRerender.emit(True)
 

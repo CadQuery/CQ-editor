@@ -72,6 +72,17 @@ A newer installation option (starting with 0.3.0) is to install via pip. Being a
 pip install CQ-editor
 ```
 
+## Running
+
+Whether CQ-editor was installed via conda or pip, it should now be possible to start the application using the following command.
+```bash
+CQ-editor
+```
+If you are running a Linux distribution which uses Wayland, you may get an error. The following command line is a work-around for Wayland issues.
+```bash
+CQ-editor --platform xcb
+```
+
 ## Usage
 
 ### Showing Objects

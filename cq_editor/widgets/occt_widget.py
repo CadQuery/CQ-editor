@@ -76,6 +76,10 @@ class OCCTWidget(QWidget):
         pos = event.pos()
 
         if event.button() == Qt.LeftButton:
+            # Used to prevent drag selection of objects
+            self.pending_select = True
+            self.left_press = pos
+
             self.view.StartRotation(pos.x(), pos.y())
         elif event.button() == Qt.RightButton:
             self.view.StartZoomAtPoint(pos.x(), pos.y())
@@ -89,6 +93,10 @@ class OCCTWidget(QWidget):
 
         if event.buttons() == Qt.LeftButton:
             self.view.Rotation(x, y)
+
+        # If the user moves the mouse at all, the selection will not happen
+        if abs(x-self.left_press.x()) >2 or abs(y-self.left_press.y()) >2:
+            self.pending_select = False
 
         elif event.buttons() == Qt.MiddleButton:
             self.view.Pan(x - self.old_pos.x(), self.old_pos.y() - y, theToStart=True)
@@ -104,9 +112,10 @@ class OCCTWidget(QWidget):
             pos = event.pos()
             x, y = pos.x(), pos.y()
 
-            self.context.MoveTo(x, y, self.view, True)
-
-            self._handle_selection()
+            # Only make the selection if the user has not moved the mouse
+            if self.pending_select:
+                self.context.MoveTo(x,y,self.view,True)
+                self._handle_selection()
 
     def _handle_selection(self):
 

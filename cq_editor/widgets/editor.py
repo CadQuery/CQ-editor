@@ -265,6 +265,10 @@ class Editor(CodeEditor, ComponentMixin):
         cursor_position = cursor.position()
         anchor_position = cursor.anchor()
 
+        # Save the current scroll position
+        vertical_scroll_pos = self.verticalScrollBar().value()
+        horizontal_scroll_pos = self.horizontalScrollBar().value()
+
         # Reload the file in case it was modified by an external editor
         self.set_text_from_file(self._filename)
 
@@ -272,6 +276,10 @@ class Editor(CodeEditor, ComponentMixin):
         cursor.setPosition(anchor_position)
         cursor.setPosition(cursor_position, QTextCursor.KeepAnchor)
         self.setTextCursor(cursor)
+
+        # Restore the scroll position
+        self.verticalScrollBar().setValue(vertical_scroll_pos)
+        self.horizontalScrollBar().setValue(horizontal_scroll_pos)
 
         # Reset the dirty state and trigger a 3D render
         self.reset_modified()

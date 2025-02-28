@@ -45,6 +45,7 @@ class Editor(CodeEditor, ComponentMixin):
                 "values": ["Spyder", "Monokai", "Zenburn"],
                 "value": "Spyder",
             },
+            {"name": "Maximum line length", "type": "int", "value": 88},
         ],
     )
 
@@ -60,7 +61,7 @@ class Editor(CodeEditor, ComponentMixin):
         self.setup_editor(
             linenumbers=True,
             markers=True,
-            edge_line=False,
+            edge_line=self.preferences["Maximum line length"],
             tab_mode=False,
             show_blanks=True,
             font=QFontDatabase.systemFont(QFontDatabase.FixedFont),
@@ -138,6 +139,10 @@ class Editor(CodeEditor, ComponentMixin):
         self._file_watch_timer.setInterval(self.preferences["Autoreload delay"])
 
         self.toggle_wrap_mode(self.preferences["Line wrap"])
+
+        # Update the edge line (maximum line length)
+        self.edge_line.set_enabled(True)
+        self.edge_line.set_columns(self.preferences["Maximum line length"])
 
         self._clear_watched_paths()
         self._watch_paths()

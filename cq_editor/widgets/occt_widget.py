@@ -95,7 +95,7 @@ class OCCTWidget(QWidget):
             self.view.Rotation(x, y)
 
         # If the user moves the mouse at all, the selection will not happen
-        if abs(x-self.left_press.x()) >2 or abs(y-self.left_press.y()) >2:
+        if abs(x - self.left_press.x()) > 2 or abs(y - self.left_press.y()) > 2:
             self.pending_select = False
 
         elif event.buttons() == Qt.MiddleButton:
@@ -114,7 +114,7 @@ class OCCTWidget(QWidget):
 
             # Only make the selection if the user has not moved the mouse
             if self.pending_select:
-                self.context.MoveTo(x,y,self.view,True)
+                self.context.MoveTo(x, y, self.view, True)
                 self._handle_selection()
 
     def _handle_selection(self):

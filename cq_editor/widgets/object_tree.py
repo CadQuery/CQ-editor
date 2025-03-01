@@ -38,9 +38,9 @@ class TopTreeItem(QTreeWidgetItem):
 class ObjectTreeItem(QTreeWidgetItem):
 
     props = [
-        {"name": "Name", "type": "str", "value": ""},
-        {"name": "Color", "type": "color", "value": "#f4a824"},
-        {"name": "Alpha", "type": "float", "value": 0, "limits": (0, 1), "step": 1e-1},
+        {"name": "Name", "type": "str", "value": "", "readonly": True},
+        # {"name": "Color", "type": "color", "value": "#f4a824"},
+        # {"name": "Alpha", "type": "float", "value": 0, "limits": (0, 1), "step": 1e-1},
         {"name": "Visible", "type": "bool", "value": True},
     ]
 
@@ -68,12 +68,14 @@ class ObjectTreeItem(QTreeWidgetItem):
         self.properties = Parameter.create(name="Properties", children=self.props)
 
         self.properties["Name"] = name
-        self.properties["Alpha"] = ais.Transparency()
-        self.properties["Color"] = (
-            get_occ_color(ais)
-            if ais and ais.HasColor()
-            else get_occ_color(DEFAULT_FACE_COLOR)
-        )
+        # Alpha and Color from this panel fight with the options in show_object and so they are
+        # disabled for now until a better solution is found
+        # self.properties["Alpha"] = ais.Transparency()
+        # self.properties["Color"] = (
+        #     get_occ_color(ais)
+        #     if ais and ais.HasColor()
+        #     else get_occ_color(DEFAULT_FACE_COLOR)
+        # )
         self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
 
     def propertiesChanged(self, properties, changed):
@@ -81,12 +83,14 @@ class ObjectTreeItem(QTreeWidgetItem):
         changed_prop = changed[0][0]
 
         self.setData(0, 0, self.properties["Name"])
-        self.ais.SetTransparency(self.properties["Alpha"])
 
-        if changed_prop.name() == "Color":
-            set_color(self.ais, to_occ_color(self.properties["Color"]))
+        # if changed_prop.name() == "Alpha":
+        #     self.ais.SetTransparency(self.properties["Alpha"])
 
-        self.ais.Redisplay()
+        # if changed_prop.name() == "Color":
+        #     set_color(self.ais, to_occ_color(self.properties["Color"]))
+
+        # self.ais.Redisplay()
 
         if self.properties["Visible"]:
             self.setCheckState(0, Qt.Checked)

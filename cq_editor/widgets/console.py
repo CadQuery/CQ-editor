@@ -8,6 +8,7 @@ from ..mixins import ComponentMixin
 
 from ..icons import icon
 
+
 class ConsoleWidget(RichJupyterWidget, ComponentMixin):
 
     name = "Console"
@@ -20,9 +21,7 @@ class ConsoleWidget(RichJupyterWidget, ComponentMixin):
 
         self._actions = {
             "Run": [
-                QAction(
-                    icon("delete"), "Clear Console", self, triggered=self.clear
-                ),
+                QAction(icon("delete"), "Clear Console", self, triggered=self.clear),
             ]
         }
         self.font_size = 6

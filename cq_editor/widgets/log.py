@@ -9,6 +9,7 @@ from ..mixins import ComponentMixin
 
 from ..icons import icon
 
+
 def strip_escape_sequences(input_string):
     # Regular expression pattern to match ANSI escape codes
     escape_pattern = re.compile(r"\x1B\[[0-?]*[ -/]*[@-~]")
@@ -53,9 +54,7 @@ class LogViewer(QPlainTextEdit, ComponentMixin):
 
         self._actions = {
             "Run": [
-                QAction(
-                    icon("delete"), "Clear Log", self, triggered=self.clear
-                ),
+                QAction(icon("delete"), "Clear Log", self, triggered=self.clear),
             ]
         }
 

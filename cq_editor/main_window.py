@@ -177,6 +177,19 @@ class MainWindow(QMainWindow, MainMixin):
 
         self.toolbar.setPalette(p)
 
+        self.setStyleSheet(
+            """
+            QMenu {
+                background-color: rgb(80,80,80);
+                color: rgb(255,255,255);
+                border: 1px solid #000;
+            }
+            QMenu::item::selected {
+                background-color: rgb(30,30,30);
+            }
+            """
+        )
+
     def closeEvent(self, event):
 
         self.saveWindow()
@@ -210,18 +223,18 @@ class MainWindow(QMainWindow, MainMixin):
         )
 
         self.registerComponent(
-            "console",
-            ConsoleWidget(self),
-            lambda c: dock(c, "Console", self, defaultArea="bottom"),
-        )
-
-        self.registerComponent(
             "traceback_viewer",
             TracebackPane(self),
             lambda c: dock(c, "Current traceback", self, defaultArea="bottom"),
         )
 
         self.registerComponent("debugger", Debugger(self))
+
+        self.registerComponent(
+            "console",
+            ConsoleWidget(self),
+            lambda c: dock(c, "Console", self, defaultArea="bottom"),
+        )
 
         self.registerComponent(
             "variables_viewer",

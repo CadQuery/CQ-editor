@@ -76,7 +76,7 @@ class ConsoleWidget(RichJupyterWidget, ComponentMixin):
         """
         Clears the terminal
         """
-        self._control.clear()
+        self.reset(clear=True)
 
     def print_text(self, text):
         """

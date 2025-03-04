@@ -21,7 +21,7 @@ class ConsoleWidget(RichJupyterWidget, ComponentMixin):
 
         self._actions = {
             "Run": [
-                QAction(icon("delete"), "Clear Console", self, triggered=self.clear),
+                QAction(icon("delete"), "Clear Console", self, triggered=self.reset_console),
             ]
         }
         self.font_size = 6
@@ -75,6 +75,12 @@ class ConsoleWidget(RichJupyterWidget, ComponentMixin):
     def clear(self):
         """
         Clears the terminal
+        """
+        self._control.clear()
+
+    def reset_console(self):
+        """
+        Resets the terminal, which clears it back to a single prompt.
         """
         self.reset(clear=True)
 

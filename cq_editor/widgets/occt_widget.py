@@ -94,9 +94,9 @@ class OCCTWidget(QWidget):
         if event.buttons() == Qt.LeftButton:
             self.view.Rotation(x, y)
 
-        # If the user moves the mouse at all, the selection will not happen
-        if abs(x - self.left_press.x()) > 2 or abs(y - self.left_press.y()) > 2:
-            self.pending_select = False
+            # If the user moves the mouse at all, the selection will not happen
+            if abs(x - self.left_press.x()) > 2 or abs(y - self.left_press.y()) > 2:
+                self.pending_select = False
 
         elif event.buttons() == Qt.MiddleButton:
             self.view.Pan(x - self.old_pos.x(), self.old_pos.y() - y, theToStart=True)

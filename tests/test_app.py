@@ -794,6 +794,10 @@ def test_console(main):
     console.print_text("a")
     assert console._prompt_pos == pos_orig + len("a")
 
+    # test reset of the console contents
+    console.reset_console()
+    assert len(console._control.toPlainText()) <= 10
+
 
 def test_viewer(main):
 
@@ -1664,6 +1668,17 @@ def test_print_redirect(main):
 
     qtbot.wait(100)
     assert "foo\nbar" in log.toPlainText()
+
+
+def test_log_clear(main):
+    """
+    Makes sure that the log can be cleared.
+    """
+    qtbot, win = main
+
+    log = win.components["log"]
+    log.clear_log()
+    assert log.toPlainText() == ""
 
 
 def test_light_dark_mode(main):

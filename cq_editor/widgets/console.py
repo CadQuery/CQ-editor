@@ -1,10 +1,12 @@
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QAction
 from PyQt5.QtCore import pyqtSlot
 
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.inprocess import QtInProcessKernelManager
 
 from ..mixins import ComponentMixin
+
+from ..icons import icon
 
 
 class ConsoleWidget(RichJupyterWidget, ComponentMixin):
@@ -17,6 +19,13 @@ class ConsoleWidget(RichJupyterWidget, ComponentMixin):
         #        if not customBanner is None:
         #            self.banner = customBanner
 
+        self._actions = {
+            "Run": [
+                QAction(
+                    icon("delete"), "Clear Console", self, triggered=self.reset_console
+                ),
+            ]
+        }
         self.font_size = 6
         self.style_sheet = """<style>
                             QPlainTextEdit, QTextEdit {
@@ -70,6 +79,12 @@ class ConsoleWidget(RichJupyterWidget, ComponentMixin):
         Clears the terminal
         """
         self._control.clear()
+
+    def reset_console(self):
+        """
+        Resets the terminal, which clears it back to a single prompt.
+        """
+        self.reset(clear=True)
 
     def print_text(self, text):
         """

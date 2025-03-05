@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QDockWidget,
     QAction,
     QApplication,
+    QMenu,
 )
 from logbook import Logger
 import cadquery as cq
@@ -170,10 +171,21 @@ class MainWindow(QMainWindow, MainMixin):
         # We alter the color of the toolbar separately to avoid having separate dark theme icons
         p = self.toolbar.palette()
         if self.preferences["Light/Dark Theme"] == "Dark":
-            p.setColor(QPalette.Button, QColor(120, 120, 120))
             p.setColor(QPalette.Background, QColor(120, 120, 120))
+
+            # TWeak the QMenu items palette for dark theme
+            menu_palette = self.menuBar().palette()
+            menu_palette.setColor(QPalette.Base, QColor(80, 80, 80))
+            for menu in self.menuBar().findChildren(QMenu):
+                menu.setPalette(menu_palette)
         else:
-            p = QApplication.instance().style().standardPalette()
+            p.setColor(QPalette.Background, QColor(240, 240, 240))
+
+            # Revert the QMenu items palette for dark theme
+            menu_palette = self.menuBar().palette()
+            menu_palette.setColor(QPalette.Base, QColor(240, 240, 240))
+            for menu in self.menuBar().findChildren(QMenu):
+                menu.setPalette(menu_palette)
 
         self.toolbar.setPalette(p)
 
@@ -210,18 +222,18 @@ class MainWindow(QMainWindow, MainMixin):
         )
 
         self.registerComponent(
-            "console",
-            ConsoleWidget(self),
-            lambda c: dock(c, "Console", self, defaultArea="bottom"),
-        )
-
-        self.registerComponent(
             "traceback_viewer",
             TracebackPane(self),
             lambda c: dock(c, "Current traceback", self, defaultArea="bottom"),
         )
 
         self.registerComponent("debugger", Debugger(self))
+
+        self.registerComponent(
+            "console",
+            ConsoleWidget(self),
+            lambda c: dock(c, "Console", self, defaultArea="bottom"),
+        )
 
         self.registerComponent(
             "variables_viewer",

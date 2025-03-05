@@ -3,9 +3,11 @@ import re
 
 from PyQt5 import QtGui
 from PyQt5.QtCore import QObject, pyqtSignal
-from PyQt5.QtWidgets import QPlainTextEdit
+from PyQt5.QtWidgets import QPlainTextEdit, QAction
 
 from ..mixins import ComponentMixin
+
+from ..icons import icon
 
 
 def strip_escape_sequences(input_string):
@@ -50,6 +52,12 @@ class LogViewer(QPlainTextEdit, ComponentMixin):
         super(LogViewer, self).__init__(*args, **kwargs)
         self._MAX_ROWS = 500
 
+        self._actions = {
+            "Run": [
+                QAction(icon("delete"), "Clear Log", self, triggered=self.clear),
+            ]
+        }
+
         self.setReadOnly(True)
         self.setMaximumBlockCount(self._MAX_ROWS)
         self.setLineWrapMode(QPlainTextEdit.NoWrap)
@@ -60,3 +68,9 @@ class LogViewer(QPlainTextEdit, ComponentMixin):
         """Append text to the panel with ANSI escape sequences stipped."""
         self.moveCursor(QtGui.QTextCursor.End)
         self.insertPlainText(strip_escape_sequences(msg))
+
+    def clear_log(self):
+        """
+        Clear the log content.
+        """
+        self.clear()

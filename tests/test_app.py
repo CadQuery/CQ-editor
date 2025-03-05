@@ -795,7 +795,7 @@ def test_console(main):
     assert console._prompt_pos == pos_orig + len("a")
 
     # test reset of the console contents
-    console.reset()
+    console.reset_console()
     assert len(console._control.toPlainText()) <= 10
 
 
@@ -1677,7 +1677,7 @@ def test_log_clear(main):
     qtbot, win = main
 
     log = win.components["log"]
-    log.clear()
+    log.clear_log()
     assert log.toPlainText() == ""
 
 

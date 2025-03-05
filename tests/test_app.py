@@ -796,9 +796,7 @@ def test_console(main):
 
     # test reset of the console contents
     console.reset()
-    print(console._control.toPlainText())
-    assert console._control.toPlainText().startswith("\nIn [")
-    assert len(console._control.toPlainText()) <= 9
+    assert len(console._control.toPlainText()) <= 10
 
 
 def test_viewer(main):

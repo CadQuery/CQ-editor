@@ -290,7 +290,7 @@ class Editor(CodeEditor, ComponentMixin):
         # Restore undo stack availability
         if undo_stack:
             self.document().setModified(True)
-            self.document().undo()  # Prevens the need for a double undo
+            self.document().undo()  # Prevents the need for a double undo
 
         # Restore the cursor position and selection
         cursor.setPosition(anchor_position)
@@ -345,7 +345,7 @@ class Editor(CodeEditor, ComponentMixin):
             self._logger.warning(f"Syntax error in {module_path}: {err}")
         except Exception as err:
             # The module finder has trouble when CadQuery is imported in the top level script and in
-            # imported modules. The warning about it can be ignored
+            # imported modules. The warning about it can be ignored.
             if "cadquery" not in finder.badmodules or (
                 "cadquery" in finder.badmodules and len(finder.badmodules) > 1
             ):

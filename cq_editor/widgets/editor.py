@@ -269,8 +269,28 @@ class Editor(CodeEditor, ComponentMixin):
         vertical_scroll_pos = self.verticalScrollBar().value()
         horizontal_scroll_pos = self.horizontalScrollBar().value()
 
-        # Reload the file in case it was modified by an external editor
-        self.set_text_from_file(self._filename)
+        # Save undo stack before reloading text
+        undo_stack = self.document().isUndoAvailable()
+
+        # Block signals to avoid reset issues
+        self.blockSignals(True)
+
+        # Read the contents of the file into a string
+        with open(self._filename, "r", encoding="utf-8") as f:
+            file_contents = f.read()
+
+            # Insert new text while preserving history
+            cursor = self.textCursor()
+            cursor.select(QTextCursor.Document)
+            cursor.insertText(file_contents)
+
+        # Stop blocking signals
+        self.blockSignals(False)
+
+        # Restore undo stack availability
+        if undo_stack:
+            self.document().setModified(True)
+            self.document().undo()  # Prevents the need for a double undo
 
         # Restore the cursor position and selection
         cursor.setPosition(anchor_position)
@@ -324,9 +344,14 @@ class Editor(CodeEditor, ComponentMixin):
         except SyntaxError as err:
             self._logger.warning(f"Syntax error in {module_path}: {err}")
         except Exception as err:
-            self._logger.warning(
-                f"Cannot determine imported modules in {module_path}: {type(err).__name__} {err}"
-            )
+            # The module finder has trouble when CadQuery is imported in the top level script and in
+            # imported modules. The warning about it can be ignored.
+            if "cadquery" not in finder.badmodules or (
+                "cadquery" in finder.badmodules and len(finder.badmodules) > 1
+            ):
+                self._logger.warning(
+                    f"Cannot determine imported modules in {module_path}: {type(err).__name__} {err}"
+                )
         else:
             for module_name, module in finder.modules.items():
                 if module_name != "__main__":

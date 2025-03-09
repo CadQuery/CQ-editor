@@ -4,7 +4,7 @@ from modulefinder import ModuleFinder
 
 from spyder.plugins.editor.widgets.codeeditor import CodeEditor
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer
-from PyQt5.QtWidgets import QAction, QFileDialog
+from PyQt5.QtWidgets import QAction, QFileDialog, QApplication
 from PyQt5.QtGui import QFontDatabase, QTextCursor
 from path import Path
 
@@ -284,13 +284,15 @@ class Editor(CodeEditor, ComponentMixin):
             cursor.select(QTextCursor.Document)
             cursor.insertText(file_contents)
 
+            # The editor will not always update after a text insertion, so we force it
+            QApplication.processEvents()
+
         # Stop blocking signals
         self.blockSignals(False)
 
         # Restore undo stack availability
         if undo_stack:
             self.document().setModified(True)
-            self.document().undo()  # Prevents the need for a double undo
 
         # Restore the cursor position and selection
         cursor.setPosition(anchor_position)

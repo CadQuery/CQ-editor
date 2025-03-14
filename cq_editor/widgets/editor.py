@@ -51,6 +51,9 @@ class Editor(CodeEditor, ComponentMixin):
 
     EXTENSIONS = "py"
 
+    # Tracks whether or not the document was saved from the Spyder editor vs an external editor
+    was_modified_by_self = False
+
     def __init__(self, parent=None):
 
         self._watched_file = None
@@ -198,6 +201,8 @@ class Editor(CodeEditor, ComponentMixin):
             # Let the editor and the rest of the app know that the file is no longer dirty
             self.reset_modified()
 
+            self.was_modified_by_self = True
+
         else:
             self.save_as()
 
@@ -269,9 +274,6 @@ class Editor(CodeEditor, ComponentMixin):
         vertical_scroll_pos = self.verticalScrollBar().value()
         horizontal_scroll_pos = self.horizontalScrollBar().value()
 
-        # Save undo stack before reloading text
-        undo_stack = self.document().isUndoAvailable()
-
         # Block signals to avoid reset issues
         self.blockSignals(True)
 
@@ -290,9 +292,12 @@ class Editor(CodeEditor, ComponentMixin):
         # Stop blocking signals
         self.blockSignals(False)
 
-        # Restore undo stack availability
-        if undo_stack:
-            self.document().setModified(True)
+        self.document().setModified(True)
+
+        # Undo has to be backed up one step to compensate for the text insertion
+        if self.was_modified_by_self:
+            self.document().undo()
+            self.was_modified_by_self = False
 
         # Restore the cursor position and selection
         cursor.setPosition(anchor_position)

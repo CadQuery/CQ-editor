@@ -1,2 +1,2 @@
 #!/bin/sh
-exec bin/cq-editor
+exec $(dirname $(realpath "$0"))/bin/cq-editor

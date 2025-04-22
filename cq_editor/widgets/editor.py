@@ -4,7 +4,13 @@ from modulefinder import ModuleFinder
 
 from spyder.plugins.editor.widgets.codeeditor import CodeEditor
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer, Qt
-from PyQt5.QtWidgets import QAction, QFileDialog, QApplication, QListWidget, QListWidgetItem
+from PyQt5.QtWidgets import (
+    QAction,
+    QFileDialog,
+    QApplication,
+    QListWidget,
+    QListWidgetItem,
+)
 from PyQt5.QtGui import QFontDatabase, QTextCursor
 from path import Path
 
@@ -275,10 +281,7 @@ class Editor(CodeEditor, ComponentMixin):
         """
         Allows the user to ask for autocomplete suggestions.
         """
-        script = jedi.Script(
-            self.toPlainText(),
-            path=self.filename
-        )
+        script = jedi.Script(self.toPlainText(), path=self.filename)
         completions = script.complete()
         if completions:
             # Clear the completion list
@@ -297,7 +300,6 @@ class Editor(CodeEditor, ComponentMixin):
             # Show the completion list
             self.completion_list.show()
 
-
     def insert_completion(self, item):
         """
         Inserts the selected completion into the editor.
@@ -308,7 +310,6 @@ class Editor(CodeEditor, ComponentMixin):
 
         # Hide the completion list
         self.completion_list.hide()
-
 
     # callback triggered by QFileSystemWatcher
     def _file_changed(self):
@@ -370,7 +371,6 @@ class Editor(CodeEditor, ComponentMixin):
     def reset_modified(self):
 
         self.document().setModified(False)
-
 
     @property
     def modified(self):

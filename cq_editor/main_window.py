@@ -301,6 +301,16 @@ class MainWindow(QMainWindow, MainMixin):
                 triggered=self.components["editor"].toggle_comment,
             )
         )
+        # Add the menu action to toggle auto-completion
+        menu_edit.addAction(
+            QAction(
+                icon("search"),
+                "Auto-Complete",
+                self,
+                shortcut="alt+/",
+                triggered=self.components["editor"]._trigger_autocomplete,
+            )
+        )
         menu_edit.addAction(
             QAction(
                 icon("preferences"),

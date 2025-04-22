@@ -3,12 +3,14 @@ import spyder.utils.encoding
 from modulefinder import ModuleFinder
 
 from spyder.plugins.editor.widgets.codeeditor import CodeEditor
-from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer
-from PyQt5.QtWidgets import QAction, QFileDialog, QApplication
+from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer, Qt
+from PyQt5.QtWidgets import QAction, QFileDialog, QApplication, QListWidget, QListWidgetItem
 from PyQt5.QtGui import QFontDatabase, QTextCursor
 from path import Path
 
 import sys
+
+import jedi
 
 from pyqtgraph.parametertree import Parameter
 
@@ -119,6 +121,15 @@ class Editor(CodeEditor, ComponentMixin):
         self._file_watch_timer.timeout.connect(self._file_changed)
 
         self.updatePreferences()
+
+        # Create a floating list widget for completions
+        self.completion_list = QListWidget(self)
+        self.completion_list.setWindowFlags(Qt.Popup)
+        self.completion_list.setFocusPolicy(Qt.NoFocus)
+        self.completion_list.hide()
+
+        # Connect the completion list to the editor
+        self.completion_list.itemClicked.connect(self.insert_completion)
 
     def _fixContextMenu(self):
 
@@ -260,6 +271,45 @@ class Editor(CodeEditor, ComponentMixin):
                 if module_paths:
                     self._file_watcher.addPaths(module_paths)
 
+    def _trigger_autocomplete(self):
+        """
+        Allows the user to ask for autocomplete suggestions.
+        """
+        script = jedi.Script(
+            self.toPlainText(),
+            path=self.filename
+        )
+        completions = script.complete()
+        if completions:
+            # Clear the completion list
+            self.completion_list.clear()
+
+            # Add completions to the list
+            for completion in completions:
+                item = QListWidgetItem(completion.name)
+                self.completion_list.addItem(item)
+
+            # Position the list near the cursor
+            cursor_rect = self.cursorRect()
+            global_pos = self.mapToGlobal(cursor_rect.bottomLeft())
+            self.completion_list.move(global_pos)
+
+            # Show the completion list
+            self.completion_list.show()
+
+
+    def insert_completion(self, item):
+        """
+        Inserts the selected completion into the editor.
+        """
+        cursor = self.textCursor()
+        cursor.insertText(item.text())
+        self.setTextCursor(cursor)
+
+        # Hide the completion list
+        self.completion_list.hide()
+
+
     # callback triggered by QFileSystemWatcher
     def _file_changed(self):
         # neovim writes a file by removing it first so must re-add each time
@@ -320,6 +370,7 @@ class Editor(CodeEditor, ComponentMixin):
     def reset_modified(self):
 
         self.document().setModified(False)
+
 
     @property
     def modified(self):

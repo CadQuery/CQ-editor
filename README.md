@@ -7,11 +7,9 @@
 
 CadQuery GUI editor based on PyQT that supports Linux, Windows and Mac.
 
-<img src="https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot2.png" alt="Screenshot" width="70%" >
-<img src="https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot3.png" alt="Screenshot" width="70%" >
 <img src="https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot4.png" alt="Screenshot" width="70%" >
 
-![CQ-editor screenshot](screenshots/screenshot4.png)
+Additional screenshots are available [in the wiki](https://github.com/CadQuery/CQ-editor/wiki#screenshots).
 
 ## Notable features
 
@@ -45,7 +43,7 @@ If you believe that you have found a bug in CQ-editor, please ensure the followi
 * You are not running a CQ-editor fork, as these are not always synchronized with the latest updates in this project.
 * You have searched the [issue tracker](https://github.com/CadQuery/CQ-editor/issues) to make sure that the bug is not already known.
 
-If you have checked those things, please file a [new issue](https://github.com/CadQuery/CQ-editor/issues/new) with the following information.
+If you have already checked those things, please file a [new issue](https://github.com/CadQuery/CQ-editor/issues/new) with the following information.
 
 * Operating System (type, version, etc) - If running Linux, please include the distribution and the version.
 * How CQ-editor was installed.

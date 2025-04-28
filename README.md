@@ -7,8 +7,7 @@
 
 CadQuery GUI editor based on PyQT that supports Linux, Windows and Mac.
 
-<img src="https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot4.png" alt="Screenshot" width="70%" >
-
+![CQ-editor screenshot](https://github.com/CadQuery/CQ-editor/raw/master/screenshots/screenshot4.png)
 Additional screenshots are available [in the wiki](https://github.com/CadQuery/CQ-editor/wiki#screenshots).
 
 ## Notable features

@@ -1710,3 +1710,41 @@ def test_light_dark_mode(main):
 
     # Check that the dark mode stylesheet is different from the light mode stylesheet
     assert dark_bg != light_bg
+
+
+def test_autocomplete(main):
+    qtbot, win = main
+
+    editor = win.components["editor"]
+    # debugger = win.components["debugger"]
+    # log = win.components["log"]
+
+    # Set some text that should give a couple of auto-complete options
+    editor.set_text(r"""import cadquery as cq\nres = cq.W""")
+
+    # Set the cursor position to the end of the text
+    editor.set_cursor_position(len(editor.get_text_with_eol()))
+
+    # Trigger auto-complete
+    editor._trigger_autocomplete()
+    qtbot.wait(100)
+
+    # Check that the completion list has two items
+    assert len(editor.completion_list) == 2
+
+    # Select the first item in the completion list
+    editor.completion_list.setCurrentRow(1)
+
+    # Wait for the completion to be applied
+    qtbot.wait(100)
+
+    # Simulate a click on the second item in the list
+    editor.completion_list.itemClicked.emit(editor.completion_list.item(1))
+
+    # Wait for the completion to be applied
+    qtbot.wait(100)
+
+    # Check that the text has been completed
+    assert (
+        editor.get_text_with_eol() == r"""import cadquery as cq\nres = cq.Workplane"""
+    )

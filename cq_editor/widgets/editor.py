@@ -3,15 +3,16 @@ import spyder.utils.encoding
 from modulefinder import ModuleFinder
 
 from spyder.plugins.editor.widgets.codeeditor import CodeEditor
-from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer, Qt
+from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer, Qt, QEvent
 from PyQt5.QtWidgets import (
     QAction,
     QFileDialog,
     QApplication,
     QListWidget,
     QListWidgetItem,
+    QShortcut,
 )
-from PyQt5.QtGui import QFontDatabase, QTextCursor
+from PyQt5.QtGui import QFontDatabase, QTextCursor, QKeyEvent
 from path import Path
 
 import sys
@@ -136,6 +137,40 @@ class Editor(CodeEditor, ComponentMixin):
 
         # Connect the completion list to the editor
         self.completion_list.itemClicked.connect(self.insert_completion)
+
+        # Ensure that when the escape key is pressed with the completion_list in focus, it will be hidden
+        self.completion_list.installEventFilter(self)
+
+    def eventFilter(self, watched, event):
+        """
+        Allows us to do things like escape and tab key press for the completion list.
+        """
+
+        if watched == self.completion_list and event.type() == QEvent.KeyPress:
+            key_event = QKeyEvent(event)
+            # Handle the escape key press
+            if key_event.key() == Qt.Key_Escape:
+                if self.completion_list and self.completion_list.isVisible():
+                    self.completion_list.hide()
+                    return True  # Event handled
+            # Handle the tab key press
+            elif key_event.key() == Qt.Key_Tab:
+                if self.completion_list and self.completion_list.isVisible():
+                    self.insert_completion(self.completion_list.currentItem())
+                    return True  # Event handled
+
+            # Let the event propagate to the editor
+            return False
+
+        # Let the event propagate to the editor
+        return False
+
+    def hide_completion_list(self):
+        """
+        Hide the completion list.
+        """
+        if self.completion_list and self.completion_list.isVisible():
+            self.completion_list.hide()
 
     def _fixContextMenu(self):
 
@@ -300,11 +335,26 @@ class Editor(CodeEditor, ComponentMixin):
             # Show the completion list
             self.completion_list.show()
 
+            # Select the first item in the list
+            self.completion_list.setCurrentRow(0)
+
     def insert_completion(self, item):
         """
         Inserts the selected completion into the editor.
         """
+        # Find the last period in the text
+        text_before_cursor = self.toPlainText()[: self.textCursor().position()]
+        last_period_index = text_before_cursor.rfind(".")
+
+        # Move the cursor to just after the last period position
         cursor = self.textCursor()
+        cursor.setPosition(last_period_index + 1)
+
+        # Remove text after last period
+        cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
+        cursor.removeSelectedText()
+
+        # Insert the completion text
         cursor.insertText(item.text())
         self.setTextCursor(cursor)
 

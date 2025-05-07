@@ -35,6 +35,7 @@ class Editor(CodeEditor, ComponentMixin):
     # autoreload is enabled.
     triggerRerender = pyqtSignal(bool)
     sigFilenameChanged = pyqtSignal(str)
+    statusChanged = pyqtSignal(str)
 
     preferences = Parameter.create(
         name="Preferences",
@@ -155,6 +156,10 @@ class Editor(CodeEditor, ComponentMixin):
                     return True  # Event handled
             # Handle the tab key press
             elif key_event.key() == Qt.Key_Tab:
+                if self.completion_list and self.completion_list.isVisible():
+                    self.insert_completion(self.completion_list.currentItem())
+                    return True  # Event handled
+            elif key_event.key() == Qt.Key_Return:
                 if self.completion_list and self.completion_list.isVisible():
                     self.insert_completion(self.completion_list.currentItem())
                     return True  # Event handled
@@ -316,17 +321,75 @@ class Editor(CodeEditor, ComponentMixin):
         """
         Allows the user to ask for autocomplete suggestions.
         """
+
+        # Clear the status bar
+        self.statusChanged.emit("")
+
+        # Track whether or not there are any completions to show
+        completions_present = False
+
         script = jedi.Script(self.toPlainText(), path=self.filename)
-        completions = script.complete()
-        if completions:
-            # Clear the completion list
-            self.completion_list.clear()
 
-            # Add completions to the list
-            for completion in completions:
-                item = QListWidgetItem(completion.name)
-                self.completion_list.addItem(item)
+        # Clear the completion list
+        self.completion_list.clear()
 
+        # Check to see if the character before the cursor is an open parenthesis
+        cursor_pos = self.textCursor().position()
+        text_before_cursor = self.toPlainText()[:cursor_pos]
+        text_after_cursor = self.toPlainText()[cursor_pos:]
+        if text_before_cursor.endswith("("):
+            # If there is a trailing close parentheis after the cursor, remove it
+            if text_after_cursor.startswith(")"):
+                self.textCursor().deleteChar()
+
+                # Update the script with the modified text
+                script = jedi.Script(self.toPlainText(), path=self.filename)
+
+            # Check if there are any function signatures
+            signatures = script.get_signatures()
+            if signatures:
+                # Let the rest of the code know that there was a completion
+                completions_present = True
+
+                # Load the signatures into the completion list
+                for signature in signatures:
+                    # Build a human-readable signature
+                    i = 0
+                    cur_signature = f"{signature.name}("
+                    for param in signature.params:
+                        # Prevent trailing comma in parameter list
+                        param_ending = ","
+                        if i == len(signature.params) - 1:
+                            param_ending = ""
+
+                        # If the parameter is optional, do not overload the user with it
+                        if "Optional" in param.description:
+                            i += 1
+                            continue
+
+                        if "=" in param.description:
+                            cur_signature += f"{param.name}={param.description.split('=')[1].strip()}{param_ending}"
+                        else:
+                            cur_signature += f"{param.name}{param_ending}"
+                        i += 1
+                    cur_signature += ")"
+
+                    # Add the current signature to the list
+                    item = QListWidgetItem(cur_signature)
+                    self.completion_list.addItem(item)
+        else:
+            completions = script.complete()
+            if completions:
+                # Let the rest of the code know that there was a completion
+                completions_present = True
+
+                # Add completions to the list
+                for completion in completions:
+                    item = QListWidgetItem(completion.name)
+                    self.completion_list.addItem(item)
+
+        # Only show the completions list if there were any
+        if completions_present:
             # Position the list near the cursor
             cursor_rect = self.cursorRect()
             global_pos = self.mapToGlobal(cursor_rect.bottomLeft())
@@ -337,11 +400,25 @@ class Editor(CodeEditor, ComponentMixin):
 
             # Select the first item in the list
             self.completion_list.setCurrentRow(0)
+        else:
+            # Let the user know that no completions are available
+            self.statusChanged.emit("No completions available")
 
     def insert_completion(self, item):
         """
         Inserts the selected completion into the editor.
         """
+
+        # If there is an open parenthesis before the cursor, replace it with the completion
+        if (
+            self.textCursor().position() > 0
+            and self.toPlainText()[self.textCursor().position() - 1] == "("
+        ):
+            cursor = self.textCursor()
+            cursor.setPosition(cursor.position() - 1)
+            cursor.movePosition(QTextCursor.EndOfWord, QTextCursor.KeepAnchor)
+            cursor.removeSelectedText()
+
         # Find the last period in the text
         text_before_cursor = self.toPlainText()[: self.textCursor().position()]
         last_period_index = text_before_cursor.rfind(".")

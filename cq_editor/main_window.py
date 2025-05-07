@@ -439,6 +439,8 @@ class MainWindow(QMainWindow, MainMixin):
         self.components["editor"].sigFilenameChanged.connect(
             self.handle_filename_change
         )
+        # Allows updating of the status bar from the Editor
+        self.components["editor"].statusChanged.connect(self.update_statusbar)
 
     def prepare_console(self):
 
@@ -527,6 +529,14 @@ class MainWindow(QMainWindow, MainMixin):
         if modified:
             title += "*"
         self.setWindowTitle(title)
+
+    def update_statusbar(self, status_text):
+        """
+        Allow updating the status bar with information.
+        """
+
+        # Update the statusbar text
+        self.status_label.setText(status_text)
 
 
 if __name__ == "__main__":

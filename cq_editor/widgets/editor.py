@@ -64,6 +64,9 @@ class Editor(CodeEditor, ComponentMixin):
     # Tracks whether or not the document was saved from the Spyder editor vs an external editor
     was_modified_by_self = False
 
+    # Helps display the completion list for the editor
+    completion_list = None
+
     def __init__(self, parent=None):
 
         self._watched_file = None

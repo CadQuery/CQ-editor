@@ -20,6 +20,8 @@ install:
     - cmd: curl -fsSL -o miniconda.exe https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe
     - cmd: miniconda.exe /S /InstallationType=JustMe /D=%MINICONDA_DIRNAME%
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
+    - cmd: mamba shell init --shell cmd.exe --root-prefix=~/.local/share/mamba
+    - cmd: mamba shell reinit --shell cmd.exe
     - cmd: activate
     - mamba info
     - mamba env create -y --name cqgui -f cqgui_env.yml

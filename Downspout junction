@@ -1,0 +1,66 @@
+import cadquery as cq
+import math
+
+# CONFIGURABLE PARAMETERS
+outer_width = 3.0 * 25.4      # 3 inches to mm
+outer_depth = 2.0 * 25.4      # 2 inches to mm
+wall_thickness = 0.3 * 25.4   # 0.3 inches to mm
+insert_depth = 2.0 * 25.4     # 2 inches to mm
+screw_diameter = 3.0          # 3mm screw holes
+side_angle_deg = 10           # adjustable: 5–15°
+
+# Derived inner dimensions
+inner_width = outer_width - 2 * wall_thickness
+inner_depth = outer_depth - 2 * wall_thickness
+side_angle_rad = math.radians(side_angle_deg)
+
+# Create female top connector
+female_top = (
+    cq.Workplane("XY")
+    .box(outer_width, outer_depth, insert_depth)
+    .faces(">Z").workplane()
+    .rect(inner_width, inner_depth)
+    .cutBlind(-insert_depth)
+)
+
+# Create male bottom connector
+male_bottom = (
+    cq.Workplane("XY")
+    .box(inner_width, inner_depth, insert_depth)
+    .translate((0, 0, -insert_depth))
+)
+
+# Center block (wall thickness only)
+junction = cq.Workplane("XY").box(outer_width, outer_depth, wall_thickness)
+
+# Combine vertical section
+vertical = female_top.union(junction).union(male_bottom)
+
+# Create angled side female connection
+side_connector = (
+    cq.Workplane("XZ")
+    .transformed(rotate=(0, side_angle_deg, 0))
+    .box(outer_width, outer_depth, insert_depth)
+    .faces(">Z").workplane(centerOption="CenterOfMass")
+    .rect(inner_width, inner_depth)
+    .cutBlind(-insert_depth)
+    .translate((outer_width/2, 0, wall_thickness/2))
+)
+
+# Combine with main body
+model = vertical.union(side_connector)
+
+# Add screw holes to narrow sides of each connection
+def add_screw_holes(part, depth_offset, x_width, y_depth, z_height, is_female=True):
+    z_pos = z_height if is_female else -z_height
+    hole_plane = part.faces(">Z").workplane(offset=z_pos)
+    for x in [-x_width / 4, x_width / 4]:
+        y = y_depth / 2 - 5
+        hole_plane = hole_plane.pushPoints([(x, y)]).hole(screw_diameter)
+    return part
+
+model = add_screw_holes(model, insert_depth, outer_width, outer_depth, insert_depth/2, is_female=True)  # Top
+model = add_screw_holes(model, insert_depth, inner_width, inner_depth, insert_depth + 5, is_female=False)  # Bottom
+
+# Export STL
+cq.exporters.export(model, 'downspout_connector.stl')

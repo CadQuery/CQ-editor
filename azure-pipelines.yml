@@ -22,7 +22,7 @@ parameters:
     default:
       - 11
 
-stages:     
+stages:
 - stage: build_conda_package
   jobs:
   - ${{ each minor in parameters.minor }}:
@@ -43,7 +43,7 @@ stages:
   - template: constructor-build.yml@templates
     parameters:
       name: win
-      vmImage: 'windows-latest'
+      vmImage: 'windows-2019'
   - template: constructor-build.yml@templates
     parameters:
       name: macos
@@ -76,7 +76,7 @@ stages:
 
 # stage left for debugging, disabled by default
 - stage: verify
-  condition: False 
+  condition: False
   jobs:
   - job: verify_linux
     pool:

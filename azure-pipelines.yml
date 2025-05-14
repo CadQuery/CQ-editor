@@ -39,7 +39,7 @@ stages:
   - template: constructor-build.yml@templates
     parameters:
       name: linux
-      vmImage: 'ubuntu-latest'
+      vmImage: 'ubuntu-22.04'
   - template: constructor-build.yml@templates
     parameters:
       name: win

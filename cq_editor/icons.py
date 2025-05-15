@@ -71,6 +71,7 @@ _icons_specs = {
         },
     ),
     "toggle-comment": (("fa.hashtag",), {}),
+    "search": (("fa.search",), {}),
 }
 
 

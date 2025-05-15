@@ -29,7 +29,7 @@ stages:
     - template: conda-build.yml@templates
       parameters:
         name: Linux
-        vmImage: 'ubuntu-22.04'
+        vmImage: 'ubuntu-20.04'
         py_maj: 3
         py_min: ${{minor}}
         conda_bld: 3.21.6
@@ -39,7 +39,7 @@ stages:
   - template: constructor-build.yml@templates
     parameters:
       name: linux
-      vmImage: 'ubuntu-22.04'
+      vmImage: 'ubuntu-20.04'
   - template: constructor-build.yml@templates
     parameters:
       name: win
@@ -54,7 +54,7 @@ stages:
   - job: upload_to_github
     condition: ne(variables['Build.Reason'], 'PullRequest')
     pool:
-      vmImage: ubuntu-latest
+      vmImage: ubuntu-20.04
     steps:
     - download: current
       artifact: installer_ubuntu-latest
@@ -80,7 +80,7 @@ stages:
   jobs:
   - job: verify_linux
     pool:
-      vmImage: ubuntu-latest
+      vmImage: ubuntu-20.04
     steps:
     - download: current
       artifact: installer_ubuntu-latest

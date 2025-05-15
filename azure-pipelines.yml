@@ -29,7 +29,7 @@ stages:
     - template: conda-build.yml@templates
       parameters:
         name: Linux
-        vmImage: 'ubuntu-latest'
+        vmImage: 'ubuntu-22.04'
         py_maj: 3
         py_min: ${{minor}}
         conda_bld: 3.21.6

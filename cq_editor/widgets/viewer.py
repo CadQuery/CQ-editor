@@ -167,7 +167,7 @@ class OCCViewer(QWidget, ComponentMixin):
         self._actions = {
             "View": [
                 QAction(
-                    qta.icon("fa.arrows-alt"),
+                    qta.icon("fa6s.maximize"),
                     "Fit (Shift+F1)",
                     parent,
                     shortcut="shift+F1",
@@ -223,14 +223,14 @@ class OCCViewer(QWidget, ComponentMixin):
                     triggered=self.right_view,
                 ),
                 QAction(
-                    qta.icon("fa.square-o"),
+                    qta.icon("fa5.stop-circle"),
                     "Wireframe (Shift+F9)",
                     parent,
                     shortcut="shift+F9",
                     triggered=self.wireframe_view,
                 ),
                 QAction(
-                    qta.icon("fa.square"),
+                    qta.icon("fa5.square"),
                     "Shaded (Shift+F10)",
                     parent,
                     shortcut="shift+F10",

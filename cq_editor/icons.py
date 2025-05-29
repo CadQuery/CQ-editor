@@ -15,11 +15,11 @@ _icons = {"app": QIcon(":/images/icons/cadquery_logo_dark.svg")}
 import qtawesome as qta
 
 _icons_specs = {
-    "new": (("fa.file-o",), {}),
-    "open": (("fa.folder-open-o",), {}),
+    "new": (("fa5.file",), {}),
+    "open": (("fa5.folder-open",), {}),
     # borrowed from spider-ide
     "autoreload": [
-        ("fa.repeat", "fa.clock-o"),
+        ("fa5s.redo-alt", "fa5.clock"),
         {
             "options": [
                 {"scale_factor": 0.75, "offset": (-0.1, -0.1)},
@@ -27,9 +27,9 @@ _icons_specs = {
             ]
         },
     ],
-    "save": (("fa.save",), {}),
+    "save": (("fa5.save",), {}),
     "save_as": (
-        ("fa.save", "fa.pencil"),
+        ("fa5.save", "fa5s.pencil-alt"),
         {
             "options": [
                 {
@@ -39,12 +39,12 @@ _icons_specs = {
             ]
         },
     ),
-    "run": (("fa.play",), {}),
-    "delete": (("fa.trash",), {}),
+    "run": (("fa5.play",), {}),
+    "delete": (("fa5s.trash",), {}),
     "delete-many": (
         (
-            "fa.trash",
-            "fa.trash",
+            "fa5s.trash",
+            "fa5s.trash",
         ),
         {
             "options": [
@@ -53,16 +53,16 @@ _icons_specs = {
             ]
         },
     ),
-    "help": (("fa.life-ring",), {}),
-    "about": (("fa.info",), {}),
-    "preferences": (("fa.cogs",), {}),
+    "help": (("fa5s.life-ring",), {}),
+    "about": (("fa5s.info",), {}),
+    "preferences": (("fa5s.cogs",), {}),
     "inspect": (
-        ("fa.cubes", "fa.search"),
+        ("fa5s.cubes", "fa5s.search"),
         {"options": [{"scale_factor": 0.8, "offset": (0, 0), "color": "gray"}, {}]},
     ),
-    "screenshot": (("fa.camera",), {}),
+    "screenshot": (("fa5s.camera",), {}),
     "screenshot-save": (
-        ("fa.save", "fa.camera"),
+        ("fa5.save", "fa5s.camera"),
         {
             "options": [
                 {"scale_factor": 0.8},
@@ -70,7 +70,7 @@ _icons_specs = {
             ]
         },
     ),
-    "toggle-comment": (("fa.hashtag",), {}),
+    "toggle-comment": (("fa5s.hashtag",), {}),
 }
 
 

@@ -8,11 +8,12 @@ version = "0.6.dev0"
 dependencies = [
   "cadquery",
   "pyqtgraph",
-  "spyder>=5.5.6,<6",
+  "spyder>=6,<7",
   "path",
   "logbook",
   "requests",
-  "qtconsole>=5.5.1,<5.6.0"
+  "qtconsole>=5.6.1,<5.7.0",
+  "qtawesome>=1.4.0"
 ]
 requires-python = ">=3.9,<3.13"
 authors = [

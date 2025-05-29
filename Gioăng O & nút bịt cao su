@@ -1,0 +1,33 @@
+import cadquery as cq
+
+# ---------- Gioăng chữ O ----------
+inner_diameter = 30.5
+outer_diameter = 41.5
+section_diameter = (outer_diameter - inner_diameter) / 2
+mean_radius = inner_diameter / 2 + section_diameter
+
+o_ring = (
+    cq.Workplane("XZ")
+    .center(mean_radius, 0)
+    .circle(section_diameter)
+    .revolve(360)
+)
+
+cq.exporters.export(o_ring, "gioang_o_ring.step")
+
+# ---------- Đầu bịt cao su ----------
+outer_d = 113
+inner_d = 108
+height = 20
+groove_depth = 5
+
+rubber_cap = (
+    cq.Workplane("XY")
+    .circle(outer_d / 2)
+    .extrude(height)
+    .faces(">Z").workplane()
+    .circle(inner_d / 2)
+    .cutBlind(-groove_depth)
+)
+
+cq.exporters.export(rubber_cap, "dau_bit_cao_su.step")

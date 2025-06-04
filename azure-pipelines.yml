@@ -34,55 +34,55 @@ stages:
         py_min: ${{minor}}
         conda_bld: 3.21.6
 
-- stage: build_installers
-  jobs:
-  - template: constructor-build.yml@templates
-    parameters:
-      name: linux
-      vmImage: 'ubuntu-20.04'
-  - template: constructor-build.yml@templates
-    parameters:
-      name: win
-      vmImage: 'windows-2019'
-  - template: constructor-build.yml@templates
-    parameters:
-      name: macos
-      vmImage: 'macOS-latest'
+# - stage: build_installers
+#   jobs:
+#   - template: constructor-build.yml@templates
+#     parameters:
+#       name: linux
+#       vmImage: 'ubuntu-20.04'
+#   - template: constructor-build.yml@templates
+#     parameters:
+#       name: win
+#       vmImage: 'windows-2019'
+#   - template: constructor-build.yml@templates
+#     parameters:
+#       name: macos
+#       vmImage: 'macOS-latest'
 
-- stage: upload_installers
-  jobs:
-  - job: upload_to_github
-    condition: ne(variables['Build.Reason'], 'PullRequest')
-    pool:
-      vmImage: ubuntu-20.04
-    steps:
-    - download: current
-      artifact: installer_ubuntu-latest
-    - download: current
-      artifact: installer_windows-latest
-    - download: current
-      artifact: installer_macOS-latest
-    - bash: cp $(Pipeline.Workspace)/installer*/*.* .
-    - task: GitHubRelease@1
-      inputs:
-        gitHubConnection: github.com_oauth
-        assets: CQ-editor-*.*
-        action: edit
-        tag: nightly
-        target: d8e247d15001bf785ef7498d922b4b5aa017a9c9
-        addChangeLog: false
-        assetUploadMode: replace
-        isPreRelease: true
+# - stage: upload_installers
+#   jobs:
+#   - job: upload_to_github
+#     condition: ne(variables['Build.Reason'], 'PullRequest')
+#     pool:
+#       vmImage: ubuntu-20.04
+#     steps:
+#     - download: current
+#       artifact: installer_ubuntu-latest
+#     - download: current
+#       artifact: installer_windows-latest
+#     - download: current
+#       artifact: installer_macOS-latest
+#     - bash: cp $(Pipeline.Workspace)/installer*/*.* .
+#     - task: GitHubRelease@1
+#       inputs:
+#         gitHubConnection: github.com_oauth
+#         assets: CQ-editor-*.*
+#         action: edit
+#         tag: nightly
+#         target: d8e247d15001bf785ef7498d922b4b5aa017a9c9
+#         addChangeLog: false
+#         assetUploadMode: replace
+#         isPreRelease: true
 
 # stage left for debugging, disabled by default
-- stage: verify
-  condition: False
-  jobs:
-  - job: verify_linux
-    pool:
-      vmImage: ubuntu-20.04
-    steps:
-    - download: current
-      artifact: installer_ubuntu-latest
-    - bash: cp $(Pipeline.Workspace)/installer*/*.* .
-    - bash: sh ./CQ-editor-master-Linux-x86_64.sh -b -p dummy && cd dummy && ./run.sh
+# - stage: verify
+#   condition: False
+#   jobs:
+#   - job: verify_linux
+#     pool:
+#       vmImage: ubuntu-20.04
+#     steps:
+#     - download: current
+#       artifact: installer_ubuntu-latest
+#     - bash: cp $(Pipeline.Workspace)/installer*/*.* .
+#     - bash: sh ./CQ-editor-master-Linux-x86_64.sh -b -p dummy && cd dummy && ./run.sh

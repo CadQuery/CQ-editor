@@ -18,17 +18,13 @@ jobs:
       - name: Set up Conda
         uses: conda-incubator/setup-miniconda@v3
         with:
-          auto-update-conda: true
-          auto-activate-base: false
+          miniconda-version: "latest"
+          activate-environment: constructor
 
       - name: Create Conda environment
+        shell: bash -el {0}
         run: |
-          conda create -n constructor python=3.10 -y
-          conda activate constructor
           conda install -c conda-forge constructor conda-libmamba-solver
-
-      - name: Run Constructor
-        run: |
           mkdir out && cd out && constructor ../conda
 
       - name: Upload Constructor output

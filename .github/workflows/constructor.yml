@@ -1,0 +1,39 @@
+# Set this workflow up to run on pushes to the main branch
+name: Constructor
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    
+jobs:
+  constructor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-update-conda: true
+          auto-activate-base: false
+
+      - name: Create Conda environment
+        run: |
+          conda create -n constructor python=3.10 -y
+          conda activate constructor
+          conda install -c conda-forge constructor conda-libmamba-solver
+
+      - name: Run Constructor
+        run: |
+          mkdir out && cd out && constructor ../conda
+
+      - name: Upload Constructor output
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer_linux
+          path: out/*

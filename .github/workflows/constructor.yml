@@ -3,12 +3,11 @@ name: Constructor
 on:
   push:
     branches:
-      - main
+      - master
   pull_request:
     branches:
-      - main
-  workflow_dispatch:
-    
+      - master
+
 jobs:
   constructor:
     runs-on: ubuntu-latest

@@ -52,9 +52,37 @@ stages:
             sudo apt-get -q -y install libglu1-mesa-dev freeglut3-dev mesa-common-dev
           displayName: 'Install OpenGL headers'
 
-      - template: conda-enable.yml
-        parameters:
-          vmImage: ubuntu-latest
+      # install conda for mac
+      - bash: brew install miniforge && ls /usr/local/Caskroom/miniforge/base/bin
+        displayName: 'MacOS install miniforge'
+        condition: eq( variables['Agent.OS'], 'Darwin' )
+
+      #activate conda
+      - bash: echo "##vso[task.prependpath]/usr/local/Caskroom/miniforge/base/bin"
+        condition: eq( variables['Agent.OS'], 'Darwin' )
+        displayName: 'Add conda to PATH - OSX'
+
+      - bash: echo "##vso[task.prependpath]$CONDA/bin"
+        condition: eq( variables['Agent.OS'], 'Linux' )
+        displayName: 'Add conda to PATH - Linux'
+
+      - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Scripts"
+        condition: eq( variables['Agent.OS'], 'Windows_NT' )
+        displayName: 'Add conda to PATH - Windows'
+
+      - powershell: Write-Host "##vso[task.prependpath]$env:CONDA\Library\bin"
+        condition: eq( variables['Agent.OS'], 'Windows_NT' )
+        displayName: 'Add condabin to PATH - Windows'
+
+      # install mamba
+      - bash: |
+            conda config --set anaconda_upload yes --set always_yes yes --set solver libmamba && \
+            conda config --add channels conda-forge && \
+            conda install -c conda-forge -q mamba micromamba conda-devenv libsolv conda-libmamba-solver && \
+            env && \
+            conda info && \
+            conda list
+        displayName: 'Install mamba, boa; report config and info'
 
       - bash: conda create --yes --quiet --name build_env -c conda-forge conda-build boa conda-verify libarchive python=3.12 anaconda-client
         displayName: Create Anaconda environment
@@ -93,56 +121,3 @@ stages:
           PYTHON_VERSION: 3.${{ minor }}
           PACKAGE_VERSION: $(Build.SourceBranchName)
           TOKEN: $(anaconda.TOKEN)
-
-# - stage: build_installers
-#   jobs:
-#   - template: constructor-build.yml@templates
-#     parameters:
-#       name: linux
-#       vmImage: 'ubuntu-latest'
-#   - template: constructor-build.yml@templates
-#     parameters:
-#       name: win
-#       vmImage: 'windows-latest'
-#   - template: constructor-build.yml@templates
-#     parameters:
-#       name: macos
-#       vmImage: 'macOS-latest'
-
-# - stage: upload_installers
-#   jobs:
-#   - job: upload_to_github
-#     condition: ne(variables['Build.Reason'], 'PullRequest')
-#     pool:
-#       vmImage: ubuntu-latest
-#     steps:
-#     - download: current
-#       artifact: installer_ubuntu-latest
-#     - download: current
-#       artifact: installer_windows-latest
-#     - download: current
-#       artifact: installer_macOS-latest
-#     - bash: cp $(Pipeline.Workspace)/installer*/*.* .
-#     - task: GitHubRelease@1
-#       inputs:
-#         gitHubConnection: github.com_oauth
-#         assets: CQ-editor-*.*
-#         action: edit
-#         tag: nightly
-#         target: d8e247d15001bf785ef7498d922b4b5aa017a9c9
-#         addChangeLog: false
-#         assetUploadMode: replace
-#         isPreRelease: true
-
-# stage left for debugging, disabled by default
-# - stage: verify
-#   condition: False 
-#   jobs:
-#   - job: verify_linux
-#     pool:
-#       vmImage: ubuntu-latest
-#     steps:
-#     - download: current
-#       artifact: installer_ubuntu-latest
-#     - bash: cp $(Pipeline.Workspace)/installer*/*.* .
-#     - bash: sh ./CQ-editor-master-Linux-x86_64.sh -b -p dummy && cd dummy && ./run.sh

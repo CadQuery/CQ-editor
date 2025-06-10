@@ -9,80 +9,140 @@ trigger:
 pr:
 - master
 
-resources:
-  repositories:
-    - repository: templates
-      type: github
-      name: CadQuery/conda-packages
-      endpoint: CadQuery
+# resources:
+#   repositories:
+#     - repository: templates
+#       type: github
+#       name: jmwright/conda-packages
+#       endpoint: CadQuery
 
 parameters:
   - name: minor
     type: object
     default:
       - 11
+  - name: location
+    type: string
+    default: 'conda'
 
-stages:     
+stages:
 - stage: build_conda_package
   jobs:
   - ${{ each minor in parameters.minor }}:
-    - template: conda-build.yml@templates
-      parameters:
-        name: Linux
-        vmImage: 'ubuntu-latest'
-        py_maj: 3
-        py_min: ${{minor}}
-        conda_bld: 3.21.6
+    - job: Linux_3_${{ minor }}
+      timeoutInMinutes: 360
 
-- stage: build_installers
-  jobs:
-  - template: constructor-build.yml@templates
-    parameters:
-      name: linux
-      vmImage: 'ubuntu-latest'
-  - template: constructor-build.yml@templates
-    parameters:
-      name: win
-      vmImage: 'windows-latest'
-  - template: constructor-build.yml@templates
-    parameters:
-      name: macos
-      vmImage: 'macOS-latest'
+      pool:
+        vmImage: ubuntu-latest
 
-- stage: upload_installers
-  jobs:
-  - job: upload_to_github
-    condition: ne(variables['Build.Reason'], 'PullRequest')
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - download: current
-      artifact: installer_ubuntu-latest
-    - download: current
-      artifact: installer_windows-latest
-    - download: current
-      artifact: installer_macOS-latest
-    - bash: cp $(Pipeline.Workspace)/installer*/*.* .
-    - task: GitHubRelease@1
-      inputs:
-        gitHubConnection: github.com_oauth
-        assets: CQ-editor-*.*
-        action: edit
-        tag: nightly
-        target: d8e247d15001bf785ef7498d922b4b5aa017a9c9
-        addChangeLog: false
-        assetUploadMode: replace
-        isPreRelease: true
+      steps:
+
+      # this step is needed for OCC to find fonts
+      - bash: |
+          sudo apt-get -q -y install gsfonts xfonts-utils && \
+          sudo mkfontscale /usr/share/fonts/type1/gsfonts/ && \
+          sudo mkfontdir /usr/share/fonts/type1/gsfonts/
+        condition: eq( variables['Agent.OS'], 'Linux' )
+        displayName: 'Help OCC find fonts'
+
+      # Ubunut install opengl items
+      - ${{ if contains('ubuntu-latest', 'Ubuntu') }}:
+        - bash: |
+            sudo apt-get update && \
+            sudo apt-get -q -y install libglu1-mesa-dev freeglut3-dev mesa-common-dev
+          displayName: 'Install OpenGL headers'
+
+      - template: conda-enable.yml
+        parameters:
+          vmImage: ubuntu-latest
+
+      - bash: conda create --yes --quiet --name build_env -c conda-forge conda-build boa conda-verify libarchive python=3.12 anaconda-client
+        displayName: Create Anaconda environment
+
+      - bash: |
+          cd ${{ parameters.location }} && \
+          conda run -n build_env conda mambabuild -c conda-forge -c cadquery --output-folder . . && \
+          full_path=$(conda run -n build_env conda build --output -c conda-forge -c cadquery --output-folder . . ) && \
+          echo $full_path && \
+          base_name=$(basename $full_path) && \
+          split_name=($(IFS=-; tmp=($base_name); echo ${tmp[@]})) && \
+          package_name=${split_name[@]: 0 : ${#split_name[@]} - 2} && \
+          package_name=${package_name/ /-} && \
+          version_name=${split_name[-2]} && \
+          echo "Removing $base_name" && \
+          conda run -n build_env anaconda -v -t $TOKEN remove --force "cadquery/$package_name/$version_name"  && \
+          echo "Uploading $full_path" && \
+          conda run -n build_env anaconda -v -t $TOKEN upload -u cadquery --force $full_path && \
+          cd ..
+        displayName: 'Run conda build'
+        failOnStderr: false
+        condition: ne(variables['Build.Reason'], 'PullRequest')
+        env:
+          PYTHON_VERSION: 3.${{ minor }}
+          PACKAGE_VERSION: $(Build.SourceBranchName)
+          TOKEN: $(anaconda.TOKEN)
+
+      - bash: |
+          cd ${{ parameters.location }} && \
+          conda run -n build_env conda mambabuild -c conda-forge -c cadquery . && \
+          cd ..
+        displayName: 'Run conda build without upload'
+        failOnStderr: false
+        condition: eq(variables['Build.Reason'], 'PullRequest')
+        env:
+          PYTHON_VERSION: 3.${{ minor }}
+          PACKAGE_VERSION: $(Build.SourceBranchName)
+          TOKEN: $(anaconda.TOKEN)
+
+# - stage: build_installers
+#   jobs:
+#   - template: constructor-build.yml@templates
+#     parameters:
+#       name: linux
+#       vmImage: 'ubuntu-latest'
+#   - template: constructor-build.yml@templates
+#     parameters:
+#       name: win
+#       vmImage: 'windows-latest'
+#   - template: constructor-build.yml@templates
+#     parameters:
+#       name: macos
+#       vmImage: 'macOS-latest'
+
+# - stage: upload_installers
+#   jobs:
+#   - job: upload_to_github
+#     condition: ne(variables['Build.Reason'], 'PullRequest')
+#     pool:
+#       vmImage: ubuntu-latest
+#     steps:
+#     - download: current
+#       artifact: installer_ubuntu-latest
+#     - download: current
+#       artifact: installer_windows-latest
+#     - download: current
+#       artifact: installer_macOS-latest
+#     - bash: cp $(Pipeline.Workspace)/installer*/*.* .
+#     - task: GitHubRelease@1
+#       inputs:
+#         gitHubConnection: github.com_oauth
+#         assets: CQ-editor-*.*
+#         action: edit
+#         tag: nightly
+#         target: d8e247d15001bf785ef7498d922b4b5aa017a9c9
+#         addChangeLog: false
+#         assetUploadMode: replace
+#         isPreRelease: true
 
 # stage left for debugging, disabled by default
-- stage: verify
-  condition: False 
-  jobs:
-  - job: verify_linux
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-    - download: current
-      artifact: installer_ubuntu-latest
-    - bash: cp $(Pipeline.Workspace)/installer*/*.* .
-    - bash: sh ./CQ-editor-master-Linux-x86_64.sh -b -p dummy && cd dummy && ./run.sh
+# - stage: verify
+#   condition: False 
+#   jobs:
+#   - job: verify_linux
+#     pool:
+#       vmImage: ubuntu-latest
+#     steps:
+#     - download: current
+#       artifact: installer_ubuntu-latest
+#     - bash: cp $(Pipeline.Workspace)/installer*/*.* .
+#     - bash: sh ./CQ-editor-master-Linux-x86_64.sh -b -p dummy && cd dummy && ./run.sh

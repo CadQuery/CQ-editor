@@ -21,13 +21,13 @@ install:
     - cmd: miniconda.exe /S /InstallationType=JustMe /D=%MINICONDA_DIRNAME%
     - cmd: set "PATH=%MINICONDA_DIRNAME%;%MINICONDA_DIRNAME%\\Scripts;%PATH%"
     - cmd: activate
-    - mamba info
-    - mamba env create --name cqgui -f cqgui_env.yml
+    - conda info
+    - conda env create -y --name cqgui -f cqgui_env.yml
     - sh: source activate cqgui
     - cmd: activate cqgui
-    - mamba list
-    - mamba install -y pytest pluggy pytest-qt
-    - mamba install -y pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay
+    - conda list
+    - conda install -y pytest pluggy pytest-qt
+    - conda install -y pytest-mock pytest-cov pytest-repeat codecov pyvirtualdisplay
 
 build: false
 

@@ -1,0 +1,100 @@
+# Set this workflow up to run on pushes to the main branch
+name: Constructor
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  constructor-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniconda-version: "latest"
+          activate-environment: constructor
+
+      - name: Create Conda environment
+        shell: bash -el {0}
+        run: |
+          conda install -c conda-forge constructor conda-libmamba-solver
+          mkdir out && cd out && constructor ../conda
+
+      - name: Upload Constructor output
+        uses: actions/upload-artifact@v4
+        with:
+          name: CQ-editor-master-Linux-x86_64
+          path: out/*.*
+  constructor-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniconda-version: "latest"
+          activate-environment: constructor
+
+      - name: Create Conda environment
+        shell: bash -el {0}
+        run: |
+          conda install -c conda-forge constructor conda-libmamba-solver
+          mkdir out && cd out && constructor ../conda
+
+      - name: Upload Constructor output
+        uses: actions/upload-artifact@v4
+        with:
+          name: CQ-editor-master-Windows-x86_64
+          path: out/*.*
+  constructor-macos-arm64:
+    runs-on: macos-14
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniconda-version: "latest"
+          activate-environment: constructor
+
+      - name: Create Conda environment
+        shell: bash -el {0}
+        run: |
+          conda install -c conda-forge constructor conda-libmamba-solver
+          mkdir out && cd out && constructor ../conda
+
+      - name: Upload Constructor output
+        uses: actions/upload-artifact@v4
+        with:
+          name: CQ-editor-master-MacOSX-ARM64
+          path: out/*.*
+  constructor-macos-x86_64:
+    runs-on: macos-13
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniconda-version: "latest"
+          activate-environment: constructor
+
+      - name: Create Conda environment
+        shell: bash -el {0}
+        run: |
+          conda install -c conda-forge constructor conda-libmamba-solver
+          mkdir out && cd out && constructor ../conda
+
+      - name: Upload Constructor output
+        uses: actions/upload-artifact@v4
+        with:
+          name: CQ-editor-master-MacOSX-x86_64
+          path: out/*.*

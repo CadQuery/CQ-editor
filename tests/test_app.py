@@ -1716,8 +1716,6 @@ def test_autocomplete(main):
     qtbot, win = main
 
     editor = win.components["editor"]
-    # debugger = win.components["debugger"]
-    # log = win.components["log"]
 
     # Set some text that should give a couple of auto-complete options
     editor.set_text(r"""import cadquery as cq\nres = cq.W""")
@@ -1748,3 +1746,70 @@ def test_autocomplete(main):
     assert (
         editor.get_text_with_eol() == r"""import cadquery as cq\nres = cq.Workplane"""
     )
+
+
+def test_autocomplete_keystrokes(main):
+    """
+    Tests that the user keystrokes will have the intended effect on the UI.
+    """
+
+    qtbot, win = main
+
+    editor = win.components["editor"]
+
+    # Set some text that should give a couple of auto-complete options
+    editor.set_text(r"""import cadquery as cq\nres = cq.""")
+
+    # Set the cursor position to the end of the text
+    editor.set_cursor_position(len(editor.get_text_with_eol()))
+
+    # Inject the Alt+/ key combo
+    qtbot.keyPress(editor, "/", modifier=Qt.AltModifier)
+    qtbot.wait(100)
+
+    # Check that the completion list is visible
+    assert editor.completion_list.isVisible()
+
+    # Select the first item in the completion list with the Return key
+    qtbot.keyClick(editor.completion_list, Qt.Key_Return)
+    qtbot.wait(100)
+    # Check that the text has been completed
+    assert editor.get_text_with_eol() == r"""import cadquery as cq\nres = cq.Assembly"""
+
+    # Reset for the next test
+    editor.set_text(r"""import cadquery as cq\nres = cq.Workplane().box(""")
+
+    # Set the cursor position to the end of the text
+    editor.set_cursor_position(len(editor.get_text_with_eol()))
+
+    # Inject the Alt+/ key combo
+    qtbot.keyPress(editor, "/", modifier=Qt.AltModifier)
+    qtbot.wait(100)
+
+    # Check that the completion list is visible
+    assert editor.completion_list.isVisible()
+
+    # Select the first item in the completion list with the Tab key
+    qtbot.keyClick(editor.completion_list, Qt.Key_Tab)
+    qtbot.wait(100)
+
+    # Check that the text has been completed
+    assert (
+        editor.get_text_with_eol()
+        == r"""import cadquery as cq\nres = cq.Workplane().box(length,width,height,centered=True,combine=True,clean=True)"""
+    )
+
+    # Reset for the next test
+    editor.set_text(r"""import cadquery as cq\nres = cq.Workplane().box(""")
+
+    # Trigger autocomplete again
+    qtbot.keyPress(editor, "/", modifier=Qt.AltModifier)
+    qtbot.wait(100)
+
+    # Check that the completion list is visible
+    assert editor.completion_list.isVisible()
+
+    # Make sure the Escape key closes the completion list
+    qtbot.keyClick(editor.completion_list, Qt.Key_Escape)
+    qtbot.wait(100)
+    assert not editor.completion_list.isVisible()

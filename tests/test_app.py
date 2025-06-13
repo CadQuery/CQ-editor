@@ -1765,14 +1765,14 @@ def test_autocomplete_keystrokes(main):
 
     # Inject the Alt+/ key combo
     qtbot.keyPress(editor, "/", modifier=Qt.AltModifier)
-    qtbot.wait(100)
+    qtbot.wait(250)
 
     # Check that the completion list is visible
     assert editor.completion_list.isVisible()
 
     # Select the first item in the completion list with the Return key
     qtbot.keyClick(editor.completion_list, Qt.Key_Return)
-    qtbot.wait(100)
+    qtbot.wait(250)
     # Check that the text has been completed
     assert editor.get_text_with_eol() == r"""import cadquery as cq\nres = cq.Assembly"""
 
@@ -1784,14 +1784,14 @@ def test_autocomplete_keystrokes(main):
 
     # Inject the Alt+/ key combo
     qtbot.keyPress(editor, "/", modifier=Qt.AltModifier)
-    qtbot.wait(100)
+    qtbot.wait(250)
 
     # Check that the completion list is visible
     assert editor.completion_list.isVisible()
 
     # Select the first item in the completion list with the Tab key
     qtbot.keyClick(editor.completion_list, Qt.Key_Tab)
-    qtbot.wait(100)
+    qtbot.wait(250)
 
     # Check that the text has been completed
     assert (
@@ -1804,12 +1804,12 @@ def test_autocomplete_keystrokes(main):
 
     # Trigger autocomplete again
     qtbot.keyPress(editor, "/", modifier=Qt.AltModifier)
-    qtbot.wait(100)
+    qtbot.wait(250)
 
     # Check that the completion list is visible
     assert editor.completion_list.isVisible()
 
     # Make sure the Escape key closes the completion list
     qtbot.keyClick(editor.completion_list, Qt.Key_Escape)
-    qtbot.wait(100)
+    qtbot.wait(250)
     assert not editor.completion_list.isVisible()

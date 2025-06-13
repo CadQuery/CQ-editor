@@ -1757,6 +1757,10 @@ def test_autocomplete_keystrokes(main):
 
     editor = win.components["editor"]
 
+    # Make sure the editor is focused
+    editor.setFocus()
+    qtbot.waitExposed(editor)
+
     # Set some text that should give a couple of auto-complete options
     editor.set_text(r"""import cadquery as cq\nres = cq.""")
 
@@ -1764,11 +1768,11 @@ def test_autocomplete_keystrokes(main):
     editor.set_cursor_position(len(editor.get_text_with_eol()))
 
     # Inject the Alt+/ key combo
-    qtbot.keyPress(editor, "/", modifier=Qt.AltModifier)
+    qtbot.keyPress(editor, Qt.Key_Slash, modifier=Qt.AltModifier)
     qtbot.wait(250)
 
     # Check that the completion list is visible
-    # assert editor.completion_list.isVisible()
+    assert editor.completion_list.isVisible()
 
     # Select the first item in the completion list with the Return key
     qtbot.keyClick(editor.completion_list, Qt.Key_Return)
@@ -1783,11 +1787,11 @@ def test_autocomplete_keystrokes(main):
     editor.set_cursor_position(len(editor.get_text_with_eol()))
 
     # Inject the Alt+/ key combo
-    qtbot.keyPress(editor, "/", modifier=Qt.AltModifier)
+    qtbot.keyPress(editor, Qt.Key_Slash, modifier=Qt.AltModifier)
     qtbot.wait(250)
 
     # Check that the completion list is visible
-    # assert editor.completion_list.isVisible()
+    assert editor.completion_list.isVisible()
 
     # Select the first item in the completion list with the Tab key
     qtbot.keyClick(editor.completion_list, Qt.Key_Tab)
@@ -1803,13 +1807,13 @@ def test_autocomplete_keystrokes(main):
     editor.set_text(r"""import cadquery as cq\nres = cq.Workplane().box(""")
 
     # Trigger autocomplete again
-    qtbot.keyPress(editor, "/", modifier=Qt.AltModifier)
+    qtbot.keyPress(editor, Qt.Key_Slash, modifier=Qt.AltModifier)
     qtbot.wait(250)
 
     # Check that the completion list is visible
-    # assert editor.completion_list.isVisible()
+    assert editor.completion_list.isVisible()
 
     # Make sure the Escape key closes the completion list
     qtbot.keyClick(editor.completion_list, Qt.Key_Escape)
     qtbot.wait(250)
-    # assert not editor.completion_list.isVisible()
+    assert not editor.completion_list.isVisible()

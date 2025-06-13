@@ -1748,6 +1748,8 @@ def test_autocomplete(main):
     )
 
 
+# Skip this test on Linux due to a known issue with Qt and keystrokes
+@pytest.mark.skipif(sys.platform.startswith("linux"), reason="Known issue with Qt keystrokes")
 def test_autocomplete_keystrokes(main):
     """
     Tests that the user keystrokes will have the intended effect on the UI.

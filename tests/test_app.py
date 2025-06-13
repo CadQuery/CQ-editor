@@ -1768,7 +1768,7 @@ def test_autocomplete_keystrokes(main):
     editor.set_cursor_position(len(editor.get_text_with_eol()))
 
     # Inject the Alt+/ key combo
-    qtbot.keyPress(editor, Qt.Key_Slash, modifier=Qt.AltModifier)
+    qtbot.keyClick(editor, Qt.Key_Slash, modifier=Qt.AltModifier)
     qtbot.wait(250)
 
     # Check that the completion list is visible
@@ -1787,7 +1787,7 @@ def test_autocomplete_keystrokes(main):
     editor.set_cursor_position(len(editor.get_text_with_eol()))
 
     # Inject the Alt+/ key combo
-    qtbot.keyPress(editor, Qt.Key_Slash, modifier=Qt.AltModifier)
+    qtbot.keyClick(editor, Qt.Key_Slash, modifier=Qt.AltModifier)
     qtbot.wait(250)
 
     # Check that the completion list is visible
@@ -1807,7 +1807,7 @@ def test_autocomplete_keystrokes(main):
     editor.set_text(r"""import cadquery as cq\nres = cq.Workplane().box(""")
 
     # Trigger autocomplete again
-    qtbot.keyPress(editor, Qt.Key_Slash, modifier=Qt.AltModifier)
+    qtbot.keyClick(editor, Qt.Key_Slash, modifier=Qt.AltModifier)
     qtbot.wait(250)
 
     # Check that the completion list is visible

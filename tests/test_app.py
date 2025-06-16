@@ -1751,7 +1751,7 @@ def test_autocomplete(main):
     editor.set_text(r"""import cadquery as cq\nres = cq.Workplane()""")
 
     # Set the cursor position to the end of the text
-    editor.set_cursor_position(len(editor.get_text_with_eol()))
+    editor.set_cursor_position(len(editor.get_text_with_eol()) - 1)
 
     # Trigger auto-complete
     editor._trigger_autocomplete()

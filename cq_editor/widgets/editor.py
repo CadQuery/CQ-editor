@@ -173,7 +173,6 @@ class Editor(CodeEditor, ComponentMixin):
         # Let the event propagate to the editor
         return False
 
-
     def _fixContextMenu(self):
 
         menu = self.menu

@@ -1758,7 +1758,9 @@ def test_autocomplete(main):
     qtbot.wait(100)
 
     # Check to make sure that the auto-complete trigger removed the last ")"
-    assert editor.get_text_with_eol() == r"""import cadquery as cq\nres = cq.Workplane("""
+    assert (
+        editor.get_text_with_eol() == r"""import cadquery as cq\nres = cq.Workplane("""
+    )
 
 
 # Skip this test on Linux due to a known issue with Qt and keystrokes

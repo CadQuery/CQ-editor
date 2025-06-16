@@ -173,12 +173,6 @@ class Editor(CodeEditor, ComponentMixin):
         # Let the event propagate to the editor
         return False
 
-    def hide_completion_list(self):
-        """
-        Hide the completion list.
-        """
-        if self.completion_list and self.completion_list.isVisible():
-            self.completion_list.hide()
 
     def _fixContextMenu(self):
 

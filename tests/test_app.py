@@ -1747,6 +1747,19 @@ def test_autocomplete(main):
         editor.get_text_with_eol() == r"""import cadquery as cq\nres = cq.Workplane"""
     )
 
+    # Set some text that should give a couple of auto-complete options
+    editor.set_text(r"""import cadquery as cq\nres = cq.Workplane()""")
+
+    # Set the cursor position to the end of the text
+    editor.set_cursor_position(len(editor.get_text_with_eol()))
+
+    # Trigger auto-complete
+    editor._trigger_autocomplete()
+    qtbot.wait(100)
+
+    # Check to make sure that the auto-complete trigger removed the last ")"
+    assert editor.get_text_with_eol() == r"""import cadquery as cq\nres = cq.Workplane("""
+
 
 # Skip this test on Linux due to a known issue with Qt and keystrokes
 @pytest.mark.skipif(
@@ -1821,3 +1834,13 @@ def test_autocomplete_keystrokes(main):
     qtbot.keyClick(editor.completion_list, Qt.Key_Escape)
     qtbot.wait(250)
     assert not editor.completion_list.isVisible()
+
+    # Trigger autocomplete again
+    qtbot.keyClick(editor, Qt.Key_Slash, modifier=Qt.AltModifier)
+    qtbot.wait(250)
+
+    # Trigger a key press that is not handled by the completion list
+    qtbot.keyClick(editor.completion_list, Qt.Key_A)
+    qtbot.wait(250)
+    # Check that the completion list is still visible
+    assert editor.completion_list.isVisible()

@@ -91,6 +91,14 @@ class PreferencesWidget(QDialog):
                 # Fill the light/dark theme in the general settings
                 elif child.name() == "Light/Dark Theme":
                     child.setLimits(["Light", "Dark"])
+                # Fill the orbit method
+                elif child.name() == "Orbit Method":
+                    child.setLimits(
+                        [
+                            "Turntable",
+                            "Trackball",
+                        ]
+                    )
 
     @pyqtSlot(QTreeWidgetItem, QTreeWidgetItem)
     def handleSelection(self, item, *args):

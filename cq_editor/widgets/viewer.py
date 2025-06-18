@@ -85,6 +85,15 @@ class OCCViewer(QWidget, ComponentMixin):
                     "OverUnder",
                 ],
             },
+            {
+                "name": "Orbit Method",
+                "type": "list",
+                "value": "Turntable",
+                "values": [
+                    "Turntable",
+                    "Trackball",
+                ],
+            },
         ],
     )
     IMAGE_EXTENSIONS = "png"
@@ -135,6 +144,12 @@ class OCCViewer(QWidget, ComponentMixin):
         if not self.preferences["Use gradient"]:
             color2 = color1
         self.canvas.view.SetBgGradientColors(color1, color2, theToUpdate=True)
+
+        # Set the orbit method
+        orbit_method = self.preferences["Orbit Method"]
+        if not orbit_method:
+            orbit_method = "Trackball"
+        self.canvas.set_orbit_method(orbit_method)
 
         self.canvas.update()
 

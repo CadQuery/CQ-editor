@@ -2,13 +2,14 @@ from sys import platform
 
 
 from PyQt5.QtWidgets import QWidget, QApplication
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QEvent
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QPoint
 
 import OCP
 
 from OCP.Aspect import Aspect_DisplayConnection, Aspect_TypeOfTriedronPosition
 from OCP.OpenGl import OpenGl_GraphicDriver
 from OCP.V3d import V3d_Viewer
+from OCP.gp import gp_Trsf, gp_Ax1, gp_Dir
 from OCP.AIS import AIS_InteractiveContext, AIS_DisplayMode
 from OCP.Quantity import Quantity_Color
 
@@ -30,6 +31,15 @@ class OCCTWidget(QWidget):
 
         self._initialized = False
         self._needs_update = False
+        self._previous_pos = QPoint(
+            0, 0  # Keeps track of where the previous mouse position
+        )
+        self._rotate_step = (
+            0.008  # Controls the speed of rotation with the turntable orbit method
+        )
+
+        # Orbit method settings
+        self._orbit_method = "Turntable"
 
         # OCCT secific things
         self.display_connection = Aspect_DisplayConnection()
@@ -64,6 +74,20 @@ class OCCTWidget(QWidget):
         ctx.SetDisplayMode(AIS_DisplayMode.AIS_Shaded, True)
         ctx.DefaultDrawer().SetFaceBoundaryDraw(True)
 
+    def set_orbit_method(self, method):
+        """
+        Set the orbit method for the OCCT view.
+        """
+
+        # Keep track of which orbit method is used
+        if method == "Turntable":
+            self._orbit_method = "Turntable"
+            self.view.SetUp(0, 0, 1)
+        elif method == "Trackball":
+            self._orbit_method = "Trackball"
+        else:
+            raise ValueError(f"Unknown orbit method: {method}")
+
     def wheelEvent(self, event):
 
         delta = event.angleDelta().y()
@@ -80,31 +104,51 @@ class OCCTWidget(QWidget):
             self.pending_select = True
             self.left_press = pos
 
-            self.view.StartRotation(pos.x(), pos.y())
+            # We only start the rotation if the orbit method is set to Trackball
+            if self._orbit_method == "Trackball":
+                self.view.StartRotation(pos.x(), pos.y())
         elif event.button() == Qt.RightButton:
             self.view.StartZoomAtPoint(pos.x(), pos.y())
 
-        self.old_pos = pos
+        self._previous_pos = pos
 
     def mouseMoveEvent(self, event):
 
         pos = event.pos()
         x, y = pos.x(), pos.y()
 
+        # Check for mouse drag rotation
         if event.buttons() == Qt.LeftButton:
-            self.view.Rotation(x, y)
+            # Set the rotation differently based on the orbit method
+            if self._orbit_method == "Trackball":
+                self.view.Rotation(x, y)
+            elif self._orbit_method == "Turntable":
+                # Control the turntable rotation manually
+                delta_x, delta_y = (
+                    x - self._previous_pos.x(),
+                    y - self._previous_pos.y(),
+                )
+                cam = self.view.Camera()
+                z_rotation = gp_Trsf()
+                z_rotation.SetRotation(
+                    gp_Ax1(cam.Center(), gp_Dir(0, 0, 1)), -delta_x * self._rotate_step
+                )
+                cam.Transform(z_rotation)
+                self.view.Rotate(0, -delta_y * self._rotate_step, 0)
 
             # If the user moves the mouse at all, the selection will not happen
             if abs(x - self.left_press.x()) > 2 or abs(y - self.left_press.y()) > 2:
                 self.pending_select = False
 
         elif event.buttons() == Qt.MiddleButton:
-            self.view.Pan(x - self.old_pos.x(), self.old_pos.y() - y, theToStart=True)
+            self.view.Pan(
+                x - self._previous_pos.x(), self._previous_pos.y() - y, theToStart=True
+            )
 
         elif event.buttons() == Qt.RightButton:
-            self.view.ZoomAtPoint(self.old_pos.x(), y, x, self.old_pos.y())
+            self.view.ZoomAtPoint(self._previous_pos.x(), y, x, self._previous_pos.y())
 
-        self.old_pos = pos
+        self._previous_pos = pos
 
     def mouseReleaseEvent(self, event):
 

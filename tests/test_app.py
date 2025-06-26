@@ -1870,17 +1870,41 @@ def test_viewer_orbit_methods(main):
 
     # Simulate a drag to pan
     qtbot.mousePress(viewer, Qt.MiddleButton)
-    event = QMouseEvent(QEvent.MouseMove, QPoint(100, 100), Qt.RightButton, Qt.RightButton, Qt.NoModifier)
+    event = QMouseEvent(
+        QEvent.MouseMove,
+        QPoint(100, 100),
+        Qt.RightButton,
+        Qt.RightButton,
+        Qt.NoModifier,
+    )
     viewer.mouseMoveEvent(event)
-    event = QMouseEvent(QEvent.MouseMove, QPoint(300, 300), Qt.RightButton, Qt.RightButton, Qt.NoModifier)
+    event = QMouseEvent(
+        QEvent.MouseMove,
+        QPoint(300, 300),
+        Qt.RightButton,
+        Qt.RightButton,
+        Qt.NoModifier,
+    )
     viewer.mouseMoveEvent(event)
     qtbot.mouseRelease(viewer, Qt.MiddleButton)
 
     # Simulate drag to zoom
     qtbot.mousePress(viewer, Qt.RightButton)
-    event = QMouseEvent(QEvent.MouseMove, QPoint(100, 100), Qt.RightButton, Qt.RightButton, Qt.NoModifier)
+    event = QMouseEvent(
+        QEvent.MouseMove,
+        QPoint(100, 100),
+        Qt.RightButton,
+        Qt.RightButton,
+        Qt.NoModifier,
+    )
     viewer.mouseMoveEvent(event)
-    event = QMouseEvent(QEvent.MouseMove, QPoint(300, 300), Qt.RightButton, Qt.RightButton, Qt.NoModifier)
+    event = QMouseEvent(
+        QEvent.MouseMove,
+        QPoint(300, 300),
+        Qt.RightButton,
+        Qt.RightButton,
+        Qt.NoModifier,
+    )
     viewer.mouseMoveEvent(event)
     qtbot.mouseRelease(viewer, Qt.RightButton)
 

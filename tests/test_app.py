@@ -10,8 +10,9 @@ import pytest
 import pytestqt
 import cadquery as cq
 
-from PyQt5.QtCore import Qt, QSettings, QPoint
+from PyQt5.QtCore import Qt, QSettings, QPoint, QEvent
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtGui import QMouseEvent
 
 from cq_editor.__main__ import MainWindow
 from cq_editor.widgets.editor import Editor
@@ -1869,14 +1870,18 @@ def test_viewer_orbit_methods(main):
 
     # Simulate a drag to pan
     qtbot.mousePress(viewer, Qt.MiddleButton)
-    qtbot.mouseMove(viewer, QPoint(100, 100))
-    qtbot.mouseMove(viewer, QPoint(300, 300))
+    event = QMouseEvent(QEvent.MouseMove, QPoint(100, 100), Qt.RightButton, Qt.RightButton, Qt.NoModifier)
+    viewer.mouseMoveEvent(event)
+    event = QMouseEvent(QEvent.MouseMove, QPoint(300, 300), Qt.RightButton, Qt.RightButton, Qt.NoModifier)
+    viewer.mouseMoveEvent(event)
     qtbot.mouseRelease(viewer, Qt.MiddleButton)
 
     # Simulate drag to zoom
     qtbot.mousePress(viewer, Qt.RightButton)
-    qtbot.mouseMove(viewer, QPoint(100, 100))
-    qtbot.mouseMove(viewer, QPoint(300, 300))
+    event = QMouseEvent(QEvent.MouseMove, QPoint(100, 100), Qt.RightButton, Qt.RightButton, Qt.NoModifier)
+    viewer.mouseMoveEvent(event)
+    event = QMouseEvent(QEvent.MouseMove, QPoint(300, 300), Qt.RightButton, Qt.RightButton, Qt.NoModifier)
+    viewer.mouseMoveEvent(event)
     qtbot.mouseRelease(viewer, Qt.RightButton)
 
     assert True

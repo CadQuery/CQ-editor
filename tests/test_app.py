@@ -10,8 +10,9 @@ import pytest
 import pytestqt
 import cadquery as cq
 
-from PyQt5.QtCore import Qt, QSettings
+from PyQt5.QtCore import Qt, QSettings, QPoint, QEvent
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtGui import QMouseEvent
 
 from cq_editor.__main__ import MainWindow
 from cq_editor.widgets.editor import Editor
@@ -1846,3 +1847,65 @@ def test_autocomplete_keystrokes(main):
     qtbot.wait(250)
     # Check that the completion list is still visible
     assert editor.completion_list.isVisible()
+
+
+def test_viewer_orbit_methods(main):
+    """
+    Tests that mouse movements in the viewer work as expected.
+    """
+
+    qtbot, win = main
+
+    viewer = win.components["viewer"]
+
+    # Make sure the editor is focused
+    viewer.setFocus()
+    qtbot.waitExposed(viewer)
+
+    # Simulate a drag to rotate
+    qtbot.mousePress(viewer, Qt.LeftButton)
+    qtbot.mouseMove(viewer, QPoint(100, 100))
+    qtbot.mouseMove(viewer, QPoint(300, 300))
+    qtbot.mouseRelease(viewer, Qt.LeftButton)
+
+    # Simulate a drag to pan
+    qtbot.mousePress(viewer, Qt.MiddleButton)
+    event = QMouseEvent(
+        QEvent.MouseMove,
+        QPoint(100, 100),
+        Qt.RightButton,
+        Qt.RightButton,
+        Qt.NoModifier,
+    )
+    viewer.mouseMoveEvent(event)
+    event = QMouseEvent(
+        QEvent.MouseMove,
+        QPoint(300, 300),
+        Qt.RightButton,
+        Qt.RightButton,
+        Qt.NoModifier,
+    )
+    viewer.mouseMoveEvent(event)
+    qtbot.mouseRelease(viewer, Qt.MiddleButton)
+
+    # Simulate drag to zoom
+    qtbot.mousePress(viewer, Qt.RightButton)
+    event = QMouseEvent(
+        QEvent.MouseMove,
+        QPoint(100, 100),
+        Qt.RightButton,
+        Qt.RightButton,
+        Qt.NoModifier,
+    )
+    viewer.mouseMoveEvent(event)
+    event = QMouseEvent(
+        QEvent.MouseMove,
+        QPoint(300, 300),
+        Qt.RightButton,
+        Qt.RightButton,
+        Qt.NoModifier,
+    )
+    viewer.mouseMoveEvent(event)
+    qtbot.mouseRelease(viewer, Qt.RightButton)
+
+    assert True

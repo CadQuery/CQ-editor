@@ -119,6 +119,10 @@ class MainWindow(QMainWindow, MainMixin):
         self.restorePreferences()
         self.restoreWindow()
 
+        # Handle the event of the editor being hidden or shown
+        self.editor_dock = self.docks["editor"]
+        self.editor_dock.visibilityChanged.connect(self.handleEditorVisiblityChange)
+
         # Let the user know when the file has been modified
         self.components["editor"].document().modificationChanged.connect(
             self.update_window_title
@@ -128,6 +132,13 @@ class MainWindow(QMainWindow, MainMixin):
             self.components["editor"].load_from_file(filename)
 
         self.restoreComponentState()
+
+    def handleEditorVisiblityChange(self, visible):
+        """
+        Does the work required to enable/disable menu items when the Editor visibility is changed.
+        """
+        self.toggle_comment_action.setEnabled(visible)
+        self.autocomplete_action.setEnabled(visible)
 
     def preferencesChanged(self, param, changes):
         """
@@ -292,25 +303,25 @@ class MainWindow(QMainWindow, MainMixin):
         for t in self.findChildren(QToolBar):
             menu_view.addAction(t.toggleViewAction())
 
-        menu_edit.addAction(
-            QAction(
-                icon("toggle-comment"),
-                "Toggle Comment",
-                self,
-                shortcut="ctrl+/",
-                triggered=self.components["editor"].toggle_comment,
-            )
+        self.toggle_comment_action = QAction(
+            icon("toggle-comment"),
+            "Toggle Comment",
+            self,
+            shortcut="ctrl+/",
+            triggered=self.components["editor"].toggle_comment,
         )
+        menu_edit.addAction(self.toggle_comment_action)
+
         # Add the menu action to toggle auto-completion
-        menu_edit.addAction(
-            QAction(
-                icon("search"),
-                "Auto-Complete",
-                self,
-                shortcut="alt+/",
-                triggered=self.components["editor"]._trigger_autocomplete,
-            )
+        self.autocomplete_action = QAction(
+            icon("search"),
+            "Auto-Complete",
+            self,
+            shortcut="alt+/",
+            triggered=self.components["editor"]._trigger_autocomplete,
         )
+        menu_edit.addAction(self.autocomplete_action)
+
         menu_edit.addAction(
             QAction(
                 icon("preferences"),

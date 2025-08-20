@@ -122,6 +122,7 @@ class MainWindow(QMainWindow, MainMixin):
         # Handle the event of the editor being hidden or shown
         self.editor_dock = self.docks["editor"]
         self.editor_dock.visibilityChanged.connect(self.handleEditorVisiblityChange)
+        self.handleEditorVisiblityChange(not self.editor_dock.isHidden())
 
         # Let the user know when the file has been modified
         self.components["editor"].document().modificationChanged.connect(

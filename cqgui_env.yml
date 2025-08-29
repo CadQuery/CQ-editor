@@ -4,11 +4,11 @@ channels:
   - conda-forge
 dependencies:
   - pyqtgraph
-  - python=3.10
+  - python=3.11
   - spyder >=6,<7
   - path
   - logbook
   - requests
-  - cadquery
+  - cadquery=master
   - qtconsole >=5.6.1,<5.7.0
   - qtawesome>=1.4.0

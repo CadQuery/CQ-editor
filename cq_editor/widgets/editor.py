@@ -124,11 +124,6 @@ class Editor(CodeEditor, ComponentMixin):
 
         menu = self.menu
 
-        menu.removeAction(self.run_cell_action)
-        menu.removeAction(self.run_cell_and_advance_action)
-        menu.removeAction(self.run_selection_action)
-        menu.removeAction(self.re_run_last_cell_action)
-
     def updatePreferences(self, *args):
 
         self.set_color_scheme(self.preferences["Color scheme"])

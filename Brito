@@ -1,0 +1,26 @@
+import cadquery as cq
+import math
+
+# Medidas principais
+outer_diameter = 35
+wall_thickness = 2
+inner_diameter = outer_diameter - 2 * wall_thickness
+
+# Comprimentos
+L1 = 100
+L2 = 150
+L3 = 80
+angle = 45  # graus
+
+# Tubo 1 - reto
+tubo1 = (
+    cq.Workplane("XY")
+    .circle(outer_diameter / 2)
+    .circle(inner_diameter / 2)
+    .extrude(L1)
+)
+
+# Tubo 2 - 45 graus
+tubo2 = (
+    cq.Workplane("XY")
+    .workplane(offset=L1)

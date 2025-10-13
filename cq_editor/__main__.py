@@ -18,9 +18,15 @@ def main():
 
     args = parser.parse_args(app.arguments()[1:])
 
-    win = MainWindow(filename=args.filename if args.filename else None)
-    win.show()
-    sys.exit(app.exec_())
+    # sys.exit(app.exec_())
+
+    try:
+        win = MainWindow(filename=args.filename if args.filename else None)
+        win.show()
+        app.exec_()
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
 
 
 if __name__ == "__main__":

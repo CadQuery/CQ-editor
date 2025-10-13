@@ -402,9 +402,9 @@ class Debugger(QObject, ComponentMixin):
             if (
                 self.state in (DbgState.STEP, DbgState.STEP_IN)
                 and frame is self._frames[-1]
-            ) or (lineno in self.breakpoints):
+            ) or (lineno in self.get_breakpoints()):
 
-                if lineno in self.breakpoints:
+                if lineno in self.get_breakpoints():
                     self._frames.append(frame)
 
                 self.sigLineChanged.emit(lineno)

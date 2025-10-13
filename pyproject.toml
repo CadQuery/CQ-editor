@@ -8,7 +8,7 @@ version = "0.6.dev0"
 dependencies = [
   "cadquery@git+https://github.com/CadQuery/cadquery.git",
   "pyqtgraph",
-  "spyder>=6,<7",
+  "spyder=5.5.6",
   "path",
   "logbook",
   "requests",

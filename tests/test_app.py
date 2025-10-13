@@ -401,7 +401,7 @@ def test_debug(main, mocker):
     assert number_visible_items(viewer) == 3
 
     # check breakpoints
-    assert debugger.breakpoints == []
+    assert debugger.get_breakpoints() == []
 
     # check _frames
     assert debugger._frames == []
@@ -595,7 +595,7 @@ def test_traceback(main):
     patch_debugger(debugger, ev)
 
     debugger.debug(True)
-    print(traceback_view.current_exception.text())
+
     assert "NameError" in traceback_view.current_exception.text()
     assert hasattr(sys, "last_traceback")
     assert traceback_view.tree.root.childCount() == 1

@@ -1,5 +1,5 @@
 import os
-import spyder.utils.encoding
+# import spyder.utils.encoding
 from modulefinder import ModuleFinder
 
 from .code_editor import CodeEditor
@@ -54,8 +54,8 @@ class Editor(CodeEditor, ComponentMixin):
             {
                 "name": "Color scheme",
                 "type": "list",
-                "values": ["Spyder", "Monokai", "Zenburn"],
-                "value": "Spyder",
+                "values": ["Light", "Dark"],
+                "value": "Light",
             },
             {"name": "Maximum line length", "type": "int", "value": 88},
         ],

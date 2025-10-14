@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtGui import QPalette, QColor
 
 
 DARK_BLUE = QtGui.QColor(118, 150, 185)
@@ -199,10 +200,10 @@ class CodeEditor(CodeTextEdit):
 
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
-        self.cursorPositionChanged.connect(self.highlight_current_line)
+        # self.cursorPositionChanged.connect(self.highlight_current_line)
 
         self.update_line_number_area_width(0)
-        self.highlight_current_line()
+        # self.highlight_current_line()
 
         self.menu = QtWidgets.QMenu()
 
@@ -220,30 +221,73 @@ class CodeEditor(CodeTextEdit):
         font=QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont),
         language="Python",
         filename="",):
-        pass
+        print("setup_editor called")
 
     def set_color_scheme(self, color_scheme):
-        # print(color_scheme)
-        pass
+        """
+        Sets the color theme of the editor widget.
+        :param str color_scheme: Name of the color theme to be set
+        """
+
+        if color_scheme == "Light":
+            self.setStyleSheet("")
+            self.setPalette(QtWidgets.QApplication.style().standardPalette())
+        else:
+            # Now use a palette to switch to dark colors:
+            white_color = QColor(255, 255, 255)
+            black_color = QColor(0, 0, 0)
+            red_color = QColor(255, 0, 0)
+            palette = QPalette()
+            palette.setColor(QPalette.Window, QColor(53, 53, 53))
+            palette.setColor(QPalette.WindowText, white_color)
+            palette.setColor(QPalette.Base, QColor(25, 25, 25))
+            palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+            palette.setColor(QPalette.ToolTipBase, black_color)
+            palette.setColor(QPalette.ToolTipText, white_color)
+            palette.setColor(QPalette.Text, white_color)
+            palette.setColor(QPalette.Button, QColor(53, 53, 53))
+            palette.setColor(QPalette.ButtonText, white_color)
+            palette.setColor(QPalette.BrightText, red_color)
+            palette.setColor(QPalette.Link, QColor(42, 130, 218))
+            palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+            palette.setColor(QPalette.HighlightedText, black_color)
+            self.setPalette(palette)
 
     def set_font(self, new_font):
         self.font = new_font
 
     def toggle_wrap_mode(self, wrap_mode):
-        # print(wrap_mode)
-        pass
+        print("toggle_wrap_mode called")
 
     def go_to_line(self, line_number):
-        # print(line_number)
-        pass
+        print("go_to_line called")
 
     def set_text(self, new_text):
+        """
+        Sets the text content of the editor.
+        :param str new_text: Text to be set in the editor.
+        """
         self.setPlainText(new_text)
 
     def set_text_from_file(self, file_name):
+        """
+        Allows the editor text to be set from a file.
+        :param str file_name: Full path of the file to be loaded into the editor.
+        """
+
         self._filename = file_name
+
         # Load the text into the text field
-        pass
+        with open(file_name, 'r', encoding="utf-8") as file:
+            file_content = file.read()
+
+            self.setPlainText(file_content)
+
+    def get_text_with_eol(self):
+        """
+        Returns a string representing the full text in the editor.
+        """
+        return self.toPlainText()
 
     def line_number_area_width(self):
         digits = 1
@@ -278,7 +322,7 @@ class CodeEditor(CodeTextEdit):
                     painter.setPen(DARK_BLUE)
                     width = self.line_number_area.width() - 10
                     height = self.fontMetrics().height()
-                    painter.drawText(0, int(top), width, height, QtCore.Qt.AlignCenter, number)
+                    painter.drawText(0, int(top), width, height, QtCore.Qt.AlignRight, number)
 
                 block = block.next()
                 top = bottom

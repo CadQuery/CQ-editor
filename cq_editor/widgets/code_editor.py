@@ -69,8 +69,7 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
         :param string: str. string pattern to remove
         :param line_number: int. line number
         """
-        cursor = QtGui.QTextCursor(
-            self.document().findBlockByLineNumber(line_number))
+        cursor = QtGui.QTextCursor(self.document().findBlockByLineNumber(line_number))
         cursor.select(QtGui.QTextCursor.LineUnderCursor)
         text = cursor.selectedText()
         if text.startswith(string):
@@ -84,8 +83,7 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
         :param string: str. string pattern to insert
         :param line_number: int. line number
         """
-        cursor = QtGui.QTextCursor(
-            self.document().findBlockByLineNumber(line_number))
+        cursor = QtGui.QTextCursor(self.document().findBlockByLineNumber(line_number))
         self.setTextCursor(cursor)
         self.textCursor().insertText(string)
 
@@ -98,15 +96,14 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
         start_line, end_line = self.get_selection_range()
 
         # indent event
-        if event.key() == QtCore.Qt.Key_Tab and \
-                (end_line - start_line):
-            lines = range(start_line, end_line+1)
+        if event.key() == QtCore.Qt.Key_Tab and (end_line - start_line):
+            lines = range(start_line, end_line + 1)
             self.indented.emit(lines)
             return
 
         # un-indent event
         elif event.key() == QtCore.Qt.Key_Backtab:
-            lines = range(start_line, end_line+1)
+            lines = range(start_line, end_line + 1)
             self.unindented.emit(lines)
             return
 
@@ -141,7 +138,7 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
         :param lines: [int]. line numbers
         """
         for line in lines:
-            self.insert_line_start('\t', line)
+            self.insert_line_start("\t", line)
 
     def undo_indent(self, lines):
         """
@@ -150,7 +147,7 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
         :param lines: [int]. line numbers
         """
         for line in lines:
-            self.remove_line_start('\t', line)
+            self.remove_line_start("\t", line)
 
     def do_comment(self, lines):
         """
@@ -197,7 +194,7 @@ class CodeEditor(CodeTextEdit):
         self.setFont(self.font)
 
         self.tab_size = 4
-        self.setTabStopWidth(self.tab_size * self.fontMetrics().width(' '))
+        self.setTabStopWidth(self.tab_size * self.fontMetrics().width(" "))
 
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
@@ -221,7 +218,8 @@ class CodeEditor(CodeTextEdit):
         show_blanks=True,
         font=QtGui.QFontDatabase.systemFont(QtGui.QFontDatabase.FixedFont),
         language="Python",
-        filename="",):
+        filename="",
+    ):
         print("setup_editor called")
 
     def set_color_scheme(self, color_scheme):
@@ -282,7 +280,7 @@ class CodeEditor(CodeTextEdit):
         self._filename = file_name
 
         # Load the text into the text field
-        with open(file_name, 'r', encoding="utf-8") as file:
+        with open(file_name, "r", encoding="utf-8") as file:
             file_content = file.read()
 
             self.setPlainText(file_content)
@@ -300,7 +298,7 @@ class CodeEditor(CodeTextEdit):
             max_num *= 0.1
             digits += 1
 
-        space = 30 + self.fontMetrics().width('9') * digits
+        space = 30 + self.fontMetrics().width("9") * digits
         return space
 
     def resizeEvent(self, e):
@@ -326,7 +324,9 @@ class CodeEditor(CodeTextEdit):
                     painter.setPen(DARK_BLUE)
                     width = self.line_number_area.width() - 10
                     height = self.fontMetrics().height()
-                    painter.drawText(0, int(top), width, height, QtCore.Qt.AlignRight, number)
+                    painter.drawText(
+                        0, int(top), width, height, QtCore.Qt.AlignRight, number
+                    )
 
                 block = block.next()
                 top = bottom

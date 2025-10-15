@@ -1,9 +1,11 @@
 import os
+
 # import spyder.utils.encoding
 from modulefinder import ModuleFinder
 
 from .code_editor import CodeEditor
 from .pyhighlight import PythonHighlighter
+
 # from spyder.plugins.editor.widgets.codeeditor import CodeEditor
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer, Qt, QEvent
 from PyQt5.QtWidgets import (

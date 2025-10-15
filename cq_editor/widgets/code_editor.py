@@ -120,7 +120,8 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
             self.process_multi_keys(self.pressed_keys)
 
         self.is_first = False
-        self.pressed_keys.pop()
+        if len(self.pressed_keys) > 0:
+            self.pressed_keys.pop()
         super(CodeTextEdit, self).keyReleaseEvent(event)
 
     def process_multi_keys(self, keys):
@@ -261,6 +262,9 @@ class CodeEditor(CodeTextEdit):
 
     def go_to_line(self, line_number):
         print("go_to_line called")
+
+    def toggle_comment(self):
+        print("toggle_comment called")
 
     def set_text(self, new_text):
         """

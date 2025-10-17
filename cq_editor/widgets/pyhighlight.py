@@ -21,14 +21,14 @@ def format(color, style=""):
 # Syntax styles that can be shared by all languages
 STYLES = {
     "keyword": format("blue"),
-    "operator": format("red"),
+    "operator": format("gray"),
     "brace": format("darkGray"),
     "defclass": format("black", "bold"),
-    "string": format("magenta"),
+    "string": format("orange"),
     "string2": format("darkMagenta"),
     "comment": format("darkGreen", "italic"),
     "self": format("black", "italic"),
-    "numbers": format("brown"),
+    "numbers": format("magenta"),
 }
 
 

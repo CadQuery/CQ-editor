@@ -1,3 +1,4 @@
+import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPalette, QColor
 
@@ -23,16 +24,12 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
 
     indented = QtCore.pyqtSignal(object)
     unindented = QtCore.pyqtSignal(object)
-    commented = QtCore.pyqtSignal(object)
-    uncommented = QtCore.pyqtSignal(object)
 
     def __init__(self):
         super(CodeTextEdit, self).__init__()
 
         self.indented.connect(self.do_indent)
         self.unindented.connect(self.undo_indent)
-        self.commented.connect(self.do_comment)
-        self.uncommented.connect(self.undo_comment)
 
     def clear_selection(self):
         """
@@ -109,28 +106,6 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
 
         super(CodeTextEdit, self).keyPressEvent(event)
 
-    def keyReleaseEvent(self, event):
-        """
-        Extend the key release event to catch key combos
-        """
-        if self.is_first:
-            self.process_multi_keys(self.pressed_keys)
-
-        self.is_first = False
-        if len(self.pressed_keys) > 0:
-            self.pressed_keys.pop()
-        super(CodeTextEdit, self).keyReleaseEvent(event)
-
-    def process_multi_keys(self, keys):
-        """
-        Placeholder for processing multiple key combo events
-
-        :param keys: [QtCore.Qt.Key]. key combos
-        """
-        # toggle comments indent event
-        if keys == [QtCore.Qt.Key_Control, QtCore.Qt.Key_Slash]:
-            pass
-
     def do_indent(self, lines):
         """
         Indent lines
@@ -148,24 +123,6 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
         """
         for line in lines:
             self.remove_line_start("\t", line)
-
-    def do_comment(self, lines):
-        """
-        Comment out lines
-
-        :param lines: [int]. line numbers
-        """
-        for line in lines:
-            pass
-
-    def undo_comment(self, lines):
-        """
-        Un-comment lines
-
-        :param lines: [int]. line numbers
-        """
-        for line in lines:
-            pass
 
 
 class EdgeLine(QtWidgets.QWidget):
@@ -256,13 +213,109 @@ class CodeEditor(CodeTextEdit):
         self.font = new_font
 
     def toggle_wrap_mode(self, wrap_mode):
-        print("toggle_wrap_mode called")
+        self.setLineWrapMode(wrap_mode)
 
     def go_to_line(self, line_number):
-        print("go_to_line called")
+        """
+        Set the text cursor at a specific line number.
+        """
+
+        cursor = self.textCursor()
+
+        # Line numbers start at 0
+        block = self.document().findBlockByNumber(line_number - 1)
+        cursor.setPosition(block.position())
+
+    def toggle_comment_single_line(self, line_text, cursor, pos):
+        """
+        Adds the comment character (#) and a space at the beginning of a line,
+        or removes them, if needed.
+        """
+
+        # Move right by pos characters to the position before text starts
+        cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.MoveAnchor, pos)
+
+        # Toggle the comment character on/off
+        if line_text[pos] != "#":
+            cursor.insertText("# ")
+        else:
+            # Remove the comment character
+            cursor.movePosition(
+                QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 1
+            )
+            cursor.removeSelectedText()
+
+            # Also remove an extra space if there is one
+            if line_text[pos + 1] == " ":
+                cursor.movePosition(
+                    QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 1
+                )
+                cursor.removeSelectedText()
 
     def toggle_comment(self):
-        print("toggle_comment called")
+        """
+        High level method to comment or uncomment a single line,
+        or block of lines.
+        """
+
+        # See if there is a selection range
+        sel_range = self.get_selection_range()
+        if sel_range[0] == 0 and sel_range[1] == 0:
+            # Get the text of the line
+            cursor = self.textCursor()
+            cursor.movePosition(QtGui.QTextCursor.StartOfLine)
+            line_text = cursor.block().text()
+
+            # Skip blank lines
+            if line_text == "":
+                return
+
+            # Find the first non-whitespace character position
+            pos = 0
+            while pos < len(line_text) and line_text[pos].isspace():
+                pos += 1
+
+            # Toggle the comment
+            self.toggle_comment_single_line(line_text, cursor, pos)
+        else:
+            # Make the selected line numbers 1-based
+            sel_start = sel_range[0]
+            sel_end = sel_range[1]
+
+            cursor = self.textCursor()
+
+            # Select the text block
+            block = self.document().findBlockByNumber(sel_start)
+            cursor.setPosition(block.position())
+            last_block = self.document().findBlockByNumber(sel_end)
+            end_pos = last_block.position() + last_block.length() - 1
+            cursor.setPosition(end_pos, QtGui.QTextCursor.KeepAnchor)
+
+            # Find the left-most position to put the comment at
+            leftmost_pos = 99999
+            selected_text = cursor.selectedText()
+            for line_text in selected_text.split(os.linesep):
+                # Skip blank lines
+                if line_text == "":
+                    return
+
+                # Find the first non-whitespace character position
+                pos = 0
+                while pos < len(line_text) and line_text[pos].isspace():
+                    pos += 1
+
+                # Save the left-most position
+                if pos < leftmost_pos:
+                    leftmost_pos = pos
+
+            # Step through all of the selected lines and toggle their comments
+            for i in range(sel_start, sel_end + 1):
+                # Set the cursor to the current line number
+                block = self.document().findBlockByNumber(i)
+                cursor.setPosition(block.position())
+
+                # Toggle the comment for the current line
+                self.toggle_comment_single_line(line_text, cursor, pos)
 
     def set_text(self, new_text):
         """

@@ -32,6 +32,7 @@ classifiers = [
 
 [project.scripts]
 CQ-editor = "cq_editor.cqe_run:main"
+cq-editor = "cq_editor.cqe_run:main"
 
 [project.optional-dependencies]
 test = [

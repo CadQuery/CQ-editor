@@ -226,30 +226,31 @@ class CodeEditor(CodeTextEdit):
         block = self.document().findBlockByNumber(line_number - 1)
         cursor.setPosition(block.position())
 
-    def toggle_comment_single_line(self, line_text, cursor, pos):
+    def toggle_comment_single_line(self, cursor, left_pos):
         """
         Adds the comment character (#) and a space at the beginning of a line,
         or removes them, if needed.
         """
 
         # Move right by pos characters to the position before text starts
-        cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.MoveAnchor, pos)
+        cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.MoveAnchor, left_pos)
+        cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 1)
 
         # Toggle the comment character on/off
-        if line_text[pos] != "#":
+        if cursor.selectedText() != "#":
+            cursor.movePosition(QtGui.QTextCursor.Left, QtGui.QTextCursor.MoveAnchor, 1)
             cursor.insertText("# ")
         else:
             # Remove the comment character
+            if cursor.selectedText() == "#":
+                cursor.removeSelectedText()
+
             cursor.movePosition(
                 QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 1
             )
-            cursor.removeSelectedText()
 
             # Also remove an extra space if there is one
-            if line_text[pos + 1] == " ":
-                cursor.movePosition(
-                    QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 1
-                )
+            if cursor.selectedText() == " ":
                 cursor.removeSelectedText()
 
     def toggle_comment(self):
@@ -275,8 +276,22 @@ class CodeEditor(CodeTextEdit):
             while pos < len(line_text) and line_text[pos].isspace():
                 pos += 1
 
-            # Toggle the comment
-            self.toggle_comment_single_line(line_text, cursor, pos)
+            # Move right by pos characters to the position before text starts
+            cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.MoveAnchor, pos)
+            cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 1)
+
+            # If we have a single line comment, remove it
+            if cursor.selectedText() == "#":
+                cursor.removeSelectedText()
+
+                # Remove any whitespace after the comment character
+                cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 1)
+                if cursor.selectedText() == " ":
+                    cursor.removeSelectedText()
+            else:
+                # Insert the comment characters
+                cursor.movePosition(QtGui.QTextCursor.Left, QtGui.QTextCursor.MoveAnchor, 1)
+                cursor.insertText("# ")
         else:
             # Make the selected line numbers 1-based
             sel_start = sel_range[0]
@@ -294,6 +309,8 @@ class CodeEditor(CodeTextEdit):
             # Find the left-most position to put the comment at
             leftmost_pos = 99999
             selected_text = cursor.selectedText()
+            comment_line_found = False  # When commenting blocks, if comments and non-comment lines are mixed, comment everything
+            non_comment_line_found = False  # When commenting blocks, if comments and non-comment lines are mixed, comment everything
             for line_text in selected_text.split(os.linesep):
                 # Skip blank lines
                 if line_text == "":
@@ -308,14 +325,43 @@ class CodeEditor(CodeTextEdit):
                 if pos < leftmost_pos:
                     leftmost_pos = pos
 
+                # Helps track whether or not the block should be commented or uncommented
+                if line_text.lstrip()[0] == "#" and line_text != "":
+                    comment_line_found = True
+                elif line_text.lstrip()[0] != "#" and line_text != "":
+                    non_comment_line_found = True
+
             # Step through all of the selected lines and toggle their comments
             for i in range(sel_start, sel_end + 1):
                 # Set the cursor to the current line number
                 block = self.document().findBlockByNumber(i)
                 cursor.setPosition(block.position())
 
+                # See if we need to comment the whole block
+                if comment_line_found and non_comment_line_found:
+                    # Insert the comment characters
+                    cursor.movePosition(QtGui.QTextCursor.Left, QtGui.QTextCursor.MoveAnchor, 1)
+                    cursor.insertText("# ")
+                else:
+                    # Move right by pos characters to the position before text starts
+                    cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.MoveAnchor, leftmost_pos)
+                    cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 1)
+
+                    # If the line starts with a hash, uncomment it. Otherwise comment it
+                    if cursor.selectedText() == "#":
+                        cursor.removeSelectedText()
+
+                        # Remove any whitespace after the comment character
+                        cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 1)
+                        if cursor.selectedText() == " ":
+                            cursor.removeSelectedText()
+                    else:
+                        # Insert the comment characters
+                        cursor.movePosition(QtGui.QTextCursor.Left, QtGui.QTextCursor.MoveAnchor, 1)
+                        cursor.insertText("# ")
+
                 # Toggle the comment for the current line
-                self.toggle_comment_single_line(line_text, cursor, pos)
+                # self.toggle_comment_single_line(cursor, leftmost_pos)
 
     def set_text(self, new_text):
         """

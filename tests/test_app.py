@@ -1332,7 +1332,8 @@ def test_render_shape_list(main):
 
 code_show_assy = """import cadquery as cq
 result1 = cq.Workplane("XY" ).box(3, 3, 0.5)
-assy = cq.Assembly(result1)
+assy = cq.Assembly()
+assy.add(result1)
 
 show_object(assy)
 """
@@ -1369,7 +1370,8 @@ from cadquery.occ_impl.assembly import toCAF
 import OCP
 
 result1 = cq.Workplane("XY" ).box(3, 3, 0.5)
-assy = cq.Assembly(result1)
+assy = cq.Assembly()
+assy.add(result1)
 
 lab, doc = toCAF(assy)
 ais = OCP.XCAFPrs.XCAFPrs_AISObject(lab)

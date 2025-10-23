@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import QAction, QTableView
 from logbook import info
 from path import Path
 from pyqtgraph.parametertree import Parameter
-from spyder.utils.icon_manager import icon
+from ..icons import icon
 from random import randrange as rrr, seed
 
 from ..cq_utils import find_cq_objects, reload_cq

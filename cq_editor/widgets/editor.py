@@ -6,7 +6,6 @@ from modulefinder import ModuleFinder
 from .code_editor import CodeEditor
 from .pyhighlight import PythonHighlighter
 
-# from spyder.plugins.editor.widgets.codeeditor import CodeEditor
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer, Qt, QEvent
 from PyQt5.QtWidgets import (
     QAction,
@@ -65,7 +64,7 @@ class Editor(CodeEditor, ComponentMixin):
 
     EXTENSIONS = "py"
 
-    # Tracks whether or not the document was saved from the Spyder editor vs an external editor
+    # Tracks whether or not the document was saved from the internal editor vs an external editor
     was_modified_by_self = False
 
     # Helps display the completion list for the editor

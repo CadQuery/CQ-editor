@@ -215,6 +215,15 @@ class CodeEditor(CodeTextEdit):
     def toggle_wrap_mode(self, wrap_mode):
         self.setLineWrapMode(wrap_mode)
 
+    def set_cursor_position(self, position):
+        """
+        Allows the caller to set the position of the cursor within
+        the editor text.
+        """
+
+        cursor = self.textCursor()
+        cursor.setPosition(position)
+
     def go_to_line(self, line_number):
         """
         Set the text cursor at a specific line number.
@@ -385,6 +394,7 @@ class CodeEditor(CodeTextEdit):
         :param str new_text: Text to be set in the editor.
         """
         self.setPlainText(new_text)
+        self.document().setModified(True)
 
     def set_text_from_file(self, file_name):
         """

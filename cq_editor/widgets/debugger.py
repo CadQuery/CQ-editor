@@ -199,6 +199,9 @@ class Debugger(QObject, ComponentMixin):
 
         return self.parent().components["editor"].debugger.get_breakpoints()
 
+    def set_breakpoints(self, breakpoints):
+        return self.parent().components["editor"].debugger.set_breakpoints(breakpoints)
+
     def compile_code(self, cq_script, cq_script_path=None):
 
         try:
@@ -402,9 +405,9 @@ class Debugger(QObject, ComponentMixin):
             if (
                 self.state in (DbgState.STEP, DbgState.STEP_IN)
                 and frame is self._frames[-1]
-            ) or (lineno in self.breakpoints):
+            ) or (lineno in self.get_breakpoints()):
 
-                if lineno in self.breakpoints:
+                if lineno in self.get_breakpoints():
                     self._frames.append(frame)
 
                 self.sigLineChanged.emit(lineno)

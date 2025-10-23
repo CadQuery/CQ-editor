@@ -30,6 +30,18 @@ from ..utils import get_save_filename, get_open_filename, confirm
 from ..icons import icon
 
 
+class EditorDebugger:
+    def __init__(self):
+        self.breakpoints = []
+
+    def get_breakpoints(self):
+        return self.breakpoints
+
+    def set_breakpoints(self, breakpoints):
+        self.breakpoints = breakpoints
+        return True
+
+
 class Editor(CodeEditor, ComponentMixin):
 
     name = "Code Editor"
@@ -73,6 +85,8 @@ class Editor(CodeEditor, ComponentMixin):
     def __init__(self, parent=None):
 
         self._watched_file = None
+
+        self.debugger = EditorDebugger()
 
         super(Editor, self).__init__(parent)
         ComponentMixin.__init__(self)

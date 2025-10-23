@@ -6,9 +6,9 @@ dependencies:
   - pyqt=5
   - pyqtgraph
   - python=3.10
-  - spyder >=5.5.6,<6
+  - qtawesome=1.4.0
   - path
   - logbook
   - requests
   - cadquery
-  - qtconsole >=5.5.1,<5.6.0
+  - qtconsole >=5.5.1,<5.7.0

@@ -1,8 +1,11 @@
 import os
-import spyder.utils.encoding
+
+# import spyder.utils.encoding
 from modulefinder import ModuleFinder
 
-from spyder.plugins.editor.widgets.codeeditor import CodeEditor
+from .code_editor import CodeEditor
+from .pyhighlight import PythonHighlighter
+
 from PyQt5.QtCore import pyqtSignal, QFileSystemWatcher, QTimer, Qt, QEvent
 from PyQt5.QtWidgets import (
     QAction,
@@ -25,6 +28,18 @@ from ..mixins import ComponentMixin
 from ..utils import get_save_filename, get_open_filename, confirm
 
 from ..icons import icon
+
+
+class EditorDebugger:
+    def __init__(self):
+        self.breakpoints = []
+
+    def get_breakpoints(self):
+        return self.breakpoints
+
+    def set_breakpoints(self, breakpoints):
+        self.breakpoints = breakpoints
+        return True
 
 
 class Editor(CodeEditor, ComponentMixin):
@@ -52,8 +67,8 @@ class Editor(CodeEditor, ComponentMixin):
             {
                 "name": "Color scheme",
                 "type": "list",
-                "values": ["Spyder", "Monokai", "Zenburn"],
-                "value": "Spyder",
+                "values": ["Light", "Dark"],
+                "value": "Light",
             },
             {"name": "Maximum line length", "type": "int", "value": 88},
         ],
@@ -61,7 +76,7 @@ class Editor(CodeEditor, ComponentMixin):
 
     EXTENSIONS = "py"
 
-    # Tracks whether or not the document was saved from the Spyder editor vs an external editor
+    # Tracks whether or not the document was saved from the internal editor vs an external editor
     was_modified_by_self = False
 
     # Helps display the completion list for the editor
@@ -71,11 +86,13 @@ class Editor(CodeEditor, ComponentMixin):
 
         self._watched_file = None
 
+        self.debugger = EditorDebugger()
+
         super(Editor, self).__init__(parent)
         ComponentMixin.__init__(self)
 
         self.setup_editor(
-            linenumbers=True,
+            line_numbers=True,
             markers=True,
             edge_line=self.preferences["Maximum line length"],
             tab_mode=False,
@@ -145,6 +162,8 @@ class Editor(CodeEditor, ComponentMixin):
         # Ensure that when the escape key is pressed with the completion_list in focus, it will be hidden
         self.completion_list.installEventFilter(self)
 
+        self.highlighter = PythonHighlighter(self.document())
+
     def eventFilter(self, watched, event):
         """
         Allows us to do things like escape and tab key press for the completion list.
@@ -177,16 +196,16 @@ class Editor(CodeEditor, ComponentMixin):
 
         menu = self.menu
 
-        menu.removeAction(self.run_cell_action)
-        menu.removeAction(self.run_cell_and_advance_action)
-        menu.removeAction(self.run_selection_action)
-        menu.removeAction(self.re_run_last_cell_action)
+        # menu.removeAction(self.run_cell_action)
+        # menu.removeAction(self.run_cell_and_advance_action)
+        # menu.removeAction(self.run_selection_action)
+        # menu.removeAction(self.re_run_last_cell_action)
 
     def updatePreferences(self, *args):
 
         self.set_color_scheme(self.preferences["Color scheme"])
 
-        font = self.font()
+        font = self.font
         font.setPointSize(self.preferences["Font size"])
         self.set_font(font)
 

@@ -402,7 +402,7 @@ def test_debug(main, mocker):
     assert number_visible_items(viewer) == 3
 
     # check breakpoints
-    assert debugger.breakpoints == []
+    assert debugger.set_breakpoints([])
 
     # check _frames
     assert debugger._frames == []

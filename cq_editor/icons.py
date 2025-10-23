@@ -76,6 +76,8 @@ _icons_specs = {
     "arrow-step-over": (("fa5s.step-forward",), {}),
     "arrow-step-in": (("fa5s.angle-down",), {}),
     "arrow-continue": (("fa5s.arrow-right",), {}),
+    "clear": (("fa5s.eraser",), {}),
+    "clear-2": (("fa5s.broom",), {}),
 }
 
 

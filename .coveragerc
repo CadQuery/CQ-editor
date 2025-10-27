@@ -2,6 +2,8 @@
 timid = True
 branch = True
 source = src
+omit =
+    cq_editor/__main__.py
 
 [report]
 exclude_lines =

@@ -93,11 +93,14 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
         start_line, end_line = self.get_selection_range()
 
         # indent event
-        if event.key() == QtCore.Qt.Key_Tab and (end_line - start_line):
+        if event.key() == QtCore.Qt.Key_Tab:
             lines = range(start_line, end_line + 1)
             self.indented.emit(lines)
             return
-
+        elif event.key() == QtCore.Qt.Key_Tab and (end_line - start_line):
+            lines = range(start_line, end_line + 1)
+            self.indented.emit(lines)
+            return
         # un-indent event
         elif event.key() == QtCore.Qt.Key_Backtab:
             lines = range(start_line, end_line + 1)
@@ -113,7 +116,7 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
         :param lines: [int]. line numbers
         """
         for line in lines:
-            self.insert_line_start("\t", line)
+            self.insert_line_start("    ", line)
 
     def undo_indent(self, lines):
         """
@@ -122,7 +125,13 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
         :param lines: [int]. line numbers
         """
         for line in lines:
-            self.remove_line_start("\t", line)
+            self.remove_line_start("    ", line)
+
+        # Set the cursor to the beginning of the last line
+        cursor = self.textCursor()
+        cursor.setPosition(cursor.selectionEnd())  # Move to end of selection
+        cursor.movePosition(QtGui.QTextCursor.StartOfLine)  # Jump to start of line
+        self.setTextCursor(cursor)
 
 
 class EdgeLine(QtWidgets.QWidget):

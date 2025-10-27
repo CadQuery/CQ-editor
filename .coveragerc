@@ -4,6 +4,7 @@ branch = True
 source = src
 omit =
     cq_editor/__main__.py
+    cq_editor/widgets/pyhighlight.py
 
 [report]
 exclude_lines =

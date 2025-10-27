@@ -223,6 +223,7 @@ class CodeEditor(CodeTextEdit):
 
         cursor = self.textCursor()
         cursor.setPosition(position)
+        self.setTextCursor(cursor)
 
     def go_to_line(self, line_number):
         """
@@ -393,7 +394,15 @@ class CodeEditor(CodeTextEdit):
         Sets the text content of the editor.
         :param str new_text: Text to be set in the editor.
         """
+        # Set the text in the document
         self.setPlainText(new_text)
+
+        # Set the cursor at the end of the text
+        cursor = self.textCursor()
+        cursor.movePosition(cursor.End)
+        self.setTextCursor(cursor)
+
+        # Set the document to be modified
         self.document().setModified(True)
 
     def set_text_from_file(self, file_name):

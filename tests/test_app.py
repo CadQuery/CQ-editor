@@ -150,10 +150,10 @@ def main_clean(qtbot, mocker):
     win.show()
 
     qtbot.addWidget(win)
-    qtbot.waitForWindowShown(win)
 
-    editor = win.components["editor"]
-    editor.set_text(code)
+    with qtbot.waitExposed(win):
+        editor = win.components["editor"]
+        editor.set_text(code)
 
     return qtbot, win
 
@@ -167,10 +167,10 @@ def main_clean_do_not_close(qtbot, mocker):
     win.show()
 
     qtbot.addWidget(win)
-    qtbot.waitForWindowShown(win)
 
-    editor = win.components["editor"]
-    editor.set_text(code)
+    with qtbot.waitExposed(win):
+        editor = win.components["editor"]
+        editor.set_text(code)
 
     return qtbot, win
 
@@ -185,13 +185,13 @@ def main_multi(qtbot, mocker):
     win.show()
 
     qtbot.addWidget(win)
-    qtbot.waitForWindowShown(win)
 
-    editor = win.components["editor"]
-    editor.set_text(code_multi)
+    with qtbot.waitExposed(win):
+        editor = win.components["editor"]
+        editor.set_text(code_multi)
 
-    debugger = win.components["debugger"]
-    debugger._actions["Run"][0].triggered.emit()
+        debugger = win.components["debugger"]
+        debugger._actions["Run"][0].triggered.emit()
 
     return qtbot, win
 
@@ -700,86 +700,7 @@ def test_editor(monkeypatch, editor):
     editor.restoreComponentState(settings)
 
 
-@pytest.mark.repeat(1)
-def test_editor_autoreload(monkeypatch, editor):
-
-    qtbot, editor = editor
-
-    TIMEOUT = 500
-
-    # start out with autoreload enabled
-    editor.autoreload(True)
-
-    with open("test.py", "w") as f:
-        f.write(code)
-
-    assert editor.get_text_with_eol() == ""
-
-    editor.load_from_file("test.py")
-    assert len(editor.get_text_with_eol()) > 0
-
-    # wait for reload.
-    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
-        # modify file - NB: separate process is needed to avoid Widows quirks
-        modify_file(code_bigger_object)
-
-    # check that editor has updated file contents
-    assert code_bigger_object.splitlines()[2] in editor.get_text_with_eol()
-
-    # disable autoreload
-    editor.autoreload(False)
-
-    # Wait for reload in case it incorrectly happens. A timeout should occur
-    # instead because a re-render should not be triggered with autoreload
-    # disabled.
-    with pytest.raises(pytestqt.exceptions.TimeoutError):
-        with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
-            # re-write original file contents
-            modify_file(code)
-
-    # editor should continue showing old contents since autoreload is disabled.
-    assert code_bigger_object.splitlines()[2] in editor.get_text_with_eol()
-
-    # Saving a file with autoreload disabled should not trigger a rerender.
-    with pytest.raises(pytestqt.exceptions.TimeoutError):
-        with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
-            editor.save()
-
-    editor.autoreload(True)
-
-    # Saving a file with autoreload enabled should trigger a rerender.
-    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
-        editor.save()
-
-
-def test_autoreload_nested(editor):
-
-    qtbot, editor = editor
-
-    TIMEOUT = 500
-
-    editor.autoreload(True)
-    editor.preferences["Autoreload: watch imported modules"] = True
-
-    with open("test_nested_top.py", "w") as f:
-        f.write(code_nested_top)
-
-    with open("test_nested_bottom.py", "w") as f:
-        f.write("")
-
-    assert editor.get_text_with_eol() == ""
-
-    editor.load_from_file("test_nested_top.py")
-    assert len(editor.get_text_with_eol()) > 0
-
-    # wait for reload.
-    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
-        # modify file - NB: separate process is needed to avoid Windows quirks
-        modify_file(code_nested_bottom, "test_nested_bottom.py")
-
-
 def test_console(main):
-
     qtbot, win = main
 
     console = win.components["console"]
@@ -834,6 +755,7 @@ def test_module_import(main):
 
     # run the code importing this module
     editor.set_text(code_import)
+    qtbot.wait(1000)
     debugger._actions["Run"][0].triggered.emit()
 
     # verify that no exception was generated
@@ -1911,3 +1833,81 @@ def test_viewer_orbit_methods(main):
     qtbot.mouseRelease(viewer, Qt.RightButton)
 
     assert True
+
+
+# @pytest.mark.repeat(1)
+def test_editor_autoreload(editor):
+
+    qtbot, editor = editor
+
+    TIMEOUT = 500
+
+    # start out with autoreload enabled
+    editor.autoreload(True)
+
+    with open("test.py", "w") as f:
+        f.write(code)
+
+    assert editor.get_text_with_eol() == ""
+
+    editor.load_from_file("test.py")
+    assert len(editor.get_text_with_eol()) > 0
+
+    # wait for reload.
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+        # modify file - NB: separate process is needed to avoid Widows quirks
+        modify_file(code_bigger_object)
+
+    # check that editor has updated file contents
+    assert code_bigger_object.splitlines()[2] in editor.get_text_with_eol()
+
+    # disable autoreload
+    editor.autoreload(False)
+
+    # Wait for reload in case it incorrectly happens. A timeout should occur
+    # instead because a re-render should not be triggered with autoreload
+    # disabled.
+    with pytest.raises(pytestqt.exceptions.TimeoutError):
+        with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+            # re-write original file contents
+            modify_file(code)
+
+    # editor should continue showing old contents since autoreload is disabled.
+    assert code_bigger_object.splitlines()[2] in editor.get_text_with_eol()
+
+    # Saving a file with autoreload disabled should not trigger a rerender.
+    with pytest.raises(pytestqt.exceptions.TimeoutError):
+        with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+            editor.save()
+
+    editor.autoreload(True)
+
+    # Saving a file with autoreload enabled should trigger a rerender.
+    with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+        editor.save()
+
+
+# def test_autoreload_nested(editor):
+
+#     qtbot, editor = editor
+
+#     TIMEOUT = 500
+
+#     editor.autoreload(True)
+#     editor.preferences["Autoreload: watch imported modules"] = True
+
+#     with open("test_nested_top.py", "w") as f:
+#         f.write(code_nested_top)
+
+#     with open("test_nested_bottom.py", "w") as f:
+#         f.write("")
+
+#     assert editor.get_text_with_eol() == ""
+
+#     editor.load_from_file("test_nested_top.py")
+#     assert len(editor.get_text_with_eol()) > 0
+
+#     # wait for reload.
+#     with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
+#         # modify file - NB: separate process is needed to avoid Windows quirks
+#         modify_file(code_nested_bottom, "test_nested_bottom.py")

@@ -10,7 +10,7 @@ import pytest
 import pytestqt
 import cadquery as cq
 
-from PyQt5.QtCore import Qt, QSettings, QPoint, QEvent
+from PyQt5.QtCore import Qt, QSettings, QPoint, QEvent, QSize
 from PyQt5.QtWidgets import QFileDialog, QMessageBox
 from PyQt5.QtGui import QMouseEvent
 
@@ -557,6 +557,9 @@ code_err3 = """import cadquery as cq
 result = cq.Workplane("XY" ).box(3, 3, 0)
 """
 
+base_editor_text = """import cadquery as cq
+result = cq.Workplane().box(10, 10, 10)
+"""
 
 def test_traceback(main):
 
@@ -698,6 +701,109 @@ def test_editor(monkeypatch, editor):
     os.remove("test2.py")
     assert not os.path.exists("test2.py")
     editor.restoreComponentState(settings)
+
+
+def test_size_hint(editor):
+    """
+    Tests the ability to get the size hit from the code editor widget.
+    """
+    qtbot, editor = editor
+
+    size_hint = editor.sizeHint()
+
+    assert size_hint == QSize(256, 192)
+
+
+def test_clear_selection(editor):
+    """
+    Tests the ability to clear selected text.
+    """
+    qtbot, editor = editor
+
+    # Set a block of text and make sure it is visible
+    editor.set_text(base_editor_text)
+    editor.document().setModified(False)
+    assert editor.get_text_with_eol() == base_editor_text
+
+    # Remove all the text and make sure it was removed
+    editor.selectAll()
+    cursor = editor.textCursor()
+    cursor.removeSelectedText()
+    editor.setTextCursor(cursor)
+    editor.document().setModified(False)
+    assert editor.get_text_with_eol() == ""
+
+
+def test_get_selection_range(editor):
+    """
+    Tests the ability to get the lines that are selected.
+    """
+    qtbot, editor = editor
+
+    # Set a block of text and make sure it is visible
+    editor.set_text(base_editor_text)
+    editor.document().setModified(False)
+    assert editor.get_text_with_eol() == base_editor_text
+
+    # Select all the text and get the selection range
+    editor.selectAll()
+    selection_range = editor.get_selection_range()
+    assert selection_range == (0, 2)
+
+
+def test_insert_remove_line_start(editor):
+    """
+    Tests the ability to remove and insert characters from/to the beginning of a line.
+    """
+    qtbot, editor = editor
+
+    # Set a block of text and make sure it is visible
+    editor.set_text(base_editor_text)
+    editor.insert_line_start("# ", 0)
+    editor.document().setModified(False)
+    assert editor.get_text_with_eol() == "# " + base_editor_text
+
+    # Remove the comment character from the line
+    editor.remove_line_start("# ", 0)
+    editor.document().setModified(False)
+    assert editor.get_text_with_eol() == base_editor_text
+
+
+def test_indent_unindent(editor):
+    """
+    Check to make sure that indent and un-indent work properly.
+    """
+    qtbot, editor = editor
+
+    # Set the base text
+    editor.set_text(base_editor_text)
+
+    # Indent the text and check
+    editor.selectAll()
+    qtbot.keyClick(editor, Qt.Key_Tab)
+    editor.document().setModified(False)
+    assert editor.get_text_with_eol() != base_editor_text
+
+    # Unindent the code with a direct method call and check
+    editor.selectAll()
+    start_line, end_line = editor.get_selection_range()
+    # +1 here to compesate for how black wants the multi-line string
+    editor.undo_indent(list(range(start_line, end_line + 1)))
+    editor.document().setModified(False)
+    assert editor.get_text_with_eol() == base_editor_text
+
+    # Indent the code again with a direct method call and check
+    editor.selectAll()
+    start_line, end_line = editor.get_selection_range()
+    editor.do_indent(list(range(start_line, end_line)))
+    editor.document().setModified(False)
+    assert editor.get_text_with_eol() != base_editor_text
+
+    # Unindent the code again with a keystroke
+    editor.selectAll()
+    qtbot.keyClick(editor, Qt.Key_Backtab)
+    editor.document().setModified(False)
+    assert editor.get_text_with_eol() == base_editor_text
 
 
 def test_console(main):

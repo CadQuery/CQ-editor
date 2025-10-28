@@ -42,7 +42,9 @@ class LineNumberArea(QtWidgets.QWidget):
             bottom = top + self._code_editor.blockBoundingRect(block).height()
 
             if top <= pos.y() <= bottom:
-                return block_number + 1  # Line numbers start at 0 internally and 1 for the user
+                return (
+                    block_number + 1
+                )  # Line numbers start at 0 internally and 1 for the user
 
             block = block.next()
             top = bottom
@@ -516,12 +518,19 @@ class CodeEditor(CodeTextEdit):
 
                     # Draw the breakpoint dot, if there is a breakpoint on this line
                     if self.line_has_breakpoint(line_number):
-                        painter.setBrush(QtGui.QBrush(QtGui.QColor(255, 0, 0)))  # Red circle
+                        painter.setBrush(
+                            QtGui.QBrush(QtGui.QColor(255, 0, 0))
+                        )  # Red circle
                         painter.setPen(QtGui.QPen(QtGui.QColor(150, 0, 0)))
                         circle_size = 10
                         circle_x = 5
-                        circle_y = int(top) + (self.fontMetrics().height() - circle_size - 2) // 2
-                        painter.drawEllipse(circle_x, circle_y, circle_size, circle_size)
+                        circle_y = (
+                            int(top)
+                            + (self.fontMetrics().height() - circle_size - 2) // 2
+                        )
+                        painter.drawEllipse(
+                            circle_x, circle_y, circle_size, circle_size
+                        )
 
                     # Draw the line number
                     number = str(line_number)

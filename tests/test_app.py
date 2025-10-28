@@ -755,7 +755,7 @@ def test_module_import(main):
 
     # run the code importing this module
     editor.set_text(code_import)
-    qtbot.wait(1000)
+    qtbot.wait(250)
     debugger._actions["Run"][0].triggered.emit()
 
     # verify that no exception was generated

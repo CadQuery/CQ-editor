@@ -561,6 +561,7 @@ base_editor_text = """import cadquery as cq
 result = cq.Workplane().box(10, 10, 10)
 """
 
+
 def test_traceback(main):
 
     # store the tracing function

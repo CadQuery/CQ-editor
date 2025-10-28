@@ -16,6 +16,40 @@ class LineNumberArea(QtWidgets.QWidget):
     def sizeHint(self):
         return QtCore.QSize(self._code_editor.line_number_area_width(), 0)
 
+    def mousePressEvent(self, event):
+        """
+        Handles mouse clicks to add/remove breakpoints.
+        """
+        if event.button() == QtCore.Qt.LeftButton:
+            # Calculate which line was clicked
+            line_number = self.get_line_number_from_position(event.pos())
+            if line_number is not None:
+                self._code_editor.toggle_breakpoint(line_number)
+
+    def get_line_number_from_position(self, pos):
+        """
+        Convert mouse position to line number.
+        """
+
+        # Get the first visible block
+        block = self._code_editor.firstVisibleBlock()
+        block_number = block.blockNumber()
+        offset = self._code_editor.contentOffset()
+        top = self._code_editor.blockBoundingGeometry(block).translated(offset).top()
+
+        # Find which block the click position corresponds to
+        while block.isValid():
+            bottom = top + self._code_editor.blockBoundingRect(block).height()
+
+            if top <= pos.y() <= bottom:
+                return block_number + 1  # Line numbers start at 0 internally and 1 for the user
+
+            block = block.next()
+            top = bottom
+            block_number += 1
+
+        return None
+
     def paintEvent(self, event):
         self._code_editor.lineNumberAreaPaintEvent(event)
 
@@ -478,7 +512,19 @@ class CodeEditor(CodeTextEdit):
 
             while block.isValid() and top <= event.rect().bottom():
                 if block.isVisible() and bottom >= event.rect().top():
-                    number = str(block_number + 1)
+                    line_number = block_number + 1
+
+                    # Draw the breakpoint dot, if there is a breakpoint on this line
+                    if self.line_has_breakpoint(line_number):
+                        painter.setBrush(QtGui.QBrush(QtGui.QColor(255, 0, 0)))  # Red circle
+                        painter.setPen(QtGui.QPen(QtGui.QColor(150, 0, 0)))
+                        circle_size = 10
+                        circle_x = 5
+                        circle_y = int(top) + (self.fontMetrics().height() - circle_size - 2) // 2
+                        painter.drawEllipse(circle_x, circle_y, circle_size, circle_size)
+
+                    # Draw the line number
+                    number = str(line_number)
                     painter.setPen(DARK_BLUE)
                     width = self.line_number_area.width() - 10
                     height = self.fontMetrics().height()
@@ -518,6 +564,24 @@ class CodeEditor(CodeTextEdit):
             selection.cursor.clearSelection()
             extra_selections.append(selection)
         self.setExtraSelections(extra_selections)
+
+    def toggle_breakpoint(self, line_number):
+        """
+        Toggle breakpoint on/off for a given line number.
+        """
+        if line_number in self.debugger.breakpoints:
+            self.debugger.breakpoints.remove(line_number)
+        else:
+            self.debugger.breakpoints.append(line_number)
+
+        # Repaint the line number area
+        self.line_number_area.update()
+
+    def line_has_breakpoint(self, line_number):
+        """
+        Checks if a line has a breakpoint.
+        """
+        return line_number in self.debugger.breakpoints
 
     def paintEvent(self, event):
         """

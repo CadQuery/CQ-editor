@@ -1,3 +1,5 @@
+# Much of this code was adapted from https://github.com/leixingyu/codeEditor which is under
+# an MIT license
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPalette, QColor
@@ -220,6 +222,7 @@ class CodeEditor(CodeTextEdit):
 
     def set_font(self, new_font):
         self.font = new_font
+        self.setFont(new_font)
 
     def toggle_wrap_mode(self, wrap_mode):
         self.setLineWrapMode(wrap_mode)
@@ -515,3 +518,32 @@ class CodeEditor(CodeTextEdit):
             selection.cursor.clearSelection()
             extra_selections.append(selection)
         self.setExtraSelections(extra_selections)
+
+    def paintEvent(self, event):
+        """
+        Overrides the default paint event so that we can draw the line length indicator.
+        """
+
+        # Call the parent's paintEvent first to render the text
+        super(CodeEditor, self).paintEvent(event)
+
+        painter = QtGui.QPainter(self.viewport())
+        try:
+            # Calculate the x position for the line
+            font_metrics = self.fontMetrics()
+            char_width = font_metrics.width("M")  # Use 'M' for average character width
+            x_position = self.edge_line.columns * char_width + self.contentOffset().x()
+
+            # Only draw if the line is within the visible area
+            if 0 <= x_position <= self.viewport().width():
+                # Set the pen color (light gray is common)
+                painter.setPen(
+                    QtGui.QPen(QtGui.QColor(200, 200, 200), 1, QtCore.Qt.SolidLine)
+                )
+
+                # Draw the vertical line from top to bottom of the viewport
+                painter.drawLine(
+                    int(x_position), 0, int(x_position), self.viewport().height()
+                )
+        finally:
+            painter.end()

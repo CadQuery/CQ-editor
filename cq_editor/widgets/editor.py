@@ -70,7 +70,7 @@ class Editor(CodeEditor, ComponentMixin):
                 "values": ["Light", "Dark"],
                 "value": "Light",
             },
-            {"name": "Maximum line length", "type": "int", "value": 88},
+            {"name": "Maximum line length", "type": "int", "value": 79},
         ],
     )
 

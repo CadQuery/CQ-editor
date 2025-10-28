@@ -243,7 +243,9 @@ class CodeEditor(CodeTextEdit):
 
         # Line numbers start at 0
         block = self.document().findBlockByNumber(line_number - 1)
+
         cursor.setPosition(block.position())
+        self.setTextCursor(cursor)
 
     def toggle_comment_single_line(self, cursor, left_pos):
         """
@@ -338,6 +340,7 @@ class CodeEditor(CodeTextEdit):
             leftmost_pos = 99999
             comment_line_found = False
             non_comment_line_found = False
+            blank_lines = []
             # Step through all of the selected lines and toggle their comments
             for i in range(sel_start, sel_end + 1):
                 # Set the cursor to the current line number
@@ -345,6 +348,11 @@ class CodeEditor(CodeTextEdit):
                 cursor.setPosition(block.position())
                 cursor.movePosition(cursor.EndOfBlock, cursor.KeepAnchor)
                 line_text = cursor.selectedText()
+
+                # Make sure the line is not blank
+                if line_text == "":
+                    blank_lines.append(i)
+                    continue
 
                 if line_text.strip()[0] == "#":
                     comment_line_found = True
@@ -362,6 +370,10 @@ class CodeEditor(CodeTextEdit):
 
             # Step through all of the selected lines and toggle their comments
             for i in range(sel_start, sel_end + 1):
+                # If this is a blank line, do not process it
+                if i in blank_lines:
+                    continue
+
                 # Set the cursor to the current line number
                 block = self.document().findBlockByNumber(i)
                 cursor.setPosition(block.position())

@@ -807,6 +807,75 @@ def test_indent_unindent(editor):
     assert editor.get_text_with_eol() == base_editor_text
 
 
+def test_set_color_scheme(editor):
+    """
+    Make sure that the color theme can be switched without error.
+    """
+    qtbot, editor = editor
+
+    editor.set_color_scheme("Light")
+    editor.set_color_scheme("Dark")
+
+
+def test_go_to_line(editor):
+    """
+    Tests to make sure the caller can set the current line of the code.
+    """
+    qtbot, editor = editor
+
+    # Set the base text
+    editor.set_text(base_editor_text)
+
+    # Make sure the line changes
+    editor.go_to_line(1)
+    cursor = editor.textCursor()
+    block = cursor.block()
+    assert (block.blockNumber() + 1) == 1
+    editor.go_to_line(2)
+    cursor = editor.textCursor()
+    block = cursor.block()
+    assert (block.blockNumber() + 1) == 2
+
+
+def test_toggle_comment(editor):
+    """
+    Tests to make sure that lines can be commented/uncommented.
+    """
+    qtbot, editor = editor
+
+    # Set the base text
+    editor.set_text(base_editor_text)
+
+    # Try commenting and uncommenting a single line
+    editor.go_to_line(1)
+    editor.toggle_comment()
+    assert editor.get_text_with_eol() != base_editor_text
+    editor.toggle_comment()
+    assert editor.get_text_with_eol() == base_editor_text
+
+    # Try commenting and uncommenting multiple lines
+    editor.selectAll()
+    editor.toggle_comment()
+    assert editor.get_text_with_eol() != base_editor_text
+    editor.selectAll()
+    editor.toggle_comment()
+    assert editor.get_text_with_eol() == base_editor_text
+
+
+def test_highlight_current_line(editor):
+    """
+    Make sure the current line can be highlighted without error.
+    """
+    qtbot, editor = editor
+
+    # Set the base text
+    editor.set_text(base_editor_text)
+
+    # Highlight the first line
+    editor.go_to_line(1)
+    editor.highlight_current_line()
+
+
 def test_console(main):
     qtbot, win = main
 
@@ -862,7 +931,6 @@ def test_module_import(main):
 
     # run the code importing this module
     editor.set_text(code_import)
-    qtbot.wait(250)
     debugger._actions["Run"][0].triggered.emit()
 
     # verify that no exception was generated

@@ -8,6 +8,235 @@ from PyQt5.QtGui import QPalette, QColor
 DARK_BLUE = QtGui.QColor(118, 150, 185)
 
 
+class SearchWidget(QtWidgets.QWidget):
+    def __init__(self, editor):
+        super(SearchWidget, self).__init__(editor)
+        self.editor = editor
+        self.current_match = 0
+        self.total_matches = 0
+
+        self.setup_ui()
+
+        # This widget should initially be hidden
+        self.hide()
+
+    def setup_ui(self):
+        # Horizontal layout
+        layout = QtWidgets.QHBoxLayout()
+        layout.setContentsMargins(5, 5, 5, 5)
+
+        # Search input box
+        self.search_input = QtWidgets.QLineEdit()
+        self.search_input.setPlaceholderText("Search...")
+        self.search_input.setMinimumWidth(100)
+        self.search_input.textChanged.connect(self.on_search_text_changed)
+        self.search_input.returnPressed.connect(self.find_next)
+
+        # Previous button
+        self.prev_button = QtWidgets.QPushButton("Prev")
+        self.prev_button.clicked.connect(self.find_previous)
+        self.prev_button.setEnabled(False)
+
+        # Next button
+        self.next_button = QtWidgets.QPushButton("Next")
+        self.next_button.clicked.connect(self.find_next)
+        self.next_button.setEnabled(False)
+
+        # Match count label
+        self.match_label = QtWidgets.QLabel("0 matches")
+
+        # Close button
+        self.close_button = QtWidgets.QPushButton("×")
+        self.close_button.setMaximumSize(20, 20)
+        self.close_button.clicked.connect(self.hide_search)
+
+        # Add widgets to layout
+        layout.addWidget(self.search_input)
+        layout.addWidget(self.prev_button)
+        layout.addWidget(self.next_button)
+        layout.addWidget(self.match_label)
+        layout.addWidget(self.close_button)
+        self.setLayout(layout)
+
+    def on_search_text_changed(self, text):
+        """
+        Called as the user types text into the search field.
+        """
+        if not text:
+            self.clear_highlights()
+            self.update_match_count(0, 0)
+            self.prev_button.setEnabled(False)
+            self.next_button.setEnabled(False)
+            return
+
+        self.find_all_matches(text)
+
+    def find_all_matches(self, search_text):
+        """
+        Finds all the matches within the search text.
+        """
+        if not search_text:
+            return
+
+        # Clear any previous highlights
+        self.clear_highlights()
+
+        # Find all matches
+        document = self.editor.document()
+        cursor = QtGui.QTextCursor(document)
+        self.matches = []
+
+        # Find all occurrences
+        while True:
+            # Look for a match
+            cursor = document.find(search_text, cursor)
+            if cursor.isNull():
+                break
+            self.matches.append(cursor)
+
+        self.total_matches = len(self.matches)
+
+        # If there are matches make them visible to the user
+        if self.total_matches > 0:
+            self.current_match = 0
+            self.highlight_matches()
+            self.highlight_current_match()
+            self.prev_button.setEnabled(True)
+            self.next_button.setEnabled(True)
+        else:
+            self.prev_button.setEnabled(False)
+            self.next_button.setEnabled(False)
+
+        self.update_match_count(
+            self.current_match + 1 if self.total_matches > 0 else 0, self.total_matches
+        )
+
+    def highlight_matches(self):
+        """
+        Highlights all matches to make them visible.
+        """
+        extra_selections = []
+
+        for cursor in self.matches:
+            selection = QtWidgets.QTextEdit.ExtraSelection()
+            selection.format.setBackground(QtGui.QColor(255, 255, 0, 100))
+            selection.cursor = cursor
+            extra_selections.append(selection)
+
+        self.editor.setExtraSelections(extra_selections)
+
+    def highlight_current_match(self):
+        """
+        Makes the current match stand out from the others.
+        """
+
+        # If there are no matches to highlight, then skip this step
+        if not self.matches or self.current_match >= len(self.matches):
+            return
+
+        # Highlight current match more than others and scroll to it
+        extra_selections = []
+
+        for i, cursor in enumerate(self.matches):
+            selection = QtWidgets.QTextEdit.ExtraSelection()
+            # The current match should stand out
+            if i == self.current_match:
+                selection.format.setBackground(QtGui.QColor(255, 165, 0))
+            else:
+                selection.format.setBackground(QtGui.QColor(255, 255, 0, 100))
+            selection.cursor = cursor
+            extra_selections.append(selection)
+
+        self.editor.setExtraSelections(extra_selections)
+
+        # Scroll to the current match
+        self.editor.setTextCursor(self.matches[self.current_match])
+        self.editor.ensureCursorVisible()
+
+    def find_next(self):
+        """
+        Finds the next match.
+        """
+
+        # If there are no matches, skip this step
+        if not self.matches:
+            return
+
+        self.current_match = (self.current_match + 1) % len(self.matches)
+        self.highlight_current_match()
+        self.update_match_count(self.current_match + 1, self.total_matches)
+
+    def find_previous(self):
+        """
+        Finds the previous match.
+        """
+
+        # If there are no matches, skip this step
+        if not self.matches:
+            return
+
+        self.current_match = (self.current_match - 1) % len(self.matches)
+        self.highlight_current_match()
+        self.update_match_count(self.current_match + 1, self.total_matches)
+
+    def update_match_count(self, current, total):
+        """
+        Updates the match count for the user.
+        """
+        if total == 0:
+            self.match_label.setText("0 matches")
+        else:
+            self.match_label.setText(f"{current} of {total}")
+
+    def clear_highlights(self):
+        """
+        Clears all of the find highlights.
+        """
+        self.editor.setExtraSelections([])
+        self.matches = []
+
+    def show_search(self):
+        """
+        Makes the search dialog visible.
+        """
+        self.show()
+
+        # Make sure the user can start typing search text right away
+        self.search_input.setFocus()
+        self.search_input.selectAll()
+
+        self.position_widget()
+
+        # If there is already text in the search box, trigger the search
+        if self.search_input.text():
+            self.find_all_matches(self.search_input.text())
+
+    def hide_search(self):
+        """
+        Hides the search dialog again.
+        """
+        self.hide()
+        self.clear_highlights()
+        self.editor.setFocus()
+
+    def position_widget(self):
+        """
+        Makes sure that the search widget gets placed in the right location
+        in the window.
+        """
+
+        # Top-right corner of the editor
+        editor_rect = self.editor.geometry()
+        widget_width = 400
+        widget_height = 40
+        x = editor_rect.width() - widget_width - 20
+        y = 10
+
+        # Set the size of the widget and bring it to the front
+        self.setGeometry(x, y, widget_width, widget_height)
+        self.raise_()
+
+
 class LineNumberArea(QtWidgets.QWidget):
     def __init__(self, editor):
         super(LineNumberArea, self).__init__(editor)
@@ -54,6 +283,20 @@ class LineNumberArea(QtWidgets.QWidget):
 
     def paintEvent(self, event):
         self._code_editor.lineNumberAreaPaintEvent(event)
+
+
+class EdgeLine(QtWidgets.QWidget):
+    edge_line = None
+    columns = 80
+
+    def __init__(self):
+        super(QtWidgets.QWidget, self).__init__()
+
+    def set_enabled(self, enabled_state):
+        self.setEnabled = enabled_state
+
+    def set_columns(self, number_of_columns):
+        self.columns = number_of_columns
 
 
 class CodeTextEdit(QtWidgets.QPlainTextEdit):
@@ -189,20 +432,6 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
         self.setTextCursor(cursor)
 
 
-class EdgeLine(QtWidgets.QWidget):
-    edge_line = None
-    columns = 80
-
-    def __init__(self):
-        super(QtWidgets.QWidget, self).__init__()
-
-    def set_enabled(self, enabled_state):
-        self.setEnabled = enabled_state
-
-    def set_columns(self, number_of_columns):
-        self.columns = number_of_columns
-
-
 class CodeEditor(CodeTextEdit):
     def __init__(self, parent=None):
         super(CodeEditor, self).__init__()
@@ -228,7 +457,34 @@ class CodeEditor(CodeTextEdit):
 
         self.edge_line = EdgeLine()
 
+        self.search_widget = SearchWidget(self)
+
         self._filename = ""
+
+    def keyPressEvent(self, event):
+        # Handle Ctrl+F for search
+        if (
+            event.modifiers() == QtCore.Qt.ControlModifier
+            and event.key() == QtCore.Qt.Key_F
+        ):
+            self.search_widget.show_search()
+            return
+
+        # Handle F3 for find next (when search widget is visible)
+        if event.key() == QtCore.Qt.Key_F3 and self.search_widget.isVisible():
+            if event.modifiers() == QtCore.Qt.AltModifier:
+                self.search_widget.find_previous()  # Alt+F3 for previous
+            else:
+                self.search_widget.find_next()  # F3 for next
+            return
+
+        # Handle Escape to close search
+        if event.key() == QtCore.Qt.Key_Escape and self.search_widget.isVisible():
+            self.search_widget.hide_search()
+            return
+
+        # Call parent for other keys
+        super(CodeEditor, self).keyPressEvent(event)
 
     def setup_editor(
         self,

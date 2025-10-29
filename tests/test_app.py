@@ -876,6 +876,23 @@ def test_highlight_current_line(editor):
     editor.highlight_current_line()
 
 
+def test_set_remove_breakpoints(editor):
+    """
+    Make sure the breakpoints can be added and removed without error.
+    """
+    qtbot, editor = editor
+
+    # Set the base text
+    editor.set_text(base_editor_text)
+
+    # Toggle breakpoints and check that they are there
+    assert not editor.line_has_breakpoint(2)
+    editor.toggle_breakpoint(2)
+    assert editor.line_has_breakpoint(2)
+    editor.toggle_breakpoint(2)
+    assert not editor.line_has_breakpoint(2)
+
+
 def test_console(main):
     qtbot, win = main
 

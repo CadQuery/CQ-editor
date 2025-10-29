@@ -153,6 +153,23 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
 
         :param lines: [int]. line numbers
         """
+
+        # Get the selection range of lines
+        start_line, end_line = self.get_selection_range()
+
+        # If a single line is selected, make sure it is the only line in the range
+        if start_line == 0 and end_line == 0:
+            # Insert a tab at the current cursor location
+            cursor = self.textCursor()
+            cursor.insertText("    ")
+
+            # Make sure that no lines are changed
+            lines = []
+        # Multiple lines have been selected
+        else:
+            lines = range(start_line, end_line + 1)
+
+        # Walk through the selected lines and tab them (with 4 spaces)
         for line in lines:
             self.insert_line_start("    ", line)
 
@@ -285,35 +302,6 @@ class CodeEditor(CodeTextEdit):
 
         cursor.setPosition(block.position())
         self.setTextCursor(cursor)
-
-    def toggle_comment_single_line(self, cursor, left_pos):
-        """
-        Adds the comment character (#) and a space at the beginning of a line,
-        or removes them, if needed.
-        """
-
-        # Move right by pos characters to the position before text starts
-        cursor.movePosition(
-            QtGui.QTextCursor.Right, QtGui.QTextCursor.MoveAnchor, left_pos
-        )
-        cursor.movePosition(QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 1)
-
-        # Toggle the comment character on/off
-        if cursor.selectedText() != "#":
-            cursor.movePosition(QtGui.QTextCursor.Left, QtGui.QTextCursor.MoveAnchor, 1)
-            cursor.insertText("# ")
-        else:
-            # Remove the comment character
-            if cursor.selectedText() == "#":
-                cursor.removeSelectedText()
-
-            cursor.movePosition(
-                QtGui.QTextCursor.Right, QtGui.QTextCursor.KeepAnchor, 1
-            )
-
-            # Also remove an extra space if there is one
-            if cursor.selectedText() == " ":
-                cursor.removeSelectedText()
 
     def toggle_comment(self):
         """

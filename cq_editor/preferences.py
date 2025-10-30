@@ -63,7 +63,7 @@ class PreferencesWidget(QDialog):
             for child in component.preferences.children():
                 # Fill the editor color scheme drop down list
                 if child.name() == "Color scheme":
-                    child.setLimits(["Spyder", "Monokai", "Zenburn"])
+                    child.setLimits(["Light", "Dark"])
                 # Fill the camera projection type
                 elif child.name() == "Projection Type":
                     child.setLimits(

@@ -323,6 +323,16 @@ class MainWindow(QMainWindow, MainMixin):
         )
         menu_edit.addAction(self.autocomplete_action)
 
+        # Add the menu action to open the code search controls
+        self.search_action = QAction(
+            icon("search"),
+            "Search",
+            self,
+            shortcut="ctrl+F",
+            triggered=self.components["editor"].search_widget.show_search,
+        )
+        menu_edit.addAction(self.search_action)
+
         menu_edit.addAction(
             QAction(
                 icon("preferences"),

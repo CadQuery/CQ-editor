@@ -22,7 +22,7 @@ class ConsoleWidget(RichJupyterWidget, ComponentMixin):
         self._actions = {
             "Run": [
                 QAction(
-                    icon("delete"), "Clear Console", self, triggered=self.reset_console
+                    icon("clear-2"), "Clear Console", self, triggered=self.reset_console
                 ),
             ]
         }

@@ -734,22 +734,12 @@ def test_clear_selection(editor):
     editor.document().setModified(False)
     assert editor.get_text_with_eol() == ""
 
-
-def test_get_selection_range(editor):
-    """
-    Tests the ability to get the lines that are selected.
-    """
-    qtbot, editor = editor
-
-    # Set a block of text and make sure it is visible
+    # Test the ability to deselect a selected area
     editor.set_text(base_editor_text)
-    editor.document().setModified(False)
-    assert editor.get_text_with_eol() == base_editor_text
-
-    # Select all the text and get the selection range
     editor.selectAll()
-    selection_range = editor.get_selection_range()
-    assert selection_range == (0, 2)
+    assert editor.get_selection_range() == (0, 2)
+    editor.clear_selection()
+    assert editor.get_selection_range() == (0, 0)
 
 
 def test_insert_remove_line_start(editor):
@@ -805,6 +795,11 @@ def test_indent_unindent(editor):
     qtbot.keyClick(editor, Qt.Key_Backtab)
     editor.document().setModified(False)
     assert editor.get_text_with_eol() == base_editor_text
+
+    # Indent just the second line
+    editor.clear_selection()
+    editor.do_indent([1])
+    assert editor.get_text_with_eol() != base_editor_text
 
 
 def test_set_color_scheme(editor):
@@ -891,6 +886,59 @@ def test_set_remove_breakpoints(editor):
     assert editor.line_has_breakpoint(2)
     editor.toggle_breakpoint(2)
     assert not editor.line_has_breakpoint(2)
+
+
+def test_search(editor):
+    """
+    Tests the search functionality.
+    """
+    qtbot, editor = editor
+
+    # Set the base text
+    editor.set_text(base_editor_text)
+
+    # Test with no search match
+    editor.search_widget.on_search_text_changed("~")
+    assert editor.search_widget.match_label.text() == "0 matches"
+
+    # Check to see that various search texts change the search controls
+    editor.search_widget.on_search_text_changed("cq")
+    assert editor.search_widget.match_label.text() == "1 of 2"
+
+    # Make sure advancing to the next and previous matches works properly
+    editor.search_widget.find_next()
+    assert editor.search_widget.match_label.text() == "2 of 2"
+    editor.search_widget.find_previous()
+    assert editor.search_widget.match_label.text() == "1 of 2"
+
+    # Make sure the show and hide search works
+    editor.search_widget.show_search()
+    assert editor.search_widget.isVisible()
+    editor.search_widget.hide_search()
+    assert not editor.search_widget.isVisible()
+
+    # Test hotkeys
+    qtbot.keyClick(editor, Qt.Key_F, modifier=Qt.ControlModifier)
+    assert editor.search_widget.isVisible()
+    qtbot.keyClick(editor, Qt.Key_F3)
+    qtbot.keyClick(editor, Qt.Key_F3, modifier=Qt.AltModifier)
+
+
+def test_line_number_area(editor):
+    """
+    Tests to make sure the line number area on the left of the editor is working correctly.
+    """
+    qtbot, editor = editor
+
+    # Set the base text
+    editor.set_text(base_editor_text)
+
+    # Make sure the size hint can be retrieved without error
+    editor.line_number_area.sizeHint()
+
+    # Try to simulate a mouse click in the line number area
+    pos = QPoint(10, 10)
+    qtbot.mouseClick(editor.line_number_area, Qt.LeftButton, pos=pos)
 
 
 def test_console(main):

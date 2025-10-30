@@ -316,8 +316,10 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
         """
         Clear text selection on cursor
         """
-        pos = self.textCursor().selectionEnd()
-        self.textCursor().movePosition(pos)
+        cursor = self.textCursor()
+        pos = cursor.selectionEnd()
+        cursor.movePosition(pos)
+        self.setTextCursor(cursor)
 
     def get_selection_range(self):
         """

@@ -19,6 +19,6 @@ jobs:
         run: |
           python -m pip install .
           python -m pip install .[dev]
-          python -m pip install pytest-xvfb pytest-qt
+          python -m pip install PyQt5 pytest-xvfb pytest-qt
       - name: Run tests
         run: python -m pytest -v

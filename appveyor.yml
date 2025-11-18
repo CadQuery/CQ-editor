@@ -14,7 +14,7 @@ environment:
 install:
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then sudo apt update; sudo apt -y --force-yes install libglu1-mesa xvfb libgl1-mesa-dri mesa-common-dev libglu1-mesa-dev; fi
     - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE != "macOS"* ]]; then curl -fsSL -o miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh; fi
-    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then curl -fsSL -o miniconda.sh https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Darwin-x86_64.sh; fi
+    - sh: if [[ $APPVEYOR_BUILD_WORKER_IMAGE == "macOS"* ]]; then curl -fsSL -o miniconda.sh https://github.com/conda-forge/miniforge/releases/download/25.3.1-0/Miniforge3-Linux-x86_64.sh; fi
     - sh: bash miniconda.sh -b -p $HOME/miniconda
     - sh: source $HOME/miniconda/bin/activate
     - cmd: curl -fsSL -o miniconda.exe https://github.com/conda-forge/miniforge/releases/download/24.11.3-2/Miniforge3-Windows-x86_64.exe

@@ -6,15 +6,15 @@ build-backend = "setuptools.build_meta"
 name = "CQ-editor"
 version = "0.6.dev0"
 dependencies = [
-  "cadquery",
+  "cadquery==2.5.2",
   "pyqtgraph",
-  "spyder>=5.5.6,<6",
+  "qtawesome==1.4.0",
   "path",
   "logbook",
   "requests",
-  "qtconsole>=5.5.1,<5.6.0"
+  "qtconsole>=5.5.1,<5.7.0"
 ]
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.10,<=3.13"
 authors = [
   { name="CadQuery Developers" }
 ]

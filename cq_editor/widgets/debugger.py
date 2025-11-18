@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import QAction, QTableView
 from logbook import info
 from path import Path
 from pyqtgraph.parametertree import Parameter
-from spyder.utils.icon_manager import icon
+from ..icons import icon
 from random import randrange as rrr, seed
 
 from ..cq_utils import find_cq_objects, reload_cq
@@ -198,6 +198,9 @@ class Debugger(QObject, ComponentMixin):
     def get_breakpoints(self):
 
         return self.parent().components["editor"].debugger.get_breakpoints()
+
+    def set_breakpoints(self, breakpoints):
+        return self.parent().components["editor"].debugger.set_breakpoints(breakpoints)
 
     def compile_code(self, cq_script, cq_script_path=None):
 
@@ -402,9 +405,9 @@ class Debugger(QObject, ComponentMixin):
             if (
                 self.state in (DbgState.STEP, DbgState.STEP_IN)
                 and frame is self._frames[-1]
-            ) or (lineno in self.breakpoints):
+            ) or (lineno in self.get_breakpoints()):
 
-                if lineno in self.breakpoints:
+                if lineno in self.get_breakpoints():
                     self._frames.append(frame)
 
                 self.sigLineChanged.emit(lineno)

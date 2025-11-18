@@ -54,7 +54,7 @@ class LogViewer(QPlainTextEdit, ComponentMixin):
 
         self._actions = {
             "Run": [
-                QAction(icon("delete"), "Clear Log", self, triggered=self.clear),
+                QAction(icon("clear"), "Clear Log", self, triggered=self.clear),
             ]
         }
 

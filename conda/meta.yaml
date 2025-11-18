@@ -14,21 +14,21 @@ build:
     - CQ-editor = cq_editor.__main__:main
 requirements:
   build:
-    - python >=3.8
+    - python >=3.10
     - setuptools
 
   run:
-    - python >=3.9
+    - python >=3.10
     - cadquery=master
     - ocp
     - logbook
     - pyqt=5.*
     - pyqtgraph
-    - spyder >=5.5.6,<6
+    - qtawesome=1.4.0
     - path
     - logbook
     - requests
-    - qtconsole >=5.5.1,<5.6.0
+    - qtconsole >=5.5.1,<5.7.0
 test:
   imports:
     - cq_editor

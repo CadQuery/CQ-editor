@@ -17,6 +17,8 @@ from OCP.Graphic3d import Graphic3d_NOM_JADE, Graphic3d_MaterialAspect
 
 from PyQt5.QtGui import QColor
 
+#for builder123d Builder classes support
+import gc
 DEFAULT_FACE_COLOR = Quantity_Color(GOLD)
 DEFAULT_MATERIAL = Graphic3d_MaterialAspect(Graphic3d_NOM_JADE)
 
@@ -42,25 +44,46 @@ def to_compound(
 ):
 
     vals = []
-
-    if isinstance(obj, cq.Workplane):
+ 
+    if isinstance(obj, TopoDS_Shape):
+        vals.append(cq.Shape.cast(obj))
+    elif isinstance(obj, cq.Workplane):
         vals.extend(obj.vals())
     elif isinstance(obj, cq.Shape):
         vals.append(obj)
-    elif isinstance(obj, list) and isinstance(obj[0], cq.Workplane):
-        for o in obj:
-            vals.extend(o.vals())
-    elif isinstance(obj, list) and isinstance(obj[0], cq.Shape):
-        vals.extend(obj)
-    elif isinstance(obj, TopoDS_Shape):
-        vals.append(cq.Shape.cast(obj))
-    elif isinstance(obj, list) and isinstance(obj[0], TopoDS_Shape):
-        vals.extend(cq.Shape.cast(o) for o in obj)
     elif isinstance(obj, cq.Sketch):
         if obj._faces:
             vals.append(obj._faces)
         else:
             vals.extend(obj._edges)
+    #builder123d Shape for instance BuildLine.line or Box, wrapped is the TopoDS_Shape                        
+    elif "topology" in type(obj).__module__ and hasattr(obj, "wrapped"):
+        vals.extend(cq.Shape.cast(obj.wrapped))
+    #builder123d Builder classes
+    elif "Build" in type(obj).__name__:
+        #if builder is complete (builder._obj defined: for instance when a part has a 3D Shape, a part with one line has builder._obj to None for instance)
+        if hasattr(obj, "_obj") and obj._obj is not None:
+            vals.extend(cq.Shape.cast(obj._obj.wrapped))                         
+        else:                     
+            #get all objects and find the children of obj
+            for obj2 in gc.get_objects():
+                if "Build" in type(obj2).__name__:
+                    #select complete builders       
+                    if hasattr(obj2, "_obj") and obj2._obj is not None and hasattr(obj2, "builder_parent"):
+                      #is it a child ?
+                      if obj2.builder_parent is obj:
+                        vals.extend(cq.Shape.cast(obj2._obj.wrapped))
+                      #is it a grandchild (BuildPart has BuildSketche(s) that have BuildLine(s)) ?
+                      elif hasattr(obj2.builder_parent, "builder_parent") and obj2.builder_parent.builder_parent is obj:
+                        vals.extend(cq.Shape.cast(obj2._obj.wrapped))
+                   #we consider we had an empty builder: no error                                                                       
+    elif isinstance(obj, list) and isinstance(obj[0], cq.Workplane):
+        for o in obj:
+            vals.extend(o.vals())
+    elif isinstance(obj, list) and isinstance(obj[0], cq.Shape):
+        vals.extend(obj)
+    elif isinstance(obj, list) and isinstance(obj[0], TopoDS_Shape):
+        vals.extend(cq.Shape.cast(o) for o in obj)
     else:
         raise ValueError(f"Invalid type {type(obj)}")
 

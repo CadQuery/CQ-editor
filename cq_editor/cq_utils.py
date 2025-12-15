@@ -73,8 +73,8 @@ def to_compound(
                       #is it a child ?
                       if obj2.builder_parent is obj:
                         vals.extend(cq.Shape.cast(obj2._obj.wrapped))
-                      #is it a grandchild (BuildPart has BuildSketche(s) that have BuildLine(s)) ?
-                      elif hasattr(obj2.builder_parent, "builder_parent") and obj2.builder_parent.builder_parent is obj:
+                      #is it a grandchild (BuildPart has BuildSketche(s) that have BuildLine(s)) with incomplete parent ?
+                      elif obj2.builder_parent._obj is None and hasattr(obj2.builder_parent, "builder_parent") and obj2.builder_parent.builder_parent is obj:
                         vals.extend(cq.Shape.cast(obj2._obj.wrapped))
                    #we consider we had an empty builder: no error                                                                       
     elif isinstance(obj, list) and isinstance(obj[0], cq.Workplane):

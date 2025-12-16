@@ -76,7 +76,7 @@ jobs:
           name: CQ-editor-master-MacOSX-ARM64
           path: out/*.*
   constructor-macos-x86_64:
-    runs-on: macos-13
+    runs-on: macos-15-intel
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

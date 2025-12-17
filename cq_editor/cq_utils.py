@@ -56,18 +56,18 @@ def to_compound(
             vals.append(obj._faces)
         else:
             vals.extend(obj._edges)
-    #builder123d Shape for instance BuildLine.line or Box, wrapped is the TopoDS_Shape                        
-    elif "topology" in type(obj).__module__ and hasattr(obj, "wrapped"):
+    #builder123d Shape for instance BuildLine.line or Box, wrapped is the TopoDS_Shape                
+    elif "topology" in "".join([str(full_classes.__module__)+full_classes.__qualname__ for full_classes in (type(obj),*type(obj).__mro__)]) and hasattr(obj, "wrapped"):
         vals.extend(cq.Shape.cast(obj.wrapped))
     #builder123d Builder classes
-    elif "Build" in type(obj).__name__:
+    elif "Builder" in "".join([str(full_classes.__module__)+full_classes.__qualname__ for full_classes in (type(obj),*type(obj).__mro__)]):
         #if builder is complete (builder._obj defined: for instance when a part has a 3D Shape, a part with one line has builder._obj to None for instance)
         if hasattr(obj, "_obj") and obj._obj is not None:
             vals.extend(cq.Shape.cast(obj._obj.wrapped))                         
         else:                     
             #get all objects and find the children of obj
             for obj2 in gc.get_objects():
-                if "Build" in type(obj2).__name__:
+                if "Builder" in "".join([str(full_classes.__module__)+full_classes.__qualname__ for full_classes in (type(obj2),*type(obj2).__mro__)]):
                     #select complete builders       
                     if hasattr(obj2, "_obj") and obj2._obj is not None and hasattr(obj2, "builder_parent"):
                       #is it a child ?
@@ -76,7 +76,7 @@ def to_compound(
                       #is it a grandchild (BuildPart has BuildSketche(s) that have BuildLine(s)) with incomplete parent ?
                       elif obj2.builder_parent._obj is None and hasattr(obj2.builder_parent, "builder_parent") and obj2.builder_parent.builder_parent is obj:
                         vals.extend(cq.Shape.cast(obj2._obj.wrapped))
-                   #we consider we had an empty builder: no error                                                                       
+                   #we consider we had an empty builder: no error                                                                     
     elif isinstance(obj, list) and isinstance(obj[0], cq.Workplane):
         for o in obj:
             vals.extend(o.vals())

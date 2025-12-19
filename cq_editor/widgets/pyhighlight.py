@@ -28,7 +28,7 @@ STYLES = {
     "string": format("orange"),
     "string2": format("darkMagenta"),
     "comment": format("darkGreen", "italic"),
-    "self": format("black", "italic"),
+    "self": format("blue", "italic"),
     "numbers": format("magenta"),
 }
 
@@ -85,36 +85,36 @@ class PythonHighlighter(QSyntaxHighlighter):
         ">",
         ">=",
         # Arithmetic
-        "\+",
+        r"\+",
         "-",
-        "\*",
+        r"\*",
         "/",
         "//",
-        "\%",
-        "\*\*",
+        r"\%",
+        r"\*\*",
         # In-place
-        "\+=",
+        r"\+=",
         "-=",
-        "\*=",
+        r"\*=",
         "/=",
-        "\%=",
+        r"\%=",
         # Bitwise
-        "\^",
-        "\|",
-        "\&",
-        "\~",
+        r"\^",
+        r"\|",
+        r"\&",
+        r"\~",
         ">>",
         "<<",
     ]
 
     # Python braces
     braces = [
-        "\{",
-        "\}",
-        "\(",
-        "\)",
-        "\[",
-        "\]",
+        r"\{",
+        r"\}",
+        r"\(",
+        r"\)",
+        r"\[",
+        r"\]",
     ]
 
     def __init__(self, parent=None):

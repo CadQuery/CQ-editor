@@ -336,7 +336,7 @@ class Debugger(QObject, ComponentMixin):
             self.previous_trace = previous_trace = sys.gettrace()
 
             self.sigDebugging.emit(True)
-            self.state = DbgState.STEP
+            self.state = DbgState.CONT
 
             self.script = self.get_current_script()
             cq_script_path = self.get_current_script_path()

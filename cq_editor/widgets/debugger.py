@@ -352,11 +352,12 @@ class Debugger(QObject, ComponentMixin):
             # clear possible traceback
             self.sigTraceback.emit(None, self.script)
 
-            # Move to the first breakpoint
-            self.debug_cmd(DbgState.CONT)
-
             try:
                 sys.settrace(self.trace_callback)
+
+                # Move to the first breakpoint
+                self.debug_cmd(DbgState.CONT)
+
                 exec(code, module.__dict__, module.__dict__)
             except BdbQuit:
                 pass

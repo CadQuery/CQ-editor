@@ -461,7 +461,7 @@ def test_debug(main, mocker):
     check_no_error_occured()
 
     assert variables.model().rowCount() == 2
-    assert number_visible_items(viewer) == 3
+    assert number_visible_items(viewer) == 4
 
     # test breakpoint
     ev = event_loop(

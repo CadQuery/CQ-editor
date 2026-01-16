@@ -17,7 +17,7 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          sudo apt update && sudo apt install -y libgl1 libglx-mesa0
+          sudo apt update && sudo apt install -y libgl1 libglx-mesa0 libgl1-mesa-dri libglu1-mesa libegl1-mesa mesa-utils libopengl0
 
       - name: Install packages
         run: |

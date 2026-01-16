@@ -178,7 +178,7 @@ def set_transparency(ais: AIS_Shape, alpha: float) -> AIS_Shape:
 
     drawer = ais.Attributes()
     drawer.SetupOwnShadingAspect()
-    drawer.ShadingAspect().SetTransparency(alpha)
+    drawer.ShadingAspect().SetTransparency(1.0 - alpha)
 
     return ais
 

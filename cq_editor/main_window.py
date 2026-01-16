@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QDockWidget,
     QAction,
     QApplication,
+    QMenu,
 )
 from logbook import Logger
 import cadquery as cq
@@ -118,6 +119,11 @@ class MainWindow(QMainWindow, MainMixin):
         self.restorePreferences()
         self.restoreWindow()
 
+        # Handle the event of the editor being hidden or shown
+        self.editor_dock = self.docks["editor"]
+        self.editor_dock.visibilityChanged.connect(self.handleEditorVisiblityChange)
+        self.handleEditorVisiblityChange(not self.editor_dock.isHidden())
+
         # Let the user know when the file has been modified
         self.components["editor"].document().modificationChanged.connect(
             self.update_window_title
@@ -127,6 +133,13 @@ class MainWindow(QMainWindow, MainMixin):
             self.components["editor"].load_from_file(filename)
 
         self.restoreComponentState()
+
+    def handleEditorVisiblityChange(self, visible):
+        """
+        Does the work required to enable/disable menu items when the Editor visibility is changed.
+        """
+        self.toggle_comment_action.setEnabled(visible)
+        self.autocomplete_action.setEnabled(visible)
 
     def preferencesChanged(self, param, changes):
         """
@@ -170,10 +183,21 @@ class MainWindow(QMainWindow, MainMixin):
         # We alter the color of the toolbar separately to avoid having separate dark theme icons
         p = self.toolbar.palette()
         if self.preferences["Light/Dark Theme"] == "Dark":
-            p.setColor(QPalette.Button, QColor(120, 120, 120))
             p.setColor(QPalette.Background, QColor(120, 120, 120))
+
+            # TWeak the QMenu items palette for dark theme
+            menu_palette = self.menuBar().palette()
+            menu_palette.setColor(QPalette.Base, QColor(80, 80, 80))
+            for menu in self.menuBar().findChildren(QMenu):
+                menu.setPalette(menu_palette)
         else:
-            p = QApplication.instance().style().standardPalette()
+            p.setColor(QPalette.Background, QColor(240, 240, 240))
+
+            # Revert the QMenu items palette for dark theme
+            menu_palette = self.menuBar().palette()
+            menu_palette.setColor(QPalette.Base, QColor(240, 240, 240))
+            for menu in self.menuBar().findChildren(QMenu):
+                menu.setPalette(menu_palette)
 
         self.toolbar.setPalette(p)
 
@@ -210,18 +234,18 @@ class MainWindow(QMainWindow, MainMixin):
         )
 
         self.registerComponent(
-            "console",
-            ConsoleWidget(self),
-            lambda c: dock(c, "Console", self, defaultArea="bottom"),
-        )
-
-        self.registerComponent(
             "traceback_viewer",
             TracebackPane(self),
             lambda c: dock(c, "Current traceback", self, defaultArea="bottom"),
         )
 
         self.registerComponent("debugger", Debugger(self))
+
+        self.registerComponent(
+            "console",
+            ConsoleWidget(self),
+            lambda c: dock(c, "Console", self, defaultArea="bottom"),
+        )
 
         self.registerComponent(
             "variables_viewer",
@@ -280,15 +304,35 @@ class MainWindow(QMainWindow, MainMixin):
         for t in self.findChildren(QToolBar):
             menu_view.addAction(t.toggleViewAction())
 
-        menu_edit.addAction(
-            QAction(
-                icon("toggle-comment"),
-                "Toggle Comment",
-                self,
-                shortcut="ctrl+/",
-                triggered=self.components["editor"].toggle_comment,
-            )
+        self.toggle_comment_action = QAction(
+            icon("toggle-comment"),
+            "Toggle Comment",
+            self,
+            shortcut="ctrl+/",
+            triggered=self.components["editor"].toggle_comment,
         )
+        menu_edit.addAction(self.toggle_comment_action)
+
+        # Add the menu action to toggle auto-completion
+        self.autocomplete_action = QAction(
+            icon("search"),
+            "Auto-Complete",
+            self,
+            shortcut="alt+/",
+            triggered=self.components["editor"]._trigger_autocomplete,
+        )
+        menu_edit.addAction(self.autocomplete_action)
+
+        # Add the menu action to open the code search controls
+        self.search_action = QAction(
+            icon("search"),
+            "Search",
+            self,
+            shortcut="ctrl+F",
+            triggered=self.components["editor"].search_widget.show_search,
+        )
+        menu_edit.addAction(self.search_action)
+
         menu_edit.addAction(
             QAction(
                 icon("preferences"),
@@ -417,6 +461,8 @@ class MainWindow(QMainWindow, MainMixin):
         self.components["editor"].sigFilenameChanged.connect(
             self.handle_filename_change
         )
+        # Allows updating of the status bar from the Editor
+        self.components["editor"].statusChanged.connect(self.update_statusbar)
 
     def prepare_console(self):
 
@@ -505,6 +551,14 @@ class MainWindow(QMainWindow, MainMixin):
         if modified:
             title += "*"
         self.setWindowTitle(title)
+
+    def update_statusbar(self, status_text):
+        """
+        Allow updating the status bar with information.
+        """
+
+        # Update the statusbar text
+        self.status_label.setText(status_text)
 
 
 if __name__ == "__main__":

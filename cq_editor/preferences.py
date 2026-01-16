@@ -63,7 +63,7 @@ class PreferencesWidget(QDialog):
             for child in component.preferences.children():
                 # Fill the editor color scheme drop down list
                 if child.name() == "Color scheme":
-                    child.setLimits(["Spyder", "Monokai", "Zenburn"])
+                    child.setLimits(["Light", "Dark"])
                 # Fill the camera projection type
                 elif child.name() == "Projection Type":
                     child.setLimits(
@@ -91,6 +91,14 @@ class PreferencesWidget(QDialog):
                 # Fill the light/dark theme in the general settings
                 elif child.name() == "Light/Dark Theme":
                     child.setLimits(["Light", "Dark"])
+                # Fill the orbit method
+                elif child.name() == "Orbit Method":
+                    child.setLimits(
+                        [
+                            "Turntable",
+                            "Trackball",
+                        ]
+                    )
 
     @pyqtSlot(QTreeWidgetItem, QTreeWidgetItem)
     def handleSelection(self, item, *args):

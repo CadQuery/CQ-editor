@@ -1,6 +1,6 @@
 import requests
 
-from pkg_resources import parse_version
+from packaging.version import parse as parse_version
 
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QDesktopServices

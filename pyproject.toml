@@ -4,17 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "CQ-editor"
-version = "0.5.dev0"
+version = "0.6"
 dependencies = [
   "cadquery",
   "pyqtgraph",
-  "spyder>=5.5.6,<6",
+  "qtawesome==1.4.0",
   "path",
   "logbook",
   "requests",
-  "qtconsole>=5.5.1,<5.6.0"
+  "qtconsole>=5.5.1,<5.7.0",
+  "packaging"
 ]
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.10,<=3.14"
 authors = [
   { name="CadQuery Developers" }
 ]
@@ -32,6 +33,7 @@ classifiers = [
 
 [project.scripts]
 CQ-editor = "cq_editor.cqe_run:main"
+cq-editor = "cq_editor.cqe_run:main"
 
 [project.optional-dependencies]
 test = [

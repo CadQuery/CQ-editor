@@ -1,2 +1,2 @@
 @echo off
-start /B Scripts\conda.exe run -n base python Scripts\cq-editor-script.py
+start /B condabin\mamba.bat run -n base python Scripts\cq-editor-script.py

@@ -17,7 +17,7 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          sudo apt update && sudo apt install -y libgl1 libglx-mesa0 libgl1-mesa-dri libglu1-mesa libegl1-mesa mesa-utils libopengl0 fontconfig fonts-dejavu-core
+          sudo apt update && sudo apt install -y libgl1 libglx-mesa0 libgl1-mesa-dri libglu1-mesa libegl1-mesa mesa-utils libopengl0 fontconfig fonts-dejavu-core libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0
           sudo fc-cache -f
 
       - name: Install packages
@@ -30,8 +30,7 @@ jobs:
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
           QT_OPENGL: "software"
-          QT_QPA_PLATFORM: "offscreen"
-          QT_XCB_GL_INTEGRATION: "none"
+          QT_QPA_PLATFORM: "xcb"
         uses: coactions/setup-xvfb@v1.0.1
         with:
           run: pytest

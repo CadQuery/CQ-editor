@@ -19,7 +19,7 @@ jobs:
         run: |
           sudo apt update && sudo apt install -y libgl1 libglx-mesa0
 
-      - name: Install nimble packages and dev tools
+      - name: Install packages
         run: |
           pip install -e .
           pip install .[test]

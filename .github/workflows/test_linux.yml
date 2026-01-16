@@ -18,6 +18,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt update && sudo apt install -y libgl1 libglx-mesa0 libgl1-mesa-dri libglu1-mesa libegl1-mesa mesa-utils libopengl0 fontconfig fonts-dejavu-core
+          sudo fc-cache -f
 
       - name: Install packages
         run: |
@@ -29,7 +30,7 @@ jobs:
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
           QT_OPENGL: "software"
-          QT_QPA_PLATFORM: "minimal"
+          QT_QPA_PLATFORM: "offscreen"
           QT_XCB_GL_INTEGRATION: "none"
         uses: coactions/setup-xvfb@v1.0.1
         with:

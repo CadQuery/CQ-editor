@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   test-linux:
     name: Test Linux
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: "Check out the repo"
         uses: actions/checkout@v3
@@ -26,6 +26,6 @@ jobs:
           pip list
 
       - name: Run tests
-        uses: coactions/setup-xvfb@v1
+        uses: coactions/setup-xvfb@v1.0.1
         with:
           run: pytest

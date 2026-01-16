@@ -28,6 +28,8 @@ jobs:
       - name: Run tests
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
+          QT_QPA_PLATFORM: "offscreen"
+          QT_OPENGL: "software"
         uses: coactions/setup-xvfb@v1.0.1
         with:
           run: pytest

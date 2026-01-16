@@ -29,8 +29,11 @@ jobs:
       - name: Run tests
         env:
           LIBGL_ALWAYS_SOFTWARE: "1"
+          MESA_LOADER_DRIVER_OVERRIDE: "swrast"
+          GALLIUM_DRIVER: "llvmpipe"
           QT_OPENGL: "software"
           QT_QPA_PLATFORM: "xcb"
+          QT_XCB_GL_INTEGRATION: "none"
         uses: coactions/setup-xvfb@v1.0.1
         with:
           run: pytest

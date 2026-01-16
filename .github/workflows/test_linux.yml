@@ -26,6 +26,8 @@ jobs:
           pip list
 
       - name: Run tests
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
         uses: coactions/setup-xvfb@v1.0.1
         with:
           run: pytest

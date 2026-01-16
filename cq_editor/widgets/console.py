@@ -49,6 +49,8 @@ class ConsoleWidget(RichJupyterWidget, ComponentMixin):
 
         self.kernel_manager = kernel_manager = QtInProcessKernelManager()
         kernel_manager.start_kernel(show_banner=False)
+        kernel_manager.kernel.shell.display_banner = False
+        kernel_manager.kernel.shell.banner1 = ""
         kernel_manager.kernel.gui = "qt"
         kernel_manager.kernel.shell.banner1 = ""
 

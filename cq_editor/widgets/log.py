@@ -65,6 +65,7 @@ class QtLogHandler(logging.Handler, logging.StringFormatterHandlerMixin):
         # Preserve base class close behavior
         super(QtLogHandler, self).close()
 
+
 class LogViewer(QPlainTextEdit, ComponentMixin):
 
     name = "Log viewer"

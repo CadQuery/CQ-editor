@@ -8,6 +8,5 @@ if sys.platform == "win32":
 
 from cq_editor.__main__ import main
 
-
 if __name__ == "__main__":
     main()

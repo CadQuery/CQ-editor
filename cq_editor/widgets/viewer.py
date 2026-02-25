@@ -29,7 +29,6 @@ from .occt_widget import OCCTWidget
 from pyqtgraph.parametertree import Parameter
 import qtawesome as qta
 
-
 DEFAULT_EDGE_COLOR = Quantity_Color(BLACK)
 DEFAULT_EDGE_WIDTH = 2
 

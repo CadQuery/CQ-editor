@@ -13,7 +13,6 @@ from OCP.gp import gp_Trsf, gp_Ax1, gp_Dir
 from OCP.AIS import AIS_InteractiveContext, AIS_DisplayMode
 from OCP.Quantity import Quantity_Color
 
-
 ZOOM_STEP = 0.9
 
 

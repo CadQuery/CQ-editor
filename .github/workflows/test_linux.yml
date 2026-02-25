@@ -1,0 +1,46 @@
+name: Test Linux
+
+on: [push, pull_request]
+
+jobs:
+  test-linux:
+    name: Test Linux
+    runs-on: ubuntu-22.04
+    steps:
+      - name: "Check out the repo"
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update && sudo apt install -y \
+            xvfb xauth \
+            libgl1 libglx-mesa0 libgl1-mesa-dri libglu1-mesa libegl1-mesa mesa-utils libopengl0 \
+            libx11-6 libx11-xcb1 libxext6 libxrender1 libsm6 libice6 libxxf86vm1 libxdamage1 libxfixes3 \
+            libxcb-glx0 libxcb-dri2-0 libxcb-dri3-0 libxcb-present0 libxcb-shape0 libxcb-shm0 libxcb-sync1 \
+            libxcb-xfixes0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 \
+            libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 \
+            fontconfig fonts-dejavu-core
+          sudo fc-cache -f
+
+      - name: Install packages
+        run: |
+          pip install -e .
+          pip install .[test]
+          pip list
+
+      - name: Run tests
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          MESA_LOADER_DRIVER_OVERRIDE: "swrast"
+          GALLIUM_DRIVER: "llvmpipe"
+          LIBGL_DRIVERS_PATH: "/usr/lib/x86_64-linux-gnu/dri"
+          QT_OPENGL: "software"
+          QT_QPA_PLATFORM: "xcb"
+        uses: coactions/setup-xvfb@v1.0.1
+        with:
+          run: pytest

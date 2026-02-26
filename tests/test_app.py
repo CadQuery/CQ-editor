@@ -460,8 +460,8 @@ def test_debug(main, mocker):
 
     check_no_error_occured()
 
-    assert variables.model().rowCount() == 1
-    assert number_visible_items(viewer) == 3
+    assert variables.model().rowCount() == 2
+    assert number_visible_items(viewer) == 4
 
     # test breakpoint
     ev = event_loop(
@@ -486,7 +486,7 @@ def test_debug(main, mocker):
     assert variables.model().rowCount() == 2
     assert number_visible_items(viewer) == 4
 
-    # test breakpoint without using singals
+    # test breakpoint without using signals
     ev = event_loop(
         [
             lambda: (cont.triggered.emit(),),

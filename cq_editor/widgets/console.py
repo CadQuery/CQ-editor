@@ -49,8 +49,9 @@ class ConsoleWidget(RichJupyterWidget, ComponentMixin):
 
         self.kernel_manager = kernel_manager = QtInProcessKernelManager()
         kernel_manager.start_kernel(show_banner=False)
-        kernel_manager.kernel.gui = "qt"
+        kernel_manager.kernel.shell.display_banner = False
         kernel_manager.kernel.shell.banner1 = ""
+        kernel_manager.kernel.gui = "qt"
 
         self.kernel_client = kernel_client = self._kernel_manager.client()
         kernel_client.start_channels()
@@ -65,6 +66,17 @@ class ConsoleWidget(RichJupyterWidget, ComponentMixin):
         self.clear()
 
         self.push_vars(namespace)
+
+    def _append_plain_text(self, text, *args, **kwargs):
+        """
+        Overrides the super's method to filter out IPython tips.
+        """
+        # Drop IPython startup tips (including the unicode completion tip)
+        # Done because turning the banner off does not work
+        if isinstance(text, str) and text.lstrip().startswith("Tip:"):
+            return
+
+        return super(ConsoleWidget, self)._append_plain_text(text, *args, **kwargs)
 
     @pyqtSlot(dict)
     def push_vars(self, variableDict):

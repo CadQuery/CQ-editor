@@ -4,7 +4,6 @@ import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QPalette, QColor
 
-
 DARK_BLUE = QtGui.QColor(118, 150, 185)
 
 

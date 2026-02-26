@@ -982,7 +982,7 @@ code_import = """from module import dummy
 assert(dummy())"""
 
 
-def test_module_import(main):
+def test_module_import(main, tmp_path, monkeypatch):
 
     qtbot, win = main
 
@@ -990,12 +990,17 @@ def test_module_import(main):
     debugger = win.components["debugger"]
     traceback_view = win.components["traceback_viewer"]
 
+    # isolate test files in a temp directory
+    monkeypatch.chdir(tmp_path)
+
     # save the dummy module
-    with open("module.py", "w") as f:
-        f.write(code_module)
+    module_file = tmp_path / "module.py"
+    module_file.write_text(code_module)
 
     # run the code importing this module
-    editor.set_text(code_import)
+    script_file = tmp_path / "main.py"
+    script_file.write_text(code_import)
+    editor.load_from_file(str(script_file))
     debugger._actions["Run"][0].triggered.emit()
 
     # verify that no exception was generated

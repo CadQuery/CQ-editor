@@ -38,9 +38,32 @@ class QtLogHandler(logging.Handler, logging.StringFormatterHandlerMixin):
 
         self._qobject = _QtLogHandlerQObject()
         self._qobject.sigRecordEmit.connect(log_widget.append)
+        self._is_closed = False
 
     def emit(self, record):
-        self._qobject.sigRecordEmit.emit(self.format(record) + "\n")
+        # Skip emit if handler has been closed
+        if self._is_closed or self._qobject is None:
+            # No-op when Qt side is no longer valid
+            return
+
+        # Protect signal emission against Qt object lifetime race at shutdown
+        try:
+            self._qobject.sigRecordEmit.emit(self.format(record) + "\n")
+        # Catch wrapped C/C++ deletion error during teardown
+        except RuntimeError:
+            # Mark handler closed so future emits are ignored
+            self._is_closed = True
+            # Drop QObject reference to avoid further access
+            self._qobject = None
+
+    # Explicit close hook to safely disable handler at teardown
+    def close(self):
+        # Mark handler as closed
+        self._is_closed = True
+        # Release QObject reference
+        self._qobject = None
+        # Preserve base class close behavior
+        super(QtLogHandler, self).close()
 
 
 class LogViewer(QPlainTextEdit, ComponentMixin):
@@ -63,6 +86,9 @@ class LogViewer(QPlainTextEdit, ComponentMixin):
         self.setLineWrapMode(QPlainTextEdit.NoWrap)
 
         self.handler = QtLogHandler(self)
+
+        # Ensure handler is closed when widget is destroyed
+        self.destroyed.connect(lambda *_: self.handler.close())
 
     def append(self, msg):
         """Append text to the panel with ANSI escape sequences stipped."""

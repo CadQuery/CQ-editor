@@ -113,8 +113,8 @@ def make_AIS(
         r, g, b, a = options["rgba"]
         set_color(ais, to_occ_color((r, g, b)))
         set_transparency(ais, a)
-    if "edge_color" in options:
-        set_edge_color(ais, to_occ_color(options["edge_color"]))
+    if "edgecolor" in options:
+        set_edge_color(ais, to_occ_color(options["edgecolor"]))
 
     return ais, shape
 

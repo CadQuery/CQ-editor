@@ -1257,11 +1257,11 @@ import cadquery as cq
 result = cq.Workplane("XY" ).box(1, 1, 1)
 
 show_object(result, name ='1')
-show_object(result, name ='2', options=dict(alpha=0.5,color='red'))
-show_object(result, name ='3', options=dict(alpha=0.5,color='#ff0000'))
-show_object(result, name ='4', options=dict(alpha=0.5,color=(255,0,0)))
-show_object(result, name ='5', options=dict(alpha=0.5,color=(1.,0,0)))
-show_object(result, name ='6', options=dict(rgba=(1.,0,0,.5)))
+show_object(result, name ='2', options=dict(alpha=0.5,color='red',edgecolor="white"))
+show_object(result, name ='3', options=dict(alpha=0.5,color='#ff0000',edgecolor="#ff0000"))
+show_object(result, name ='4', options=dict(alpha=0.5,color=(255,0,0),edgecolor=(0,0,255)))
+show_object(result, name ='5', options=dict(alpha=0.5,color=(1.0,0,0),edgecolor=(0.0,0.0,1.0)))
+show_object(result, name ='6', options=dict(rgba=(1.0,0,0,0.5),edgecolor=(0.0,0.0,1.0)))
 show_object(result, name ='7', options=dict(color=('ff','cc','dd')))
 """
 

@@ -14,6 +14,8 @@ from OCP.Quantity import (
     Quantity_NOC_GOLD as GOLD,
 )
 from OCP.Graphic3d import Graphic3d_NOM_JADE, Graphic3d_MaterialAspect
+from OCP.Prs3d import Prs3d_LineAspect
+from OCP.Aspect import Aspect_TOL_SOLID
 
 from PyQt5.QtGui import QColor
 
@@ -111,6 +113,8 @@ def make_AIS(
         r, g, b, a = options["rgba"]
         set_color(ais, to_occ_color((r, g, b)))
         set_transparency(ais, a)
+    if "edge_color" in options:
+        set_edge_color(ais, to_occ_color(options["edge_color"]))
 
     return ais, shape
 
@@ -161,6 +165,22 @@ def set_color(ais: AIS_Shape, color: Quantity_Color) -> AIS_Shape:
     drawer = ais.Attributes()
     drawer.SetupOwnShadingAspect()
     drawer.ShadingAspect().SetColor(color)
+
+    return ais
+
+
+def set_edge_color(ais: AIS_Shape, color: Quantity_Color) -> AIS_Shape:
+    """
+    Sets edge color to a non-default independently of face color.
+    """
+
+    drawer = ais.Attributes()
+    drawer.SetFaceBoundaryDraw(True)
+    face_boundary_aspect = drawer.FaceBoundaryAspect()
+    if face_boundary_aspect is None:
+        face_boundary_aspect = Prs3d_LineAspect(color, Aspect_TOL_SOLID, 2.0)
+        drawer.SetFaceBoundaryAspect(face_boundary_aspect)
+    face_boundary_aspect.SetColor(color)
 
     return ais
 

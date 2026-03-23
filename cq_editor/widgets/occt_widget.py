@@ -143,7 +143,7 @@ class OCCTWidget(QWidget):
             if abs(x - self.left_press.x()) > 2 or abs(y - self.left_press.y()) > 2:
                 self.pending_select = False
 
-        elif event.buttons() == Qt.MiddleButton or (
+        if event.buttons() == Qt.MiddleButton or (
             event.buttons() == Qt.LeftButton and event.modifiers() == Qt.ControlModifier
         ):
             self.view.Pan(

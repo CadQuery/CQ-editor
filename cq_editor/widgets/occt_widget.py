@@ -117,7 +117,10 @@ class OCCTWidget(QWidget):
         x, y = pos.x(), pos.y()
 
         # Check for mouse drag rotation
-        if event.buttons() == Qt.LeftButton:
+        if event.buttons() == Qt.LeftButton and event.modifiers() not in (
+            Qt.ShiftModifier,
+            Qt.ControlModifier,
+        ):
             # Set the rotation differently based on the orbit method
             if self._orbit_method == "Trackball":
                 self.view.Rotation(x, y)
@@ -135,16 +138,21 @@ class OCCTWidget(QWidget):
                 cam.Transform(z_rotation)
                 self.view.Rotate(0, -delta_y * self._rotate_step, 0)
 
-            # If the user moves the mouse at all, the selection will not happen
+        # If the user moves the mouse at all, the selection will not happen
+        if event.buttons() == Qt.LeftButton:
             if abs(x - self.left_press.x()) > 2 or abs(y - self.left_press.y()) > 2:
                 self.pending_select = False
 
-        elif event.buttons() == Qt.MiddleButton:
+        elif event.buttons() == Qt.MiddleButton or (
+            event.buttons() == Qt.LeftButton and event.modifiers() == Qt.ControlModifier
+        ):
             self.view.Pan(
                 x - self._previous_pos.x(), self._previous_pos.y() - y, theToStart=True
             )
 
-        elif event.buttons() == Qt.RightButton:
+        elif event.buttons() == Qt.RightButton or (
+            event.buttons() == Qt.LeftButton and event.modifiers() == Qt.ShiftModifier
+        ):
             self.view.ZoomAtPoint(self._previous_pos.x(), y, x, self._previous_pos.y())
 
         self._previous_pos = pos

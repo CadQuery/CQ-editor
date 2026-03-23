@@ -6,28 +6,29 @@ source:
   path: ..
 
 build:
-  string: {{ 'py'+environ.get('PYTHON_VERSION')}}
+  string: {{ GIT_DESCRIBE_TAG }}_{{ GIT_BUILD_STR }}
+  noarch: python
   script: python setup.py install --single-version-externally-managed --record=record.txt
   entry_points:
     - cq-editor = cq_editor.__main__:main
     - CQ-editor = cq_editor.__main__:main
 requirements:
   build:
-    - python {{ environ.get('PYTHON_VERSION') }}
+    - python >=3.10
     - setuptools
 
   run:
-    - python {{ environ.get('PYTHON_VERSION') }}
+    - python >=3.10
     - cadquery=master
     - ocp
     - logbook
     - pyqt=5.*
     - pyqtgraph
-    - spyder=5.*
+    - qtawesome=1.4.0
     - path
     - logbook
     - requests
-
+    - qtconsole >=5.5.1,<5.7.0
 test:
   imports:
     - cq_editor

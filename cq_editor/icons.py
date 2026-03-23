@@ -9,51 +9,83 @@ Created on Fri May 25 14:47:10 2018
 from PyQt5.QtGui import QIcon
 
 from . import icons_res
-_icons = {
-    'app' : QIcon(":/images/icons/cadquery_logo_dark.svg")
-    }
+
+_icons = {"app": QIcon(":/images/icons/cadquery_logo_dark.svg")}
 
 import qtawesome as qta
 
 _icons_specs = {
-    'new'  : (('fa.file-o',),{}),
-    'open' : (('fa.folder-open-o',),{}),
+    "new": (("fa5.file",), {}),
+    "open": (("fa5.folder-open",), {}),
     # borrowed from spider-ide
-    'autoreload': [('fa.repeat', 'fa.clock-o'), {'options': [{'scale_factor': 0.75, 'offset': (-0.1, -0.1)}, {'scale_factor': 0.5, 'offset': (0.25, 0.25)}]}],
-    'save' : (('fa.save',),{}),
-    'save_as': (('fa.save','fa.pencil'),
-               {'options':[{'scale_factor': 1,},
-                           {'scale_factor': 0.8,
-                            'offset': (0.2, 0.2)}]}),
-    'run'  : (('fa.play',),{}),
-    'delete' : (('fa.trash',),{}),
-    'delete-many' : (('fa.trash','fa.trash',),
-                     {'options' : \
-                      [{'scale_factor': 0.8,
-                         'offset': (0.2, 0.2),
-                         'color': 'gray'},
-                       {'scale_factor': 0.8}]}),
-    'help' : (('fa.life-ring',),{}),
-    'about': (('fa.info',),{}),
-    'preferences' : (('fa.cogs',),{}),
-    'inspect' : (('fa.cubes','fa.search'),
-                 {'options' : \
-                  [{'scale_factor': 0.8,
-                     'offset': (0,0),
-                     'color': 'gray'},{}]}),
-    'screenshot' : (('fa.camera',),{}),
-    'screenshot-save' : (('fa.save','fa.camera'),
-                         {'options' : \
-                          [{'scale_factor': 0.8},
-                           {'scale_factor': 0.8,
-                            'offset': (.2,.2)}]})
+    "autoreload": [
+        ("fa5s.redo-alt", "fa5.clock"),
+        {
+            "options": [
+                {"scale_factor": 0.75, "offset": (-0.1, -0.1)},
+                {"scale_factor": 0.5, "offset": (0.25, 0.25)},
+            ]
+        },
+    ],
+    "save": (("fa5.save",), {}),
+    "save_as": (
+        ("fa5.save", "fa5s.pencil-alt"),
+        {
+            "options": [
+                {
+                    "scale_factor": 1,
+                },
+                {"scale_factor": 0.8, "offset": (0.2, 0.2)},
+            ]
+        },
+    ),
+    "run": (("fa5s.play",), {}),
+    "debug": (("fa5s.bug",), {}),
+    "delete": (("fa5s.trash",), {}),
+    "delete-many": (
+        (
+            "fa5s.trash",
+            "fa5s.trash",
+        ),
+        {
+            "options": [
+                {"scale_factor": 0.8, "offset": (0.2, 0.2), "color": "gray"},
+                {"scale_factor": 0.8},
+            ]
+        },
+    ),
+    "help": (("fa5s.life-ring",), {}),
+    "about": (("fa5s.info",), {}),
+    "preferences": (("fa5s.cogs",), {}),
+    "inspect": (
+        ("fa5s.cubes", "fa5s.search"),
+        {"options": [{"scale_factor": 0.8, "offset": (0, 0), "color": "gray"}, {}]},
+    ),
+    "screenshot": (("fa5s.camera",), {}),
+    "screenshot-save": (
+        ("fa5.save", "fa5s.camera"),
+        {
+            "options": [
+                {"scale_factor": 0.8},
+                {"scale_factor": 0.8, "offset": (0.2, 0.2)},
+            ]
+        },
+    ),
+    "toggle-comment": (("fa5s.hashtag",), {}),
+    "search": (("fa5s.search",), {}),
+    "arrow-step-over": (("fa5s.step-forward",), {}),
+    "arrow-step-in": (("fa5s.angle-down",), {}),
+    "arrow-continue": (("fa5s.arrow-right",), {}),
+    "clear": (("fa5s.eraser",), {}),
+    "clear-2": (("fa5s.broom",), {}),
 }
+
 
 def icon(name):
 
     if name in _icons:
         return _icons[name]
 
-    args,kwargs = _icons_specs[name]
+    args, kwargs = _icons_specs[name]
 
-    return qta.icon(*args,**kwargs)
+    return qta.icon(*args, **kwargs)

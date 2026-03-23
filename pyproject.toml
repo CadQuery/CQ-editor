@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "CQ-editor"
+version = "0.7.dev0"
+dependencies = [
+  "cadquery",
+  "PyQt5",
+  "pyqtgraph",
+  "qtawesome==1.4.0",
+  "path",
+  "logbook",
+  "requests",
+  "qtconsole>=5.5.1,<5.7.0",
+  "packaging"
+]
+requires-python = ">=3.10,<=3.14"
+authors = [
+  { name="CadQuery Developers" }
+]
+maintainers = [
+  { name="CadQuery Developers" }
+]
+description = "CadQuery plugin to create a mesh of an assembly with corresponding data"
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["cadquery", "CAD", "engineering", "design"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python"
+]
+
+[project.scripts]
+CQ-editor = "cq_editor.cqe_run:main"
+cq-editor = "cq_editor.cqe_run:main"
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pluggy",
+    "pytest-qt",
+    "pytest-mock",
+    "pytest-repeat",
+    "pyvirtualdisplay"
+]
+dev = [
+  "black",
+]
+
+[project.urls]
+Repository = "https://github.com/CadQuery/CQ-editor.git"
+"Bug Tracker" = "https://github.com/CadQuery/CQ-editor/issues"

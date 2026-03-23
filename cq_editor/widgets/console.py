@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QAction
 from PyQt5.QtCore import pyqtSlot
 
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
@@ -6,22 +6,53 @@ from qtconsole.inprocess import QtInProcessKernelManager
 
 from ..mixins import ComponentMixin
 
-class ConsoleWidget(RichJupyterWidget,ComponentMixin):
-    
-    name = 'Console'
+from ..icons import icon
+
+
+class ConsoleWidget(RichJupyterWidget, ComponentMixin):
+
+    name = "Console"
 
     def __init__(self, customBanner=None, namespace=dict(), *args, **kwargs):
         super(ConsoleWidget, self).__init__(*args, **kwargs)
 
-#        if not customBanner is None:
-#            self.banner = customBanner
+        #        if not customBanner is None:
+        #            self.banner = customBanner
 
+        self._actions = {
+            "Run": [
+                QAction(
+                    icon("clear-2"), "Clear Console", self, triggered=self.reset_console
+                ),
+            ]
+        }
         self.font_size = 6
+        self.style_sheet = """<style>
+                            QPlainTextEdit, QTextEdit {
+                                background-color: #3f3f3f;
+                                background-clip: padding;
+                                color: #dcdccc;
+                                selection-background-color: #484848;
+                            }
+                            .inverted {
+                                background-color: #dcdccc;
+                                color: #3f3f3f;
+                            }
+                            .error { color: red; }
+                            .in-prompt-number { font-weight: bold; }
+                            .out-prompt-number { font-weight: bold; }
+                            .in-prompt { color: navy; }
+                            .out-prompt { color: darkred; }
+                            </style>
+                            """
+        self.syntax_style = "zenburn"
+
         self.kernel_manager = kernel_manager = QtInProcessKernelManager()
         kernel_manager.start_kernel(show_banner=False)
-        kernel_manager.kernel.gui = 'qt'
+        kernel_manager.kernel.shell.display_banner = False
         kernel_manager.kernel.shell.banner1 = ""
-        
+        kernel_manager.kernel.gui = "qt"
+
         self.kernel_client = kernel_client = self._kernel_manager.client()
         kernel_client.start_channels()
 
@@ -31,10 +62,21 @@ class ConsoleWidget(RichJupyterWidget,ComponentMixin):
             QApplication.instance().exit()
 
         self.exit_requested.connect(stop)
-        
+
         self.clear()
-        
+
         self.push_vars(namespace)
+
+    def _append_plain_text(self, text, *args, **kwargs):
+        """
+        Overrides the super's method to filter out IPython tips.
+        """
+        # Drop IPython startup tips (including the unicode completion tip)
+        # Done because turning the banner off does not work
+        if isinstance(text, str) and text.lstrip().startswith("Tip:"):
+            return
+
+        return super(ConsoleWidget, self)._append_plain_text(text, *args, **kwargs)
 
     @pyqtSlot(dict)
     def push_vars(self, variableDict):
@@ -50,6 +92,11 @@ class ConsoleWidget(RichJupyterWidget,ComponentMixin):
         """
         self._control.clear()
 
+    def reset_console(self):
+        """
+        Resets the terminal, which clears it back to a single prompt.
+        """
+        self.reset(clear=True)
 
     def print_text(self, text):
         """
@@ -62,20 +109,29 @@ class ConsoleWidget(RichJupyterWidget,ComponentMixin):
         Execute a command in the frame of the console widget
         """
         self._execute(command, False)
-        
-    def _banner_default(self):
-        
-        return ''
 
-        
+    def _banner_default(self):
+
+        return ""
+
+    def app_theme_changed(self, theme):
+        """
+        Allows this console to be changed to match the light or dark theme of the rest of the app.
+        """
+
+        if theme == "Dark":
+            self.set_default_style("linux")
+        else:
+            self.set_default_style("lightbg")
+
+
 if __name__ == "__main__":
-   
-    
+
     import sys
-    
+
     app = QApplication(sys.argv)
-    
-    console = ConsoleWidget(customBanner='IPython console test')
+
+    console = ConsoleWidget(customBanner="IPython console test")
     console.show()
-    
+
     sys.exit(app.exec_())

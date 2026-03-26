@@ -448,7 +448,9 @@ class MainWindow(QMainWindow, MainMixin):
             self.components["object_tree"].stashObjects
         )
         self.components["debugger"].sigDebugging.connect(
-            lambda active: self.components["editor"].clear_debug_line() if not active else None
+            lambda active: (
+                self.components["editor"].clear_debug_line() if not active else None
+            )
         )
         self.components["debugger"].sigCQChanged.connect(
             self.components["object_tree"].addObjects

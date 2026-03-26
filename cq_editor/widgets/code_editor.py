@@ -809,11 +809,13 @@ class CodeEditor(CodeTextEdit):
                         painter.setBrush(QtGui.QBrush(QtGui.QColor(255, 200, 0)))
                         painter.setPen(QtGui.QPen(QtGui.QColor(200, 150, 0)))
                         mid_y = int(top) + self.fontMetrics().height() // 2
-                        arrow = QtGui.QPolygon([
-                            QtCore.QPoint(7, mid_y - 5),
-                            QtCore.QPoint(15, mid_y),
-                            QtCore.QPoint(7, mid_y + 5),
-                        ])
+                        arrow = QtGui.QPolygon(
+                            [
+                                QtCore.QPoint(7, mid_y - 5),
+                                QtCore.QPoint(15, mid_y),
+                                QtCore.QPoint(7, mid_y + 5),
+                            ]
+                        )
                         painter.drawPolygon(arrow)
 
                     # Draw the line number

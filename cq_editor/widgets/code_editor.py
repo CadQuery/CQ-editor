@@ -308,6 +308,8 @@ class CodeTextEdit(QtWidgets.QPlainTextEdit):
     def __init__(self):
         super(CodeTextEdit, self).__init__()
 
+        self._eol = os.linesep
+
         self.indented.connect(self.do_indent)
         self.unindented.connect(self.undo_indent)
 
@@ -717,6 +719,16 @@ class CodeEditor(CodeTextEdit):
         """
 
         self._filename = file_name
+
+        # Detect the EOL style used in the file so we can preserve it on save
+        with open(file_name, "rb") as f:
+            raw = f.read()
+        if b"\r\n" in raw:
+            self._eol = "\r\n"
+        elif b"\r" in raw:
+            self._eol = "\r"
+        else:
+            self._eol = "\n"
 
         # Load the text into the text field
         with open(file_name, "r", encoding="utf-8") as file:

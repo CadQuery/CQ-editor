@@ -271,8 +271,8 @@ class Editor(CodeEditor, ComponentMixin):
         """
 
         if self._filename != "":
-            with open(self._filename, "w", encoding="utf-8") as f:
-                f.write(self.toPlainText())
+            with open(self._filename, "w", encoding="utf-8", newline="") as f:
+                f.write(self.toPlainText().replace("\n", self._eol))
 
             # Let the editor and the rest of the app know that the file is no longer dirty
             self.reset_modified()
@@ -286,9 +286,9 @@ class Editor(CodeEditor, ComponentMixin):
 
         fname = get_save_filename(self.EXTENSIONS)
         if fname != "":
-            with open(fname, "w", encoding="utf-8") as f:
-                f.write(self.toPlainText())
-                self.filename = fname
+            with open(fname, "w", encoding="utf-8", newline="") as f:
+                f.write(self.toPlainText().replace("\n", self._eol))
+            self.filename = fname
 
             self.reset_modified()
 

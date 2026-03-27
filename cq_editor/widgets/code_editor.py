@@ -670,6 +670,7 @@ class CodeEditor(CodeTextEdit):
                     leftmost_pos = pos
 
             # Step through all of the selected lines and toggle their comments
+            cursor.beginEditBlock()
             for i in range(sel_start, sel_end + 1):
                 # If this is a blank line, do not process it
                 if i in blank_lines:
@@ -710,6 +711,7 @@ class CodeEditor(CodeTextEdit):
                             QtGui.QTextCursor.Left, QtGui.QTextCursor.MoveAnchor, 1
                         )
                         cursor.insertText("# ")
+            cursor.endEditBlock()
 
     def set_text(self, new_text):
         """

@@ -562,6 +562,21 @@ class CodeEditor(CodeTextEdit):
         cursor.setPosition(block.position())
         self.setTextCursor(cursor)
 
+    def set_debug_line(self, line_number):
+        """
+        Sets which line is currently being debugged.
+        """
+        self.debugger.current_debug_line = line_number
+        self.line_number_area.update()
+        self.go_to_line(line_number)
+
+    def clear_debug_line(self):
+        """
+        Clears the line being debugged.
+        """
+        self.debugger.current_debug_line = None
+        self.line_number_area.update()
+
     def toggle_comment(self):
         """
         High level method to comment or uncomment a single line,
@@ -788,6 +803,20 @@ class CodeEditor(CodeTextEdit):
                         painter.drawEllipse(
                             circle_x, circle_y, circle_size, circle_size
                         )
+
+                    # Draw the debug position arrow
+                    if self.debugger.current_debug_line == line_number:
+                        painter.setBrush(QtGui.QBrush(QtGui.QColor(255, 200, 0)))
+                        painter.setPen(QtGui.QPen(QtGui.QColor(200, 150, 0)))
+                        mid_y = int(top) + self.fontMetrics().height() // 2
+                        arrow = QtGui.QPolygon(
+                            [
+                                QtCore.QPoint(7, mid_y - 5),
+                                QtCore.QPoint(15, mid_y),
+                                QtCore.QPoint(7, mid_y + 5),
+                            ]
+                        )
+                        painter.drawPolygon(arrow)
 
                     # Draw the line number
                     number = str(line_number)

@@ -442,10 +442,15 @@ class MainWindow(QMainWindow, MainMixin):
             self.components["variables_viewer"].update_frame
         )
         self.components["debugger"].sigLineChanged.connect(
-            self.components["editor"].go_to_line
+            self.components["editor"].set_debug_line
         )
         self.components["debugger"].sigDebugging.connect(
             self.components["object_tree"].stashObjects
+        )
+        self.components["debugger"].sigDebugging.connect(
+            lambda active: (
+                self.components["editor"].clear_debug_line() if not active else None
+            )
         )
         self.components["debugger"].sigCQChanged.connect(
             self.components["object_tree"].addObjects

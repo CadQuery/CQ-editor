@@ -37,6 +37,7 @@ from ..icons import icon
 class EditorDebugger:
     def __init__(self):
         self.breakpoints = []
+        self.current_debug_line = None
 
     def get_breakpoints(self):
         return self.breakpoints

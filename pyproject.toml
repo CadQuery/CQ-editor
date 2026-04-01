@@ -23,7 +23,7 @@ authors = [
 maintainers = [
   { name="CadQuery Developers" }
 ]
-description = "CadQuery plugin to create a mesh of an assembly with corresponding data"
+description = "Cross-platform CadQuery 3D viewer and optional editor built on PyQt"
 readme = "README.md"
 license = {file = "LICENSE"}
 keywords = ["cadquery", "CAD", "engineering", "design"]

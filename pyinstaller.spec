@@ -35,22 +35,23 @@ a = Analysis(
     noarchive=False,
 )
 
-# Exclude problematic Linux system libraries.
-# These must not be bundled — packages like Pillow vendor their own copies
-# (e.g. pillow.libs/libxcb-*.so) which get prepended to LD_LIBRARY_PATH and
-# break OCCT's GLX initialization by shadowing the system X11/GL stack.
+# Exclude unmangled system X11/GL libraries that would shadow the system stack
+# via PyInstaller's LD_LIBRARY_PATH. Manylinux-vendored copies with a hash in
+# their name (e.g. libXcursor-1a09904e.so.1.0.2) are safe to keep because
+# their SONAME is also mangled and won't conflict with system libraries.
 if sys.platform == 'linux':
-    import os
-    exclude_libs = (
+    import os, re
+    _HASH_RE = re.compile(r'-[0-9a-f]{8}\.')
+    _SYSTEM_PREFIXES = (
         'libGL', 'libEGL', 'libGLX', 'libGLdispatch', 'libGLES',
         'libX11', 'libXau', 'libxcb', 'libXcursor', 'libXext',
         'libXfixes', 'libXi', 'libXrender',
         'libbsd',
     )
-    a.binaries = TOC(
-        [x for x in a.binaries
-         if not os.path.basename(x[0]).startswith(exclude_libs)]
-    )
+    def _is_conflicting(name):
+        bn = os.path.basename(name)
+        return bn.startswith(_SYSTEM_PREFIXES) and not _HASH_RE.search(bn)
+    a.binaries = TOC([x for x in a.binaries if not _is_conflicting(x[0])])
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 

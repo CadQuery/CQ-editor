@@ -3,7 +3,7 @@
 import sys
 from pathlib import Path
 import parso
-from PyInstaller.utils.hooks import collect_data_files
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 
 block_cipher = None
 
@@ -12,7 +12,9 @@ parso_grammar = (Path(parso.__file__).parent / 'python').glob('grammar*')
 a = Analysis(
     ['run.py'],
     pathex=['.'],
-    binaries=[],
+    binaries=[
+        *collect_dynamic_libs('casadi'),
+    ],
     datas=[
         ('cq_editor/icons_res.py', 'cq_editor'),
         *[(str(p), 'parso/python') for p in parso_grammar],

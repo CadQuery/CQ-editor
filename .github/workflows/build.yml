@@ -27,6 +27,10 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt install -y libgl1 libegl1
+
       - name: Install dependencies
         run: |
           pip install .

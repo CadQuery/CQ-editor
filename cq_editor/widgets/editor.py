@@ -551,9 +551,13 @@ class Editor(CodeEditor, ComponentMixin):
         except Exception as err:
             # The module finder has trouble when CadQuery is imported in the top level script and in
             # imported modules. The warning about it can be ignored.
-            if "cadquery" not in finder.badmodules or (
-                "cadquery" in finder.badmodules and len(finder.badmodules) > 1
+            if (
+                (isinstance(err, AttributeError) and "is_package" in str(err))
+                or ("cadquery" not in finder.badmodules)
+                or ("cadquery" in finder.badmodules and len(finder.badmodules) > 1)
             ):
+                pass
+            else:
                 self._logger.warning(
                     f"Cannot determine imported modules in {module_path}: {type(err).__name__} {err}"
                 )

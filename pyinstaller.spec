@@ -3,28 +3,31 @@
 import sys
 from pathlib import Path
 import parso
-from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_all
 
 block_cipher = None
 
 parso_grammar = (Path(parso.__file__).parent / 'python').glob('grammar*')
+casadi_datas, casadi_binaries, casadi_hiddenimports = collect_all('casadi')
 
 a = Analysis(
     ['run.py'],
     pathex=['.'],
     binaries=[
-        *collect_dynamic_libs('casadi'),
+        *casadi_binaries,
     ],
     datas=[
         ('cq_editor/icons_res.py', 'cq_editor'),
         *[(str(p), 'parso/python') for p in parso_grammar],
         *collect_data_files('debugpy'),
+        *casadi_datas,
     ],
     hiddenimports=[
         'ipykernel.datapub',
         'pygments.styles.default',
         'qtconsole.client',
         'OCP',
+        *casadi_hiddenimports,
     ],
     hookspath=[],
     runtime_hooks=[

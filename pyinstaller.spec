@@ -27,6 +27,7 @@ a = Analysis(
     hookspath=[],
     runtime_hooks=[
         'pyinstaller/pyi_rth_fontconfig.py',
+        'pyinstaller/pyi_rth_qt_xcb.py',
     ],
     excludes=['_tkinter', 'spyder'],
     win_no_prefer_redirects=False,

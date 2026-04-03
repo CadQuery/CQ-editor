@@ -15,7 +15,7 @@ jobs:
             artifact: CQ-editor-linux-x86_64
           - os: windows-latest
             artifact: CQ-editor-windows-x86_64.exe
-          - os: macos-13
+          - os: macos-12
             artifact: CQ-editor-macos-x86_64
           - os: macos-latest
             artifact: CQ-editor-macos-arm64

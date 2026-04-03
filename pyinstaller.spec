@@ -37,7 +37,7 @@ a = Analysis(
 
 # Exclude problemmatic Linux system libraries
 if sys.platform == 'linux':
-    exclude_libs = ('libGL', 'libEGL', 'libGLX', 'libGLdispatch', 'libGLES', 'libbsd')
+    exclude_libs = ('libGL', 'libEGL', 'libGLX', 'libGLdispatch', 'libGLES', 'libxcb-glx', 'libbsd')
     a.binaries = TOC(
         [x for x in a.binaries if not x[0].startswith(exclude_libs)]
     )

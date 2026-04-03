@@ -1,15 +1,15 @@
-import os, sys, asyncio
+import sys
 import faulthandler
+
+# PyInstaller with console=False sets sys.stdout/stderr to None on Windows
+if sys.stdout is None:
+    sys.stdout = open("nul", "w")
+if sys.stderr is None:
+    sys.stderr = open("nul", "w")
 
 faulthandler.enable()
 
-if "CASROOT" in os.environ:
-    del os.environ["CASROOT"]
-
-if sys.platform == "win32":
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-
-from cq_editor.__main__ import main
+from cq_editor.cqe_run import main
 
 if __name__ == "__main__":
     main()

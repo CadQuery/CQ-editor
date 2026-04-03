@@ -44,9 +44,18 @@ if sys.platform == 'linux':
     import os, re
     _HASH_RE = re.compile(r'-[0-9a-f]{8}\.')
     _SYSTEM_PREFIXES = (
+        # OpenGL / EGL
         'libGL', 'libEGL', 'libGLX', 'libGLdispatch', 'libGLES',
+        'libdrm', 'libgbm',
+        # X11 / XCB
         'libX11', 'libXau', 'libxcb', 'libXcursor', 'libXext',
-        'libXfixes', 'libXi', 'libXrender',
+        'libXfixes', 'libXi', 'libXrender', 'libXss', 'libXtst',
+        # C++ / GCC runtime — must come from the user's system
+        'libstdc++', 'libgcc_s',
+        # GLib / D-Bus — tightly coupled to the rest of the system
+        'libglib-2.0', 'libgobject-2.0', 'libgio-2.0', 'libgmodule-2.0',
+        'libdbus-1',
+        # Misc system libs
         'libbsd',
     )
     def _is_conflicting(name):

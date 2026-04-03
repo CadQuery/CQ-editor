@@ -27,7 +27,6 @@ a = Analysis(
     hookspath=[],
     runtime_hooks=[
         'pyinstaller/pyi_rth_fontconfig.py',
-        'pyinstaller/pyi_rth_qt_xcb.py',
     ],
     excludes=['_tkinter', 'spyder'],
     win_no_prefer_redirects=False,
@@ -36,11 +35,21 @@ a = Analysis(
     noarchive=False,
 )
 
-# Exclude problemmatic Linux system libraries
+# Exclude problematic Linux system libraries.
+# These must not be bundled — packages like Pillow vendor their own copies
+# (e.g. pillow.libs/libxcb-*.so) which get prepended to LD_LIBRARY_PATH and
+# break OCCT's GLX initialization by shadowing the system X11/GL stack.
 if sys.platform == 'linux':
-    exclude_libs = ('libGL', 'libEGL', 'libGLX', 'libGLdispatch', 'libGLES', 'libxcb-glx', 'libbsd')
+    import os
+    exclude_libs = (
+        'libGL', 'libEGL', 'libGLX', 'libGLdispatch', 'libGLES',
+        'libX11', 'libXau', 'libxcb', 'libXcursor', 'libXext',
+        'libXfixes', 'libXi', 'libXrender',
+        'libbsd',
+    )
     a.binaries = TOC(
-        [x for x in a.binaries if not x[0].startswith(exclude_libs)]
+        [x for x in a.binaries
+         if not os.path.basename(x[0]).startswith(exclude_libs)]
     )
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)

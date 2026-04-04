@@ -179,6 +179,41 @@ class OCCTWidget(QWidget):
 
         self.sigObjectSelected.emit(selected)
 
+    def nativeEvent(self, event_type, message):
+        # On Windows, QMainWindow dock separator handles have no native HWND, so
+        # mouse events near OCCTWidget's edges get routed to OCCTWidget's HWND
+        # instead of the separator. Return HTTRANSPARENT near all edges so
+        # WM_NCHITTEST falls through to QMainWindow's dock separator handling.
+        if platform == 'win32' and event_type == b'windows_generic_MSG':
+            import ctypes
+            import ctypes.wintypes as w
+
+            WM_NCHITTEST = 0x0084
+            HTTRANSPARENT = -1
+            MARGIN = 4
+
+            class MSG(ctypes.Structure):
+                _fields_ = [
+                    ('hwnd', w.HWND),
+                    ('message', w.UINT),
+                    ('wParam', w.WPARAM),
+                    ('lParam', w.LPARAM),
+                    ('time', w.DWORD),
+                    ('pt', w.POINT),
+                ]
+
+            msg = MSG.from_address(int(message))
+            if msg.message == WM_NCHITTEST:
+                x = ctypes.c_short(msg.lParam & 0xFFFF).value
+                y = ctypes.c_short((msg.lParam >> 16) & 0xFFFF).value
+                pos = self.mapFromGlobal(QPoint(x, y))
+                if (pos.x() < MARGIN or pos.y() < MARGIN or
+                        pos.x() > self.width() - MARGIN or
+                        pos.y() > self.height() - MARGIN):
+                    return True, HTTRANSPARENT
+
+        return super().nativeEvent(event_type, message)
+
     def paintEngine(self):
 
         return None

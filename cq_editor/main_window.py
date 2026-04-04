@@ -95,7 +95,7 @@ class MainWindow(QMainWindow, MainMixin):
             ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
         self.viewer = OCCViewer(self)
-        self.setCentralWidget(self.viewer.canvas)
+        self.setCentralWidget(self.viewer)
 
         self.prepare_panes()
         self.registerComponent("viewer", self.viewer)

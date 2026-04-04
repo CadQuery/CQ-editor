@@ -33,6 +33,7 @@ a = Analysis(
     runtime_hooks=[
         'pyinstaller/pyi_rth_fontconfig.py',
         'pyinstaller/pyi_rth_qt_xcb.py',
+        'pyinstaller/pyi_rth_casadi.py',
     ],
     excludes=['_tkinter', 'spyder'],
     win_no_prefer_redirects=False,

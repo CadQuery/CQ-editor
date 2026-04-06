@@ -42,10 +42,6 @@ result = (
 
     # Drill a counterbored hole at each of the four corner vertices.
     .cboreHole(bolt_dia, cbore_dia, cbore_depth)
-
-    # Fillet the bottom edges to clean up the part.
-    .edges("<Z")
-    .fillet(2.0)
 )
 
 show_object(result)

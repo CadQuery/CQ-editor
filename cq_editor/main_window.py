@@ -22,6 +22,7 @@ from .widgets.traceback_viewer import TracebackPane
 from .widgets.debugger import Debugger, LocalsView
 from .widgets.cq_object_inspector import CQObjectInspector
 from .widgets.log import LogViewer
+from .widgets.upload_dialog import UploadDialog
 
 from . import __version__
 from .utils import (
@@ -365,6 +366,15 @@ class MainWindow(QMainWindow, MainMixin):
             )
         )
 
+        # Add the Upload dialog action
+        menu_tools.addAction(
+            QAction(
+                "Upload Model...",
+                self,
+                triggered=self._upload_model,
+            )
+        )
+
     def prepare_menubar_component(self, menus, comp_menu_dict):
 
         for name, action in comp_menu_dict.items():
@@ -571,6 +581,26 @@ class MainWindow(QMainWindow, MainMixin):
 
         # Update the statusbar text
         self.status_label.setText(status_text)
+
+    def _upload_model(self):
+        """
+        Allows the userr to easily upload models to an online service for manufacturing,
+        analysis, simulation, display, etc.
+        """
+
+        obj_tree = self.components["object_tree"]
+        selected = [
+            item
+            for item in obj_tree.tree.selectedItems()
+            if item.parent() is obj_tree.CQ
+        ]
+        dlg = UploadDialog(
+            self,
+            self.components["object_tree"],
+            self.components["editor"],
+            selected_shapes=[item.shape for item in selected],
+        )
+        dlg.exec_()
 
 
 if __name__ == "__main__":

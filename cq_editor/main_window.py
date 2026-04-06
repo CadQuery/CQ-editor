@@ -134,6 +134,12 @@ class MainWindow(QMainWindow, MainMixin):
 
         self.restoreComponentState()
 
+        try:
+            import pyi_splash
+            pyi_splash.close()
+        except ImportError:
+            pass
+
     def handleEditorVisiblityChange(self, visible):
         """
         Does the work required to enable/disable menu items when the Editor visibility is changed.

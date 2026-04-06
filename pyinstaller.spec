@@ -71,9 +71,17 @@ if sys.platform == 'linux':
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
+splash = Splash(
+    'pyinstaller/splash_screen.png',
+    binaries=a.binaries,
+    datas=a.datas,
+)
+
 exe = EXE(
     pyz,
     a.scripts,
+    splash,
+    splash.binaries,
     a.binaries,
     a.zipfiles,
     a.datas,

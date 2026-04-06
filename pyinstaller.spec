@@ -71,17 +71,20 @@ if sys.platform == 'linux':
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
-splash = Splash(
-    'pyinstaller/splash_screen.png',
-    binaries=a.binaries,
-    datas=a.datas,
-)
+if sys.platform != 'darwin':
+    splash = Splash(
+        'pyinstaller/splash_screen.png',
+        binaries=a.binaries,
+        datas=a.datas,
+    )
+    splash_scripts = [splash, splash.binaries]
+else:
+    splash_scripts = []
 
 exe = EXE(
     pyz,
     a.scripts,
-    splash,
-    splash.binaries,
+    *splash_scripts,
     a.binaries,
     a.zipfiles,
     a.datas,

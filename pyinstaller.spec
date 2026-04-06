@@ -18,6 +18,7 @@ a = Analysis(
     ],
     datas=[
         ('cq_editor/icons_res.py', 'cq_editor'),
+        ('examples', 'examples'),
         *[(str(p), 'parso/python') for p in parso_grammar],
         *collect_data_files('debugpy'),
         *casadi_datas,

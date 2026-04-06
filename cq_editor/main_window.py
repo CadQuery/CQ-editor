@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QPalette, QColor
@@ -303,6 +304,11 @@ class MainWindow(QMainWindow, MainMixin):
         for comp in self.components.values():
             self.prepare_menubar_component(menus, comp.menuActions())
 
+        # Examples submenu
+        menu_file.addSeparator()
+        examples_menu = menu_file.addMenu("Examples")
+        self._populate_examples_menu(examples_menu)
+
         # global menu elements
         menu_view.addSeparator()
         for d in self.findChildren(QDockWidget):
@@ -504,6 +510,36 @@ class MainWindow(QMainWindow, MainMixin):
                 "log": Logger(self.name).info,
             }
         )
+
+    def _examples_dir(self):
+        # In a PyInstaller bundle examples are extracted alongside the package.
+        # In development they live next to the cq_editor package directory.
+        if getattr(sys, "frozen", False):
+            return Path(sys._MEIPASS) / "examples"
+        return Path(__file__).parent.parent / "examples"
+
+    def _populate_examples_menu(self, menu):
+        examples_dir = self._examples_dir()
+        if not examples_dir.is_dir():
+            menu.setEnabled(False)
+            return
+
+        for path in sorted(examples_dir.glob("*.py")):
+            # Strip the leading "NN_" numbering prefix for the menu label.
+            label = path.stem
+            if len(label) > 3 and label[2] == "_" and label[:2].isdigit():
+                label = label[3:]
+            label = label.replace("_", " ").title()
+
+            menu.addAction(
+                QAction(
+                    label,
+                    self,
+                    triggered=lambda checked, p=path: self.components[
+                        "editor"
+                    ].load_example(str(p)),
+                )
+            )
 
     def fill_dummy(self):
 

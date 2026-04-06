@@ -84,6 +84,10 @@ class Editor(CodeEditor, ComponentMixin):
     # Tracks whether or not the document was saved from the internal editor vs an external editor
     was_modified_by_self = False
 
+    # Set to True when a file was loaded from the examples directory; causes
+    # Save to redirect to Save As so the originals are never overwritten.
+    _is_example = False
+
     # Helps display the completion list for the editor
     completion_list = None
 
@@ -263,7 +267,17 @@ class Editor(CodeEditor, ComponentMixin):
 
         self.set_text_from_file(fname)
         self.filename = fname
+        self._is_example = False
         self.reset_modified()
+
+    def load_example(self, fname):
+        """Load a file from the examples directory.
+
+        Identical to load_from_file except it marks the buffer as an example
+        so that Save redirects to Save As, keeping the originals intact.
+        """
+        self.load_from_file(fname)
+        self._is_example = True
 
     def save(self):
         """
@@ -272,6 +286,13 @@ class Editor(CodeEditor, ComponentMixin):
         """
 
         if self._filename != "":
+            if self._is_example:
+                self.statusChanged.emit(
+                    "Examples are read-only — choose a new location to save your changes"
+                )
+                self.save_as()
+                return
+
             with open(self._filename, "w", encoding="utf-8", newline="") as f:
                 f.write(self.toPlainText().replace("\n", self._eol))
 
@@ -290,6 +311,7 @@ class Editor(CodeEditor, ComponentMixin):
             with open(fname, "w", encoding="utf-8", newline="") as f:
                 f.write(self.toPlainText().replace("\n", self._eol))
             self.filename = fname
+            self._is_example = False
 
             self.reset_modified()
 

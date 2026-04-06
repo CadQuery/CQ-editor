@@ -136,6 +136,7 @@ class MainWindow(QMainWindow, MainMixin):
 
         try:
             import pyi_splash
+
             pyi_splash.close()
         except ImportError:
             pass

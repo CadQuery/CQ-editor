@@ -1,0 +1,53 @@
+name: Build Executables
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            artifact: CQ-editor-linux-x86_64
+          - os: windows-latest
+            artifact: CQ-editor-windows-x86_64.exe
+          - os: macos-latest
+            artifact: CQ-editor-macos-arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt install -y libgl1 libegl1
+
+      - name: Install dependencies
+        run: |
+          pip install .
+          pip install pyinstaller
+
+      - name: Build executable
+        run: pyinstaller pyinstaller.spec
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist/CQ-editor*
+
+      - name: Upload to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/CQ-editor*
+

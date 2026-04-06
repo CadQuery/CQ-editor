@@ -166,7 +166,7 @@ class UploadDialog(QDialog):
                 link = data[result_key]
                 name = self._active_preset.get("name", "unknown service")
                 self._response.setHtml(
-                    f"<p>Click the link below to see your model on {name}'s website.</p>"
+                    f"<p>Click the link below to view your model on {name}'s website.</p>"
                     f'<a href="{link}">{link}</a>'
                 )
             else:

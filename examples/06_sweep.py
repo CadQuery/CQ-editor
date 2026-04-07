@@ -12,6 +12,8 @@
 #
 # This example creates a curved pipe — a circular cross-section swept along
 # a quarter-circle arc.
+#
+# For more examples and the full API reference, see https://cadquery.readthedocs.io/en/latest/
 
 import cadquery as cq
 

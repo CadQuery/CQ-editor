@@ -22,6 +22,8 @@
 #   · · · · · · · · ·  gasket      (z = +4 to +6)
 #   ─────────────────  lower plate (z = −4 to +4)
 #   nut
+#
+# For more examples and the full API reference, see https://cadquery.readthedocs.io/en/latest/
 
 import cadquery as cq
 

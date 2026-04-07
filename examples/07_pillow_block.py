@@ -14,6 +14,8 @@
 #   - Fillets
 #
 # All dimensions are in millimetres.
+#
+# For more examples and the full API reference, see https://cadquery.readthedocs.io/en/latest/
 
 import cadquery as cq
 

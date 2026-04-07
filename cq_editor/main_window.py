@@ -6,6 +6,7 @@ from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import (
     QLabel,
     QMainWindow,
+    QMessageBox,
     QToolBar,
     QDockWidget,
     QAction,
@@ -218,9 +219,20 @@ class MainWindow(QMainWindow, MainMixin):
 
         if self.components["editor"].document().isModified():
 
-            rv = confirm(self, "Confirm close", "Close without saving?")
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Unsaved changes")
+            dlg.setText("Save changes before closing?")
+            dlg.setStandardButtons(
+                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel
+            )
+            dlg.setDefaultButton(QMessageBox.Save)
+            rv = dlg.exec_()
 
-            if rv:
+            if rv == QMessageBox.Save:
+                self.components["editor"].save()
+                event.accept()
+                super(MainWindow, self).closeEvent(event)
+            elif rv == QMessageBox.Discard:
                 event.accept()
                 super(MainWindow, self).closeEvent(event)
             else:
@@ -308,6 +320,11 @@ class MainWindow(QMainWindow, MainMixin):
         menu_file.addSeparator()
         examples_menu = menu_file.addMenu("Examples")
         self._populate_examples_menu(examples_menu)
+
+        menu_file.addSeparator()
+        menu_file.addAction(
+            QAction("Quit", self, shortcut="ctrl+Q", triggered=self.close)
+        )
 
         # global menu elements
         menu_view.addSeparator()

@@ -12,6 +12,8 @@
 #
 # This example transitions from a square base to a circular top, like a
 # funnel or adapter fitting.
+#
+# For more examples and the full API reference, see https://cadquery.readthedocs.io/en/latest/
 
 import cadquery as cq
 

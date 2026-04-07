@@ -9,6 +9,8 @@
 #   "YZ" — side face of the box
 #
 # .box(length, width, height) creates a box centered on the workplane origin.
+#
+# For more examples and the full API reference, see https://cadquery.readthedocs.io/en/latest/
 
 import cadquery as cq
 

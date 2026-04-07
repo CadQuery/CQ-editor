@@ -12,6 +12,8 @@
 #
 # .fillet(radius) rounds the selected edges.
 # .chamfer(length) cuts a 45-degree bevel instead.
+#
+# For more examples and the full API reference, see https://cadquery.readthedocs.io/en/latest/
 
 import cadquery as cq
 

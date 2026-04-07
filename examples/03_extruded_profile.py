@@ -12,6 +12,8 @@
 # .extrude(depth) extrudes the closed profile in the workplane's normal direction.
 #
 # This example draws an L-shaped bracket profile and extrudes it.
+#
+# For more examples and the full API reference, see https://cadquery.readthedocs.io/en/latest/
 
 import cadquery as cq
 

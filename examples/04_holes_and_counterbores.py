@@ -13,6 +13,8 @@
 #
 # .workplane() switches the active workplane to the selected face so that
 # subsequent operations happen relative to it.
+#
+# For more examples and the full API reference, see https://cadquery.readthedocs.io/en/latest/
 
 import cadquery as cq
 

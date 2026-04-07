@@ -219,17 +219,20 @@ class MainWindow(QMainWindow, MainMixin):
 
         if self.components["editor"].document().isModified():
 
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Unsaved changes")
-            dlg.setText("Save changes before closing?")
-            dlg.setStandardButtons(
-                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel
+            rv = QMessageBox.warning(
+                self,
+                "Unsaved changes",
+                "Save changes before closing?",
+                QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel,
+                QMessageBox.Save,
             )
-            dlg.setDefaultButton(QMessageBox.Save)
-            rv = dlg.exec_()
 
             if rv == QMessageBox.Save:
                 self.components["editor"].save()
+                if self.components["editor"].document().isModified():
+                    # Save As was cancelled - abort the close.
+                    event.ignore()
+                    return
                 event.accept()
                 super(MainWindow, self).closeEvent(event)
             elif rv == QMessageBox.Discard:

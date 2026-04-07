@@ -126,6 +126,7 @@ def get_rgba(ais):
 def main(qtbot, mocker):
 
     mocker.patch.object(QMessageBox, "question", return_value=QMessageBox.Yes)
+    mocker.patch.object(QMessageBox, "warning", return_value=QMessageBox.Discard)
 
     win = MainWindow()
     win.show()
@@ -145,6 +146,7 @@ def main(qtbot, mocker):
 def main_clean(qtbot, mocker):
 
     mocker.patch.object(QMessageBox, "question", return_value=QMessageBox.Yes)
+    mocker.patch.object(QMessageBox, "warning", return_value=QMessageBox.Discard)
 
     win = MainWindow()
     win.show()

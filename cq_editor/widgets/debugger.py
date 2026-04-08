@@ -11,6 +11,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import (
     Qt,
     QObject,
+    QThread,
     pyqtSlot,
     pyqtSignal,
     QEventLoop,
@@ -111,6 +112,50 @@ class LocalsView(QTableView, ComponentMixin):
         self.setModel(model)
 
 
+class RenderWorker(QObject):
+    """Runs a CadQuery script on a background thread.
+
+    All signals are emitted from the worker thread; Qt's automatic queued-
+    connection mechanism ensures they are safely delivered to main-thread slots.
+    """
+
+    finished = pyqtSignal()
+    sigRendered = pyqtSignal(dict)
+    sigTraceback = pyqtSignal(object, str)
+    sigLocals = pyqtSignal(dict)
+
+    def __init__(self, debugger, cq_script, cq_script_path):
+        super().__init__()
+        self._debugger = debugger
+        self._cq_script = cq_script
+        self._cq_script_path = cq_script_path
+
+    @pyqtSlot()
+    def run(self):
+        d = self._debugger
+        cq_code, module = d.compile_code(self._cq_script, self._cq_script_path)
+
+        if cq_code is not None:
+            cq_objects, injected_names = d._inject_locals(module)
+            try:
+                d._exec(cq_code, module.__dict__, module.__dict__,
+                        self._cq_script_path)
+                d._cleanup_locals(module, injected_names)
+
+                if len(cq_objects) == 0:
+                    cq_objects = find_cq_objects(module.__dict__)
+
+                self.sigRendered.emit(cq_objects)
+                self.sigTraceback.emit(None, self._cq_script)
+                self.sigLocals.emit(module.__dict__)
+            except Exception:
+                exc_info = sys.exc_info()
+                sys.last_traceback = exc_info[-1]
+                self.sigTraceback.emit(exc_info, self._cq_script)
+
+        self.finished.emit()
+
+
 class Debugger(QObject, ComponentMixin):
 
     name = "Debugger"
@@ -184,6 +229,8 @@ class Debugger(QObject, ComponentMixin):
 
         self._frames = []
         self._stop_debugging = False
+        self._render_thread = None
+        self._render_worker = None
 
     def get_current_script(self):
 
@@ -214,10 +261,10 @@ class Debugger(QObject, ComponentMixin):
             self.sigTraceback.emit(sys.exc_info(), cq_script)
             return None, None
 
-    def _exec(self, code, locals_dict, globals_dict):
+    def _exec(self, code, locals_dict, globals_dict, script_path=None):
 
         with ExitStack() as stack:
-            p = (self.get_current_script_path() or Path("")).absolute().dirname()
+            p = (script_path or Path("")).absolute().dirname()
 
             if self.preferences["Add script dir to path"] and p.exists():
                 sys.path.insert(0, p)
@@ -292,35 +339,42 @@ class Debugger(QObject, ComponentMixin):
     @pyqtSlot(bool)
     def render(self):
 
+        if self._render_thread is not None and self._render_thread.isRunning():
+            return  # ignore re-entrant render requests
+
         seed(59798267586177)
         if self.preferences["Reload CQ"]:
             reload_cq()
 
+        # Capture editor state on the main thread before handing off.
         cq_script = self.get_current_script()
         cq_script_path = self.get_current_script_path()
-        cq_code, module = self.compile_code(cq_script, cq_script_path)
 
-        if cq_code is None:
-            return
+        for action in self._actions["Run"]:
+            action.setEnabled(False)
 
-        cq_objects, injected_names = self._inject_locals(module)
+        self._render_worker = RenderWorker(self, cq_script, cq_script_path)
+        self._render_thread = QThread()
+        self._render_worker.moveToThread(self._render_thread)
 
-        try:
-            self._exec(cq_code, module.__dict__, module.__dict__)
+        self._render_thread.started.connect(self._render_worker.run)
+        self._render_worker.sigRendered.connect(self.sigRendered)
+        self._render_worker.sigTraceback.connect(self.sigTraceback)
+        self._render_worker.sigLocals.connect(self.sigLocals)
+        self._render_worker.finished.connect(self._render_thread.quit)
+        self._render_worker.finished.connect(self._render_worker.deleteLater)
+        self._render_thread.finished.connect(self._render_thread.deleteLater)
+        self._render_thread.finished.connect(self._on_render_finished)
 
-            # remove the special methods
-            self._cleanup_locals(module, injected_names)
+        self._render_thread.start()
 
-            # collect all CQ objects if no explicit show_object was called
-            if len(cq_objects) == 0:
-                cq_objects = find_cq_objects(module.__dict__)
-            self.sigRendered.emit(cq_objects)
-            self.sigTraceback.emit(None, cq_script)
-            self.sigLocals.emit(module.__dict__)
-        except Exception:
-            exc_info = sys.exc_info()
-            sys.last_traceback = exc_info[-1]
-            self.sigTraceback.emit(exc_info, cq_script)
+    def _on_render_finished(self):
+
+        self._render_thread = None
+        self._render_worker = None
+
+        for action in self._actions["Run"]:
+            action.setEnabled(True)
 
     @property
     def breakpoints(self):

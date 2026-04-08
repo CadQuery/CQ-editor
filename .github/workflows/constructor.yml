@@ -84,13 +84,13 @@ jobs:
       - name: Set up Conda
         uses: conda-incubator/setup-miniconda@v3
         with:
-          miniconda-version: "26.1.1"
+          miniconda-version: "latest"
           activate-environment: constructor
 
       - name: Create Conda environment
         shell: bash -el {0}
         run: |
-          conda install -c conda-forge constructor conda-libmamba-solver
+          conda install -c conda-forge constructor=3.15.1 conda-libmamba-solver
           mkdir out && cd out && constructor ../conda
 
       - name: Upload Constructor output

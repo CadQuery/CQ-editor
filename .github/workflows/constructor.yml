@@ -84,7 +84,7 @@ jobs:
       - name: Set up Conda
         uses: conda-incubator/setup-miniconda@v3
         with:
-          miniconda-version: "latest"
+          miniconda-version: "26.1.1"
           activate-environment: constructor
 
       - name: Create Conda environment

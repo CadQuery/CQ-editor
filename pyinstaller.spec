@@ -28,6 +28,8 @@ a = Analysis(
         'pygments.styles.default',
         'qtconsole.client',
         'OCP',
+	'cadquery.func',
+	'cadquery.units',
         *casadi_hiddenimports,
     ],
     hookspath=[],

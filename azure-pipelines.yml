@@ -89,8 +89,8 @@ stages:
 
       - bash: |
           cd ${{ parameters.location }} && \
-          conda run -n build_env conda build -c conda-forge -c cadquery --output-folder . . && \
-          full_path=$(conda run -n build_env conda build --output -c conda-forge -c cadquery --output-folder . . ) && \
+          conda run -n build_env conda-build -c conda-forge -c cadquery --output-folder . . && \
+          full_path=$(conda run -n build_env conda-build --output -c conda-forge -c cadquery --output-folder . . ) && \
           echo $full_path && \
           base_name=$(basename $full_path) && \
           split_name=($(IFS=-; tmp=($base_name); echo ${tmp[@]})) && \
@@ -112,7 +112,7 @@ stages:
 
       - bash: |
           cd ${{ parameters.location }} && \
-          conda run -n build_env conda build -c conda-forge -c cadquery . && \
+          conda run -n build_env conda-build -c conda-forge -c cadquery . && \
           cd ..
         displayName: 'Run conda build without upload'
         failOnStderr: false

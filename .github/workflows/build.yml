@@ -13,7 +13,7 @@ jobs:
         include:
           - os: ubuntu-22.04
             artifact: CQ-editor-linux-x86_64
-          - os: windows-latest
+          - os: windows-2025-vs2026
             artifact: CQ-editor-windows-x86_64.exe
           - os: macos-latest
             artifact: CQ-editor-macos-arm64

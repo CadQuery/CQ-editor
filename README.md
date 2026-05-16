@@ -24,6 +24,99 @@ Additional screenshots are available in [the wiki](https://github.com/CadQuery/C
 * Export to various formats
   * STL
   * STEP
+* **🤖 AI Chat Assistant** *(opt-in)* — describe your model in plain English and get runnable CadQuery code instantly, with iterative editing support
+
+## 🤖 AI Chat Assistant
+
+CQ-editor includes an optional **AI Chat Assistant** panel that lets you generate and iterate on CadQuery models using natural language. It works with any OpenAI-compatible API provider — including OpenAI, OpenRouter, Anthropic (via OpenRouter), and local models via Ollama.
+
+### Setup
+
+**1. Install the optional dependency**
+
+```bash
+pip install openai
+```
+
+> CQ-editor starts and works normally without this package. The AI panel is fully opt-in.
+
+**2. Configure your API key and model**
+
+Open **Edit → Preferences → AI Assistant** and fill in:
+
+| Setting | Description | Example |
+|---|---|---|
+| Enabled | Turn the panel on/off | ✓ |
+| Provider / Base URL | API endpoint | `https://api.openai.com/v1` |
+| Model | Model identifier | `gpt-4o`, `o3`, `claude-sonnet-4-5` |
+| API Key | Your provider API key | `sk-...` |
+| Auto-run after insert | Re-render the model immediately after inserting code | ✓ |
+
+**Supported providers (via Base URL)**
+
+| Provider | Base URL |
+|---|---|
+| OpenAI | `https://api.openai.com/v1` |
+| OpenRouter | `https://openrouter.ai/api/v1` |
+| Local Ollama | `http://localhost:11434/v1` |
+| Any OpenAI-compatible API | your custom endpoint |
+
+**3. Open the panel**
+
+Go to **Tools → 🤖 AI Assistant**, or toggle it from the **View** menu like any other dock panel.
+
+### Usage
+
+**Generating a new model from scratch**
+
+1. Type a description in the prompt box, for example:
+   ```
+   Create a hollow cylinder, 40mm outer diameter, 30mm inner diameter, 80mm tall
+   ```
+2. Press **Enter** or click **Send**.
+3. When the AI replies with code, click **Insert & Run**.
+4. The model appears instantly in the 3D viewer.
+
+**Iterating on an existing model**
+
+The AI automatically receives your **current editor script as context** with every message. This means you can say:
+
+```
+Add a 2mm fillet to all vertical edges
+```
+
+or
+
+```
+Change the wall thickness to 5mm and add mounting holes at each corner
+```
+
+and the AI will modify the existing code rather than starting from scratch.
+
+**Typical workflow**
+
+```
+[You]  Make a rectangular enclosure 100x60x40mm with a 2mm wall thickness
+[AI]   import cadquery as cq
+       result = (
+           cq.Workplane("XY")
+           .box(100, 60, 40)
+           .shell(-2)
+       )
+       show_object(result)
+[You click Insert & Run → model renders in viewer]
+
+[You]  Add four M3 mounting holes at the corners, 5mm from each edge
+[AI]   <updated full script with mounting holes>
+[You click Insert & Run → model updates]
+```
+
+### Tips
+
+* The best models for CadQuery code generation are currently **o3**, **gpt-4o**, and **Gemini 2.5 Pro** (via OpenRouter).
+* If the generated code has an error, the traceback appears in the **Current traceback** panel — you can copy it and paste it back into the chat: *"Fix this error: ..."*.
+* Click **Clear Chat** to reset the conversation history and start a new model.
+* The API key is stored in local preferences only and is never sent anywhere other than your configured provider endpoint.
 
 ## Documentation
 

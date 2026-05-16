@@ -25,6 +25,7 @@ from .widgets.debugger import Debugger, LocalsView
 from .widgets.cq_object_inspector import CQObjectInspector
 from .widgets.log import LogViewer
 from .widgets.upload_dialog import UploadDialog
+from .widgets.ai_chat import AIChatWidget  # AI Assistant
 
 from . import __version__
 from .utils import (
@@ -288,6 +289,18 @@ class MainWindow(QMainWindow, MainMixin):
             lambda c: dock(c, "Log viewer", self, defaultArea="bottom"),
         )
 
+        # ---- AI Chat Assistant (docked on the right by default) -------
+        self.registerComponent(
+            "ai_chat",
+            AIChatWidget(
+                self,
+                editor=None,    # wired after editor is ready in prepare_actions
+                debugger=None,
+            ),
+            lambda c: dock(c, "AI Assistant", self, defaultArea="right"),
+        )
+        # ---------------------------------------------------------------
+
         for d in self.docks.values():
             d.show()
 
@@ -401,6 +414,17 @@ class MainWindow(QMainWindow, MainMixin):
             )
         )
 
+        # AI Assistant toggle in Tools menu
+        menu_tools.addSeparator()
+        menu_tools.addAction(
+            QAction(
+                "🤖 AI Assistant",
+                self,
+                triggered=self._toggle_ai_panel,
+                toolTip="Show / hide the AI Chat Assistant panel",
+            )
+        )
+
     def prepare_menubar_component(self, menus, comp_menu_dict):
 
         for name, action in comp_menu_dict.items():
@@ -421,6 +445,13 @@ class MainWindow(QMainWindow, MainMixin):
         self.statusBar().insertPermanentWidget(0, self.status_label)
 
     def prepare_actions(self):
+
+        # Wire AI chat to the live editor and debugger instances
+        ai = self.components["ai_chat"]
+        ai._editor   = self.components["editor"]
+        ai._debugger = self.components["debugger"]
+        # When LLM code arrives, push it into the editor
+        ai.insert_code.connect(self.components["editor"].set_text)
 
         self.components["debugger"].sigRendered.connect(
             self.components["object_tree"].addObjects
@@ -657,6 +688,16 @@ class MainWindow(QMainWindow, MainMixin):
             selected_shapes=[item.shape for item in selected],
         )
         dlg.exec_()
+
+    def _toggle_ai_panel(self):
+        """Show or hide the AI Assistant dock panel."""
+        dock_widget = self.docks.get("ai_chat")
+        if dock_widget:
+            if dock_widget.isVisible():
+                dock_widget.hide()
+            else:
+                dock_widget.show()
+                dock_widget.raise_()
 
 
 if __name__ == "__main__":

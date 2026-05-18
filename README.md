@@ -44,10 +44,16 @@ pip install keyring
 
 ### Installation
 
-The panel requires the `openai` package. CQ-editor starts and functions normally without it.
+The panel requires the `openai` package and optionally `keyring` for secure key storage. You can install all optional AI Assistant dependencies in one command using the project's standard extras group:
 
 ```bash
-pip install openai
+pip install .[ai]
+```
+
+Or install them manually:
+
+```bash
+pip install openai keyring
 ```
 
 ### Configuration
@@ -95,13 +101,13 @@ Add a 2mm fillet to all vertical edges
 Change the wall thickness to 5mm and add M3 mounting holes at each corner
 ```
 
-**Fixing errors**
+**Fixing errors (One-Tap Self-Healing)**
 
-If the rendered script throws an error, the traceback appears in the **Current traceback** panel. Copy it and paste it back into the chat:
+If the rendered script throws an error, the traceback appears in the **Current traceback** panel. You don't need to copy and paste anything:
 
-```
-Fix this error: <paste traceback>
-```
+* Simply click the vibrant **✨ Auto-Fix with AI** button at the top of the traceback pane.
+* The editor will instantly capture the traceback, line numbers, and crash snippet, open the AI Assistant, and request a fix.
+* Once the corrected code is returned, it is **automatically inserted back into the editor and re-rendered in one tap!**
 
 **Resetting the conversation**
 
@@ -109,8 +115,9 @@ Click **Clear Chat** to discard the conversation history and start a new session
 
 ### Notes
 
+* **Model Quality Matters**: For the best results, use high-capability frontier models. Larger models are vastly superior at precise geometric reasoning, spatial awareness, and successfully resolving CadQuery API errors compared to smaller or lightweight local models.
 * Conversation history is capped at 10 turn pairs. Older messages are dropped automatically to limit token usage.
-* Models that produce consistent fenced code blocks work best. `o3`, `gpt-4o`, and `gemini-2.5-pro` (via OpenRouter) have been tested.
+* Models that produce consistent fenced code blocks work best.
 * The panel shuts down its background thread cleanly when CQ-editor closes, even if a request is in progress.
 
 ## Documentation

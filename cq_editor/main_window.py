@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (
     QAction,
     QApplication,
     QMenu,
+    QDialog,
 )
 from logbook import Logger
 import cadquery as cq
@@ -127,6 +128,14 @@ class MainWindow(QMainWindow, MainMixin):
         self.preferences.sigTreeStateChanged.connect(self.preferencesChanged)
 
         self.restorePreferences()
+
+        # Ensure AI Assistant visibility matches preferences on startup
+        if _AI_AVAILABLE and "ai_chat" in self.components:
+            dock_widget = self.docks.get("ai_chat")
+            if dock_widget:
+                enabled = self.components["ai_chat"]._pref("Enabled")
+                dock_widget.setVisible(enabled)
+
         self.restoreWindow()
 
         # Handle the event of the editor being hidden or shown
@@ -308,7 +317,7 @@ class MainWindow(QMainWindow, MainMixin):
             d.show()
 
         PRINT_REDIRECTOR.sigStdoutWrite.connect(
-            lambda text: self.components["log"].append(text)
+            self.components["log"].append
         )
 
     def prepare_menubar(self):
@@ -454,6 +463,9 @@ class MainWindow(QMainWindow, MainMixin):
             )
             self.components["ai_chat"].insert_code.connect(
                 self.components["editor"].set_text
+            )
+            self.components["traceback_viewer"].sigAutoFixError.connect(
+                self.components["ai_chat"].auto_fix_error
             )
 
         self.components["debugger"].sigRendered.connect(
@@ -625,7 +637,8 @@ class MainWindow(QMainWindow, MainMixin):
     def edit_preferences(self):
 
         prefs = PreferencesWidget(self, self.components)
-        prefs.exec_()
+        if prefs.exec_() == QDialog.Accepted:
+            self.savePreferences()
 
     def about(self):
 

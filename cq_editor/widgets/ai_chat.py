@@ -55,7 +55,13 @@ def _keyring_save(key: str) -> bool:
     """Try to store *key* in the system keychain. Returns True on success."""
     try:
         import keyring
-        keyring.set_password(_KEYRING_SERVICE, _KEYRING_USER, key)
+        if not key or not key.strip() or "OrderedDict" in str(key):
+            try:
+                keyring.delete_password(_KEYRING_SERVICE, _KEYRING_USER)
+            except Exception:
+                pass
+        else:
+            keyring.set_password(_KEYRING_SERVICE, _KEYRING_USER, key)
         return True
     except Exception:
         return False
@@ -65,7 +71,14 @@ def _keyring_load() -> str | None:
     """Try to load the API key from the system keychain."""
     try:
         import keyring
-        return keyring.get_password(_KEYRING_SERVICE, _KEYRING_USER) or None
+        val = keyring.get_password(_KEYRING_SERVICE, _KEYRING_USER)
+        if val and "OrderedDict" in str(val):
+            try:
+                keyring.delete_password(_KEYRING_SERVICE, _KEYRING_USER)
+            except Exception:
+                pass
+            return None
+        return val or None
     except Exception:
         return None
 
@@ -81,12 +94,14 @@ class _LLMWorker(QObject):
     error    = pyqtSignal(str)   # human-readable error
 
     def __init__(self, api_key: str, base_url: str, model: str,
-                 messages: list[dict], parent=None):
+                 messages: list[dict], temperature: float, max_tokens: int, parent=None):
         super().__init__(parent)
-        self._api_key  = api_key
-        self._base_url = base_url
-        self._model    = model
-        self._messages = messages
+        self._api_key     = api_key
+        self._base_url    = base_url
+        self._model       = model
+        self._messages    = messages
+        self._temperature = temperature
+        self._max_tokens  = max_tokens
 
     @pyqtSlot()
     def run(self):
@@ -103,10 +118,17 @@ class _LLMWorker(QObject):
                 api_key=self._api_key,
                 base_url=self._base_url or None,
             )
-            resp = client.chat.completions.create(
-                model=self._model,
-                messages=self._messages,
-            )
+            kwargs = {
+                "model": self._model,
+                "messages": self._messages,
+            }
+            # Reasoning models (like o1-, o3-) do not accept standard temperature or max_tokens in chat completions
+            is_reasoning = any(x in self._model.lower() for x in ("o1-", "o3-"))
+            if not is_reasoning:
+                kwargs["temperature"] = self._temperature
+                kwargs["max_tokens"] = self._max_tokens
+
+            resp = client.chat.completions.create(**kwargs)
             self.finished.emit(resp.choices[0].message.content or "")
         except Exception as exc:          # noqa: BLE001
             self.error.emit(str(exc))
@@ -168,7 +190,7 @@ class AIChatWidget(QWidget):
                     "name": "Model",
                     "type": "str",
                     "value": "gpt-4o",
-                    "tip": "Model identifier, e.g. gpt-4o, o3, claude-sonnet-4-5",
+                    "tip": "Model identifier. Frontier models yield vastly superior geometric reasoning.",
                 },
                 {
                     "name": "API Key",
@@ -176,10 +198,24 @@ class AIChatWidget(QWidget):
                     "value": "",
                     "tip": (
                         "Your API key.\n"
-                        "Stored in the system keychain when 'keyring' is installed; "
+                        "Stored in the system keychain when 'keyring' is installed;\n"
                         "otherwise stored in plaintext preferences on disk.\n"
                         "Run: pip install keyring   for secure storage."
                     ),
+                },
+                {
+                    "name": "Temperature",
+                    "type": "float",
+                    "value": 0.2,
+                    "limits": (0.0, 2.0),
+                    "tip": "Controls randomness of responses. Lower is more deterministic.",
+                },
+                {
+                    "name": "Max Tokens",
+                    "type": "int",
+                    "value": 1024,
+                    "limits": (1, 16384),
+                    "tip": "Maximum number of tokens to generate in the reply.",
                 },
                 {
                     "name": "Auto-run after insert",
@@ -202,6 +238,7 @@ class AIChatWidget(QWidget):
         self._thread: QThread | None = None
         self._worker: _LLMWorker | None = None
         self._last_code: str = ""
+        self._auto_insert_flag: bool = False
 
         self._setup_ui()
 
@@ -216,6 +253,16 @@ class AIChatWidget(QWidget):
         """Called by main_window after both editor and debugger are ready."""
         self._editor   = editor
         self._debugger = debugger
+
+        # Heal any corrupted API Key preferences from QSettings or Keyring
+        try:
+            api_key_val = self._pref("API Key")
+            if not isinstance(api_key_val, str) or "OrderedDict" in str(api_key_val):
+                self.preferences["API Key"] = ""
+            # Trigger keyring self-healing check on startup
+            _keyring_load()
+        except Exception:
+            pass
 
     # ------------------------------------------------------------------
     # UI construction
@@ -290,8 +337,8 @@ class AIChatWidget(QWidget):
     def _api_key(self) -> str:
         # Prefer system keyring; fall back to plaintext preference
         key = _keyring_load()
-        if key:
-            return key
+        if key and key.strip():
+            return key.strip()
         return self._pref("API Key").strip()
 
     def _save_api_key(self, key: str):
@@ -310,7 +357,7 @@ class AIChatWidget(QWidget):
 
     @pyqtSlot(object, object)
     def _on_prefs_changed(self, _param, changes):
-        """React to preference changes; wire Enabled to dock visibility."""
+        """React to preference changes; wire Enabled to dock visibility & sync API Key."""
         for param, _change, _val in changes:
             if param.name() == "Enabled":
                 dock = self._find_dock()
@@ -320,6 +367,8 @@ class AIChatWidget(QWidget):
                         dock.raise_()
                     else:
                         dock.hide()
+            elif param.name() == "API Key" and _change == "value":
+                self._save_api_key(_val)
 
     def _find_dock(self):
         """Walk up the parent chain to find the QDockWidget containing us."""
@@ -393,7 +442,13 @@ class AIChatWidget(QWidget):
         if not self._ensure_privacy_consent():
             return
 
-        if self._thread and self._thread.isRunning():
+        try:
+            running = self._thread and self._thread.isRunning()
+        except RuntimeError:
+            self._thread = None
+            running = False
+
+        if running:
             self.status_label.setText("Waiting for previous response\u2026")
             return
 
@@ -424,6 +479,35 @@ class AIChatWidget(QWidget):
             f"USER REQUEST:\n{prompt}"
         )
 
+    @pyqtSlot(str)
+    def auto_fix_error(self, prompt: str):
+        """Automatically called when the user clicks 'Auto-Fix with AI' in the traceback pane."""
+        self._auto_insert_flag = True
+
+        # Ensure the dock panel is shown and raised so they can see the progress
+        dock = self._find_dock()
+        if dock is not None:
+            if not self._pref("Enabled"):
+                self.preferences["Enabled"] = True
+            dock.show()
+            dock.raise_()
+
+        # Clear the input box
+        self.prompt_input.clear()
+
+        # Add visual system feedback to user
+        self._append_chat("system", "✨ Auto-fixing script error...")
+        self._append_chat("user", prompt)
+
+        if not self._history:
+            self._history.append({"role": "system", "content": SYSTEM_PROMPT})
+
+        self._history.append({"role": "user", "content": self._inject_context(prompt)})
+        self._prune_history()
+
+        self._set_busy(True)
+        self._run_worker(list(self._history))
+
     def _run_worker(self, messages: list[dict]):
         self._thread = QThread(self)
         self._worker = _LLMWorker(
@@ -431,6 +515,8 @@ class AIChatWidget(QWidget):
             base_url=self._base_url(),
             model=self._model(),
             messages=messages,
+            temperature=self._pref("Temperature"),
+            max_tokens=self._pref("Max Tokens"),
         )
         self._worker.moveToThread(self._thread)
         self._thread.started.connect(self._worker.run)
@@ -439,7 +525,13 @@ class AIChatWidget(QWidget):
         self._worker.finished.connect(self._thread.quit)
         self._worker.error.connect(self._thread.quit)
         self._thread.finished.connect(self._thread.deleteLater)
+        self._thread.finished.connect(self._clear_thread_ref)
         self._thread.start()
+
+    @pyqtSlot()
+    def _clear_thread_ref(self):
+        self._thread = None
+        self._worker = None
 
     @pyqtSlot(str)
     def _on_response(self, reply: str):
@@ -451,6 +543,8 @@ class AIChatWidget(QWidget):
         if code:
             self._last_code = code.group(1).strip()
             self.insert_btn.setEnabled(True)
+            if self._auto_insert_flag:
+                self._insert_last_code()
         else:
             # No fenced code block found — do NOT fall back to raw reply.
             # Show an informational message so the user knows what happened.
@@ -461,11 +555,13 @@ class AIChatWidget(QWidget):
                 "\u26a0\ufe0f  The response did not contain a fenced code block. "
                 "Ask the AI to provide the complete script again.",
             )
+        self._auto_insert_flag = False
 
     @pyqtSlot(str)
     def _on_error(self, message: str):
         self._set_busy(False)
         self._append_chat("error", message)
+        self._auto_insert_flag = False
 
     @pyqtSlot()
     def _insert_last_code(self):
@@ -495,7 +591,13 @@ class AIChatWidget(QWidget):
 
     def closeEvent(self, event):
         """Ensure the background thread is cleanly stopped before the widget closes."""
-        if self._thread and self._thread.isRunning():
+        try:
+            running = self._thread and self._thread.isRunning()
+        except RuntimeError:
+            self._thread = None
+            running = False
+
+        if running:
             self._thread.quit()
             self._thread.wait(3000)   # wait up to 3 s
         super().closeEvent(event)
@@ -548,3 +650,9 @@ class AIChatWidget(QWidget):
 
     def toolbarActions(self) -> list:
         return []
+
+    def saveComponentState(self, store):
+        pass
+
+    def restoreComponentState(self, store):
+        pass

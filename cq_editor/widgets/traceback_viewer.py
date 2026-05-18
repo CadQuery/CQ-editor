@@ -1,7 +1,7 @@
 from traceback import extract_tb, format_exception_only
 from itertools import dropwhile
 
-from PyQt5.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem, QAction, QLabel
+from PyQt5.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem, QAction, QLabel, QHBoxLayout, QPushButton
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 from PyQt5.QtGui import QFontMetrics
 
@@ -30,18 +30,66 @@ class TracebackTree(QTreeWidget):
 class TracebackPane(QWidget, ComponentMixin):
 
     sigHighlightLine = pyqtSignal(int)
+    sigAutoFixError = pyqtSignal(str)
 
     def __init__(self, parent):
 
         super(TracebackPane, self).__init__(parent)
+        self.last_exc_info = None
+        self.last_code = None
 
         self.tree = TracebackTree(self)
         self.current_exception = QLabel(self)
         self.current_exception.setStyleSheet("QLabel {color : red; }")
 
-        layout(self, (self.current_exception, self.tree), self)
+        # Create a horizontal row for the exception message and the Auto-Fix button
+        top_row_widget = QWidget(self)
+        top_row_layout = QHBoxLayout(top_row_widget)
+        top_row_layout.setContentsMargins(0, 0, 0, 0)
+        top_row_layout.setSpacing(4)
+        top_row_widget.setLayout(top_row_layout)
+
+        top_row_layout.addWidget(self.current_exception, stretch=1)
+
+        self.autofix_btn = QPushButton("✨ Auto-Fix with AI", top_row_widget)
+        self.autofix_btn.setToolTip("Automatically send this error and code to the AI Assistant to fix it")
+        self.autofix_btn.setStyleSheet(
+            "QPushButton { background-color: #7B1FA2; color: white; font-weight: bold; border-radius: 3px; padding: 4px 8px; }"
+            "QPushButton:hover { background-color: #8E24AA; }"
+            "QPushButton:disabled { background-color: #BDBDBD; color: #757575; }"
+        )
+        self.autofix_btn.setEnabled(False)
+        self.autofix_btn.clicked.connect(self.trigger_autofix)
+        top_row_layout.addWidget(self.autofix_btn)
+
+        layout(self, (top_row_widget, self.tree), self)
 
         self.tree.currentItemChanged.connect(self.handleSelection)
+
+    def trigger_autofix(self):
+        if not self.last_exc_info:
+            return
+        
+        t, exc, tb = self.last_exc_info
+        exc_name = t.__name__
+        exc_msg = str(exc)
+        
+        tb_list = extract_tb(tb)
+        filtered_tb = list(dropwhile(lambda el: "string>" not in el.filename, tb_list))
+        
+        error_context = ""
+        if filtered_tb:
+            last_frame = filtered_tb[-1]
+            error_context = f"at line {last_frame.lineno}: `{last_frame.line}`"
+        else:
+            error_context = "in the script"
+            
+        prompt = (
+            f"I encountered a '{exc_name}' error {error_context}.\n"
+            f"Error details: {exc_msg}\n"
+            f"Please identify the issue in the code and provide the complete, corrected CadQuery script."
+        )
+        self.sigAutoFixError.emit(prompt)
 
     def truncate_text(self, text, max_length=100):
         """
@@ -58,9 +106,12 @@ class TracebackPane(QWidget, ComponentMixin):
     def addTraceback(self, exc_info, code):
 
         self.tree.clear()
+        self.last_exc_info = exc_info
+        self.last_code = code
 
         if exc_info:
             t, exc, tb = exc_info
+            self.autofix_btn.setEnabled(True)
 
             root = self.tree.root
             code = code.splitlines()
@@ -100,6 +151,7 @@ class TracebackPane(QWidget, ComponentMixin):
         else:
             self.current_exception.setText("")
             self.current_exception.setToolTip("")
+            self.autofix_btn.setEnabled(False)
 
     @pyqtSlot(QTreeWidgetItem, QTreeWidgetItem)
     def handleSelection(self, item, *args):

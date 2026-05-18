@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QStackedWidget, QDialog
+from PyQt5.QtWidgets import QTreeWidget, QTreeWidgetItem, QStackedWidget, QDialog, QDialogButtonBox
 from PyQt5.QtCore import pyqtSlot, Qt
 
 from pyqtgraph.parametertree import ParameterTree
@@ -45,7 +45,12 @@ class PreferencesWidget(QDialog):
             self.add(v.name, v)
 
         self.splitter = splitter((self.preferences_tree, self.stacked), (2, 5))
-        layout(self, (self.splitter,), self)
+
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Save | QDialogButtonBox.Cancel, self)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+        layout(self, (self.splitter, self.button_box), self)
 
         self.preferences_tree.currentItemChanged.connect(self.handleSelection)
 

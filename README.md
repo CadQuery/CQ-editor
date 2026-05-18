@@ -24,99 +24,94 @@ Additional screenshots are available in [the wiki](https://github.com/CadQuery/C
 * Export to various formats
   * STL
   * STEP
-* **🤖 AI Chat Assistant** *(opt-in)* — describe your model in plain English and get runnable CadQuery code instantly, with iterative editing support
+* AI Chat Assistant *(opt-in)* — generate and iterate on CadQuery models using natural language via any OpenAI-compatible API
 
-## 🤖 AI Chat Assistant
+## AI Chat Assistant
 
-CQ-editor includes an optional **AI Chat Assistant** panel that lets you generate and iterate on CadQuery models using natural language. It works with any OpenAI-compatible API provider — including OpenAI, OpenRouter, Anthropic (via OpenRouter), and local models via Ollama.
+An optional dockable panel that lets you describe what you want to model and receive a complete, runnable CadQuery script in response. The current editor script is automatically sent as context with every message, so the model edits your existing code rather than starting from scratch.
 
-### Setup
+The panel is disabled by default. No network requests are made unless you explicitly enable it and send a prompt.
 
-**1. Install the optional dependency**
+### Privacy
+
+Every prompt you send includes your current editor script and is transmitted to the API endpoint you configure. Before sending the first message, the panel will show a one-time confirmation dialog that lists the endpoint. You can change or review the endpoint at any time in **Edit -> Preferences -> AI Assistant**.
+
+The API key is stored in the system keychain if the `keyring` package is installed. Otherwise it falls back to plaintext in the local preferences file. Install `keyring` for secure storage:
+
+```bash
+pip install keyring
+```
+
+### Installation
+
+The panel requires the `openai` package. CQ-editor starts and functions normally without it.
 
 ```bash
 pip install openai
 ```
 
-> CQ-editor starts and works normally without this package. The AI panel is fully opt-in.
+### Configuration
 
-**2. Configure your API key and model**
+Open **Edit -> Preferences -> AI Assistant** and set the following:
 
-Open **Edit → Preferences → AI Assistant** and fill in:
-
-| Setting | Description | Example |
+| Setting | Description | Default |
 |---|---|---|
-| Enabled | Turn the panel on/off | ✓ |
-| Provider / Base URL | API endpoint | `https://api.openai.com/v1` |
-| Model | Model identifier | `gpt-4o`, `o3`, `claude-sonnet-4-5` |
-| API Key | Your provider API key | `sk-...` |
-| Auto-run after insert | Re-render the model immediately after inserting code | ✓ |
+| Enabled | Show the AI Assistant dock panel | false |
+| Provider / Base URL | OpenAI-compatible API endpoint | `https://api.openai.com/v1` |
+| Model | Model identifier | `gpt-4o` |
+| API Key | Provider API key | *(empty)* |
+| Auto-run after insert | Re-render the model after inserting code | true |
 
-**Supported providers (via Base URL)**
+**Supported providers**
 
 | Provider | Base URL |
 |---|---|
 | OpenAI | `https://api.openai.com/v1` |
 | OpenRouter | `https://openrouter.ai/api/v1` |
-| Local Ollama | `http://localhost:11434/v1` |
+| Ollama (local) | `http://localhost:11434/v1` |
 | Any OpenAI-compatible API | your custom endpoint |
 
-**3. Open the panel**
-
-Go to **Tools → 🤖 AI Assistant**, or toggle it from the **View** menu like any other dock panel.
+Once Enabled is checked, the panel appears as a dock on the right side. It can also be toggled from **Tools -> AI Assistant** or the **View** menu.
 
 ### Usage
 
-**Generating a new model from scratch**
+Type a description in the prompt box and press Enter or click Send. The assistant always replies with a complete `python` fenced code block. Once a response arrives, click **Insert & Run** to load the code into the editor and re-render the model.
 
-1. Type a description in the prompt box, for example:
-   ```
-   Create a hollow cylinder, 40mm outer diameter, 30mm inner diameter, 80mm tall
-   ```
-2. Press **Enter** or click **Send**.
-3. When the AI replies with code, click **Insert & Run**.
-4. The model appears instantly in the 3D viewer.
+If the response contains no code block — for example, the model returned a clarifying question — the Insert button stays disabled and an informational message is shown in the chat.
+
+**Generating a new model**
+
+```
+Create a hollow cylinder, 40mm outer diameter, 30mm inner diameter, 80mm tall
+```
 
 **Iterating on an existing model**
-
-The AI automatically receives your **current editor script as context** with every message. This means you can say:
 
 ```
 Add a 2mm fillet to all vertical edges
 ```
 
-or
-
 ```
-Change the wall thickness to 5mm and add mounting holes at each corner
+Change the wall thickness to 5mm and add M3 mounting holes at each corner
 ```
 
-and the AI will modify the existing code rather than starting from scratch.
+**Fixing errors**
 
-**Typical workflow**
+If the rendered script throws an error, the traceback appears in the **Current traceback** panel. Copy it and paste it back into the chat:
 
 ```
-[You]  Make a rectangular enclosure 100x60x40mm with a 2mm wall thickness
-[AI]   import cadquery as cq
-       result = (
-           cq.Workplane("XY")
-           .box(100, 60, 40)
-           .shell(-2)
-       )
-       show_object(result)
-[You click Insert & Run → model renders in viewer]
-
-[You]  Add four M3 mounting holes at the corners, 5mm from each edge
-[AI]   <updated full script with mounting holes>
-[You click Insert & Run → model updates]
+Fix this error: <paste traceback>
 ```
 
-### Tips
+**Resetting the conversation**
 
-* The best models for CadQuery code generation are currently **o3**, **gpt-4o**, and **Gemini 2.5 Pro** (via OpenRouter).
-* If the generated code has an error, the traceback appears in the **Current traceback** panel — you can copy it and paste it back into the chat: *"Fix this error: ..."*.
-* Click **Clear Chat** to reset the conversation history and start a new model.
-* The API key is stored in local preferences only and is never sent anywhere other than your configured provider endpoint.
+Click **Clear Chat** to discard the conversation history and start a new session. The privacy consent is also reset, so the notice will appear again on the next send.
+
+### Notes
+
+* Conversation history is capped at 10 turn pairs. Older messages are dropped automatically to limit token usage.
+* Models that produce consistent fenced code blocks work best. `o3`, `gpt-4o`, and `gemini-2.5-pro` (via OpenRouter) have been tested.
+* The panel shuts down its background thread cleanly when CQ-editor closes, even if a request is in progress.
 
 ## Documentation
 

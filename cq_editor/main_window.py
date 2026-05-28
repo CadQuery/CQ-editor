@@ -30,6 +30,7 @@ from .widgets.upload_dialog import UploadDialog
 # AI Assistant is optional — CQ-editor works normally without it
 try:
     from .widgets.ai_chat import AIChatWidget
+
     _AI_AVAILABLE = True
 except ImportError:
     _AI_AVAILABLE = False
@@ -316,9 +317,7 @@ class MainWindow(QMainWindow, MainMixin):
         for d in self.docks.values():
             d.show()
 
-        PRINT_REDIRECTOR.sigStdoutWrite.connect(
-            self.components["log"].append
-        )
+        PRINT_REDIRECTOR.sigStdoutWrite.connect(self.components["log"].append)
 
     def prepare_menubar(self):
 
@@ -429,7 +428,7 @@ class MainWindow(QMainWindow, MainMixin):
         # AI Assistant toggle (only if the widget was loaded successfully)
         if _AI_AVAILABLE:
             menu_tools.addSeparator()
-            ai_action = QAction("\U0001F916 AI Assistant", self)
+            ai_action = QAction("\U0001f916 AI Assistant", self)
             ai_action.setToolTip("Show / hide the AI Chat Assistant panel")
             ai_action.triggered.connect(self._toggle_ai_panel)
             menu_tools.addAction(ai_action)
@@ -697,10 +696,10 @@ class MainWindow(QMainWindow, MainMixin):
         if dock_widget is None:
             return
         if dock_widget.isVisible():
-            dock_widget.hide()          # hide only — no raise_() here
+            dock_widget.hide()  # hide only — no raise_() here
         else:
             dock_widget.show()
-            dock_widget.raise_()        # raise_() only when making visible
+            dock_widget.raise_()  # raise_() only when making visible
 
 
 if __name__ == "__main__":

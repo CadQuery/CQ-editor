@@ -37,6 +37,10 @@ CQ-editor = "cq_editor.cqe_run:main"
 cq-editor = "cq_editor.cqe_run:main"
 
 [project.optional-dependencies]
+ai = [
+    "openai",
+    "keyring"
+]
 test = [
     "pytest",
     "pluggy",

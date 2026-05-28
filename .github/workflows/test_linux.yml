@@ -30,7 +30,7 @@ jobs:
       - name: Install packages
         run: |
           pip install -e .
-          pip install .[test]
+          pip install .[test,ai]
           pip list
 
       - name: Run tests

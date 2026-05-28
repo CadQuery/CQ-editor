@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (
     QAction,
     QApplication,
     QMenu,
+    QDialog,
 )
 from logbook import Logger
 import cadquery as cq
@@ -25,6 +26,14 @@ from .widgets.debugger import Debugger, LocalsView
 from .widgets.cq_object_inspector import CQObjectInspector
 from .widgets.log import LogViewer
 from .widgets.upload_dialog import UploadDialog
+
+# AI Assistant is optional — CQ-editor works normally without it
+try:
+    from .widgets.ai_chat import AIChatWidget
+
+    _AI_AVAILABLE = True
+except ImportError:
+    _AI_AVAILABLE = False
 
 from . import __version__
 from .utils import (
@@ -120,6 +129,14 @@ class MainWindow(QMainWindow, MainMixin):
         self.preferences.sigTreeStateChanged.connect(self.preferencesChanged)
 
         self.restorePreferences()
+
+        # Ensure AI Assistant visibility matches preferences on startup
+        if _AI_AVAILABLE and "ai_chat" in self.components:
+            dock_widget = self.docks.get("ai_chat")
+            if dock_widget:
+                enabled = self.components["ai_chat"]._pref("Enabled")
+                dock_widget.setVisible(enabled)
+
         self.restoreWindow()
 
         # Handle the event of the editor being hidden or shown
@@ -288,12 +305,19 @@ class MainWindow(QMainWindow, MainMixin):
             lambda c: dock(c, "Log viewer", self, defaultArea="bottom"),
         )
 
+        # ---- AI Chat Assistant (opt-in; only registered if module loaded) ----
+        if _AI_AVAILABLE:
+            self.registerComponent(
+                "ai_chat",
+                AIChatWidget(self),
+                lambda c: dock(c, "AI Assistant", self, defaultArea="right"),
+            )
+        # ----------------------------------------------------------------------
+
         for d in self.docks.values():
             d.show()
 
-        PRINT_REDIRECTOR.sigStdoutWrite.connect(
-            lambda text: self.components["log"].append(text)
-        )
+        PRINT_REDIRECTOR.sigStdoutWrite.connect(self.components["log"].append)
 
     def prepare_menubar(self):
 
@@ -401,6 +425,14 @@ class MainWindow(QMainWindow, MainMixin):
             )
         )
 
+        # AI Assistant toggle (only if the widget was loaded successfully)
+        if _AI_AVAILABLE:
+            menu_tools.addSeparator()
+            ai_action = QAction("\U0001f916 AI Assistant", self)
+            ai_action.setToolTip("Show / hide the AI Chat Assistant panel")
+            ai_action.triggered.connect(self._toggle_ai_panel)
+            menu_tools.addAction(ai_action)
+
     def prepare_menubar_component(self, menus, comp_menu_dict):
 
         for name, action in comp_menu_dict.items():
@@ -421,6 +453,19 @@ class MainWindow(QMainWindow, MainMixin):
         self.statusBar().insertPermanentWidget(0, self.status_label)
 
     def prepare_actions(self):
+
+        # Wire AI chat dependencies properly via set_dependencies()
+        if _AI_AVAILABLE and "ai_chat" in self.components:
+            self.components["ai_chat"].set_dependencies(
+                editor=self.components["editor"],
+                debugger=self.components["debugger"],
+            )
+            self.components["ai_chat"].insert_code.connect(
+                self.components["editor"].set_text
+            )
+            self.components["traceback_viewer"].sigAutoFixError.connect(
+                self.components["ai_chat"].auto_fix_error
+            )
 
         self.components["debugger"].sigRendered.connect(
             self.components["object_tree"].addObjects
@@ -532,8 +577,6 @@ class MainWindow(QMainWindow, MainMixin):
         )
 
     def _examples_dir(self):
-        # In a PyInstaller bundle examples are extracted alongside the package.
-        # In development they live next to the cq_editor package directory.
         if getattr(sys, "frozen", False):
             return Path(sys._MEIPASS) / "examples"
         return Path(__file__).parent.parent / "examples"
@@ -545,7 +588,6 @@ class MainWindow(QMainWindow, MainMixin):
             return
 
         for path in sorted(examples_dir.glob("*.py")):
-            # Strip the leading "NN_" numbering prefix for the menu label.
             label = path.stem
             if len(label) > 3 and label[2] == "_" and label[:2].isdigit():
                 label = label[3:]
@@ -594,7 +636,8 @@ class MainWindow(QMainWindow, MainMixin):
     def edit_preferences(self):
 
         prefs = PreferencesWidget(self, self.components)
-        prefs.exec_()
+        if prefs.exec_() == QDialog.Accepted:
+            self.savePreferences()
 
     def about(self):
 
@@ -622,28 +665,15 @@ class MainWindow(QMainWindow, MainMixin):
         self.setWindowTitle(f"{self.name}: {new_title}")
 
     def update_window_title(self, modified):
-        """
-        Allows updating the window title to show that the document has been modified.
-        """
         title = self.windowTitle().rstrip("*")
         if modified:
             title += "*"
         self.setWindowTitle(title)
 
     def update_statusbar(self, status_text):
-        """
-        Allow updating the status bar with information.
-        """
-
-        # Update the statusbar text
         self.status_label.setText(status_text)
 
     def _upload_model(self):
-        """
-        Allows the userr to easily upload models to an online service for manufacturing,
-        analysis, simulation, display, etc.
-        """
-
         obj_tree = self.components["object_tree"]
         selected = [
             item
@@ -657,6 +687,19 @@ class MainWindow(QMainWindow, MainMixin):
             selected_shapes=[item.shape for item in selected],
         )
         dlg.exec_()
+
+    def _toggle_ai_panel(self):
+        """Show or hide the AI Assistant dock panel."""
+        if not _AI_AVAILABLE:
+            return
+        dock_widget = self.docks.get("ai_chat")
+        if dock_widget is None:
+            return
+        if dock_widget.isVisible():
+            dock_widget.hide()  # hide only — no raise_() here
+        else:
+            dock_widget.show()
+            dock_widget.raise_()  # raise_() only when making visible
 
 
 if __name__ == "__main__":

@@ -1,7 +1,15 @@
 from traceback import extract_tb, format_exception_only
 from itertools import dropwhile
 
-from PyQt5.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem, QAction, QLabel, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import (
+    QWidget,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QAction,
+    QLabel,
+    QHBoxLayout,
+    QPushButton,
+)
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 from PyQt5.QtGui import QFontMetrics
 
@@ -52,7 +60,9 @@ class TracebackPane(QWidget, ComponentMixin):
         top_row_layout.addWidget(self.current_exception, stretch=1)
 
         self.autofix_btn = QPushButton("✨ Auto-Fix with AI", top_row_widget)
-        self.autofix_btn.setToolTip("Automatically send this error and code to the AI Assistant to fix it")
+        self.autofix_btn.setToolTip(
+            "Automatically send this error and code to the AI Assistant to fix it"
+        )
         self.autofix_btn.setStyleSheet(
             "QPushButton { background-color: #7B1FA2; color: white; font-weight: bold; border-radius: 3px; padding: 4px 8px; }"
             "QPushButton:hover { background-color: #8E24AA; }"
@@ -69,25 +79,45 @@ class TracebackPane(QWidget, ComponentMixin):
     def trigger_autofix(self):
         if not self.last_exc_info:
             return
-        
+
         t, exc, tb = self.last_exc_info
         exc_name = t.__name__
         exc_msg = str(exc)
-        
+
         tb_list = extract_tb(tb)
         filtered_tb = list(dropwhile(lambda el: "string>" not in el.filename, tb_list))
-        
+
+        # Target the actual failing frame in the user's script (marked as <string>)
+        user_frames = [el for el in filtered_tb if "string>" in el.filename]
+
         error_context = ""
-        if filtered_tb:
+        if user_frames:
+            last_frame = user_frames[-1]
+            line_text = last_frame.line
+            # If standard traceback elided the source code line, fetch it from self.last_code
+            if (not line_text or line_text == "") and self.last_code:
+                try:
+                    lines = self.last_code.splitlines()
+                    if 0 <= last_frame.lineno - 1 < len(lines):
+                        line_text = lines[last_frame.lineno - 1].strip()
+                except Exception:
+                    pass
+            error_context = f"at line {last_frame.lineno}: `{line_text}`"
+        elif filtered_tb:
+            # Fallback to the last available library frame
             last_frame = filtered_tb[-1]
             error_context = f"at line {last_frame.lineno}: `{last_frame.line}`"
         else:
             error_context = "in the script"
-            
+
         prompt = (
             f"I encountered a '{exc_name}' error {error_context}.\n"
-            f"Error details: {exc_msg}\n"
-            f"Please identify the issue in the code and provide the complete, corrected CadQuery script."
+            f"Error details: {exc_msg}\n\n"
+            f"Please perform these structural steps to fix it:\n"
+            f"1. Analyze if the fillet/chamfer size is too large or mathematically invalid for the adjacent edge/face dimensions.\n"
+            f"2. Check if a boolean operation (union/cut) failed due to non-overlapping solids or co-planar faces.\n"
+            f"3. Adjust the failing parameters (e.g. reducing the fillet size, adjusting offsets, or correcting face selections) to guarantee a valid solid.\n"
+            f"4. Return the complete, corrected CadQuery script with comments detailing your fix."
         )
         self.sigAutoFixError.emit(prompt)
 

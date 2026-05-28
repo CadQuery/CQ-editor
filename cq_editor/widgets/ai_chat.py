@@ -44,17 +44,19 @@ MAX_HISTORY_TURNS = 10
 
 # Keyring service name used when storing the API key securely.
 _KEYRING_SERVICE = "cq-editor-ai-assistant"
-_KEYRING_USER    = "api-key"
+_KEYRING_USER = "api-key"
 
 
 # ---------------------------------------------------------------------------
 # Secure key storage helpers
 # ---------------------------------------------------------------------------
 
+
 def _keyring_save(key: str) -> bool:
     """Try to store *key* in the system keychain. Returns True on success."""
     try:
         import keyring
+
         if not key or not key.strip() or "OrderedDict" in str(key):
             try:
                 keyring.delete_password(_KEYRING_SERVICE, _KEYRING_USER)
@@ -71,6 +73,7 @@ def _keyring_load() -> str | None:
     """Try to load the API key from the system keychain."""
     try:
         import keyring
+
         val = keyring.get_password(_KEYRING_SERVICE, _KEYRING_USER)
         if val and "OrderedDict" in str(val):
             try:
@@ -87,36 +90,46 @@ def _keyring_load() -> str | None:
 # Background LLM worker
 # ---------------------------------------------------------------------------
 
+
 class _LLMWorker(QObject):
     """Runs the blocking OpenAI-compatible API call in a QThread."""
 
-    finished = pyqtSignal(str)   # assistant reply text
-    error    = pyqtSignal(str)   # human-readable error
+    finished = pyqtSignal(str)  # assistant reply text
+    error = pyqtSignal(str)  # human-readable error
 
-    def __init__(self, api_key: str, base_url: str, model: str,
-                 messages: list[dict], temperature: float, max_tokens: int, parent=None):
+    def __init__(
+        self,
+        api_key: str,
+        base_url: str,
+        model: str,
+        messages: list[dict],
+        temperature: float,
+        max_tokens: int,
+        parent=None,
+    ):
         super().__init__(parent)
-        self._api_key     = api_key
-        self._base_url    = base_url
-        self._model       = model
-        self._messages    = messages
+        self._api_key = api_key
+        self._base_url = base_url
+        self._model = model
+        self._messages = messages
         self._temperature = temperature
-        self._max_tokens  = max_tokens
+        self._max_tokens = max_tokens
 
     @pyqtSlot()
     def run(self):
         try:
-            from openai import OpenAI  # lazy import — openai is optional
+            import openai
         except ImportError:
             self.error.emit(
-                "The 'openai' package is not installed.\n"
-                "Run:  pip install openai"
+                "The 'openai' package is not installed.\n" "Run:  pip install openai"
             )
             return
+
         try:
-            client = OpenAI(
+            client = openai.OpenAI(
                 api_key=self._api_key,
                 base_url=self._base_url or None,
+                max_retries=3,
             )
             kwargs = {
                 "model": self._model,
@@ -128,10 +141,10 @@ class _LLMWorker(QObject):
                 kwargs["temperature"] = self._temperature
                 kwargs["max_tokens"] = self._max_tokens
 
-            resp = client.chat.completions.create(**kwargs)
+            resp = client.chat.completions.create(timeout=120.0, **kwargs)
             self.finished.emit(resp.choices[0].message.content or "")
-        except Exception as exc:          # noqa: BLE001
-            self.error.emit(str(exc))
+        except openai.OpenAIError as exc:
+            self.error.emit(f"API Error: {str(exc)}")
 
 
 # ---------------------------------------------------------------------------
@@ -139,20 +152,36 @@ class _LLMWorker(QObject):
 # ---------------------------------------------------------------------------
 
 SYSTEM_PROMPT = (
-    "You are an expert CadQuery (Python) programmer.\n"
-    "Always respond with a complete, valid CadQuery Python script wrapped in "
-    "a single ```python ... ``` fenced code block. "
-    "Do not include any text outside that block.\n"
-    "The user's current script (if any) is provided under 'CURRENT SCRIPT'. "
-    "Modify it as requested, or start fresh if the user asks for something new."
+    "You are an elite Mechanical Engineer and master CadQuery (Python) programmer.\n"
+    "Your mission is to generate and iterate on stunning, robust 3D models using the CadQuery library.\n\n"
+    "CRITICAL RULES:\n"
+    "1. FORMAT: Always respond with a single, complete, valid Python script wrapped in a fenced ```python ... ``` code block. "
+    "Do not include any chat, explanations, intro, or outro text outside the block. Conversational elements must be strictly written as inline code comments.\n"
+    "2. VISUALIZATION: You must call `show_object(shape_name)` at the end of the script to display the design in the 3D viewport. "
+    "For multiple parts, show them all, e.g., `show_object(part1, name='part1')`.\n"
+    "3. STATE PRESERVATION: If a 'CURRENT SCRIPT' is provided, modify or iterate on it cleanly. "
+    "Preserve structural constraints unless asked to rewrite. Keep parameter definitions editable.\n\n"
+    "CADQUERY BEST PRACTICES:\n"
+    "- SELECTORS: Be precise with selectors (e.g., `.faces('>Z')`, `.edges('|Z')`, `.vertices('<Y')`). "
+    "Only fillet/chamfer edges when you are 100% sure they exist on the current workplane or active shape selection.\n"
+    "- FILLETING SAFETY: Fillet operations (`.fillet(radius)`) fail mathematically if the radius is too large or if adjacent fillets overlap. "
+    "Default to conservative fillet/chamfer sizes (e.g., 0.1 to 1.0mm) unless a specific larger dimension is requested.\n"
+    "- SOLID CONTEXT: Remember that CadQuery chains are stateful. Chained operations act on the currently selected features. "
+    "Use intermediate variables to store distinct solids (e.g., `base = cq.Workplane...`) to avoid long, un-debuggable chains.\n"
+    "- BOOLEANS: Use `.union()`, `.cut()`, and `.intersect()` for clean CSG boolean additions and subtractions.\n\n"
+    "ERROR SELF-HEALING:\n"
+    "- If the user reports a traceback, analyze the failing line and error (e.g., `StdFail_NotDone`). "
+    "This is usually caused by: impossible fillets/chamfers, self-intersecting lofts/sweeps, empty selectors, or invalid sketch constraints. "
+    "Identify the geometric conflict, explain it briefly in inline comments, and fix the parameters or selection logic in the returned script."
 )
 
-_CODE_RE = re.compile(r"```(?:python)?\n(.*?)```", re.DOTALL | re.IGNORECASE)
+_CODE_RE = re.compile(r"```(?:python|py)?\s*(.*?)\s*```", re.DOTALL | re.IGNORECASE)
 
 
 # ---------------------------------------------------------------------------
 # Main widget
 # ---------------------------------------------------------------------------
+
 
 class AIChatWidget(QWidget):
     """Dockable AI Chat panel for CQ-editor."""
@@ -213,7 +242,7 @@ class AIChatWidget(QWidget):
                 {
                     "name": "Max Tokens",
                     "type": "int",
-                    "value": 1024,
+                    "value": 4096,
                     "limits": (1, 16384),
                     "tip": "Maximum number of tokens to generate in the reply.",
                 },
@@ -232,13 +261,12 @@ class AIChatWidget(QWidget):
             ],
         )
 
-        self._editor   = None   # set via set_dependencies()
+        self._editor = None  # set via set_dependencies()
         self._debugger = None
         self._history: list[dict] = []
         self._thread: QThread | None = None
         self._worker: _LLMWorker | None = None
         self._last_code: str = ""
-        self._auto_insert_flag: bool = False
 
         self._setup_ui()
 
@@ -251,7 +279,7 @@ class AIChatWidget(QWidget):
 
     def set_dependencies(self, editor, debugger):
         """Called by main_window after both editor and debugger are ready."""
-        self._editor   = editor
+        self._editor = editor
         self._debugger = debugger
 
         # Heal any corrupted API Key preferences from QSettings or Keyring
@@ -284,8 +312,9 @@ class AIChatWidget(QWidget):
         )
         self._privacy_banner.setWordWrap(True)
         self._privacy_banner.setAlignment(Qt.AlignCenter)
-        self._privacy_banner.setStyleSheet("color: #7B5B00; background: #FFF8E1; "
-                                           "padding: 2px; border-radius: 3px;")
+        self._privacy_banner.setStyleSheet(
+            "color: #7B5B00; background: #FFF8E1; " "padding: 2px; border-radius: 3px;"
+        )
         root.addWidget(self._privacy_banner)
 
         self.chat_display = QTextEdit()
@@ -373,6 +402,7 @@ class AIChatWidget(QWidget):
     def _find_dock(self):
         """Walk up the parent chain to find the QDockWidget containing us."""
         from PyQt5.QtWidgets import QDockWidget
+
         p = self.parent()
         while p is not None:
             if isinstance(p, QDockWidget):
@@ -413,7 +443,7 @@ class AIChatWidget(QWidget):
     def _prune_history(self):
         """Keep system prompt + at most MAX_HISTORY_TURNS turn pairs."""
         non_system = [m for m in self._history if m["role"] != "system"]
-        system     = [m for m in self._history if m["role"] == "system"]
+        system = [m for m in self._history if m["role"] == "system"]
         # Each turn = one user + one assistant message
         max_msgs = MAX_HISTORY_TURNS * 2
         if len(non_system) > max_msgs:
@@ -482,8 +512,6 @@ class AIChatWidget(QWidget):
     @pyqtSlot(str)
     def auto_fix_error(self, prompt: str):
         """Automatically called when the user clicks 'Auto-Fix with AI' in the traceback pane."""
-        self._auto_insert_flag = True
-
         # Ensure the dock panel is shown and raised so they can see the progress
         dock = self._find_dock()
         if dock is not None:
@@ -497,7 +525,10 @@ class AIChatWidget(QWidget):
 
         # Add visual system feedback to user
         self._append_chat("system", "✨ Auto-fixing script error...")
-        self._append_chat("user", prompt)
+
+        # Filter out the automated system instructions from the chat log display to keep it natural
+        display_prompt = prompt.split("\n\n")[0].strip()
+        self._append_chat("user", display_prompt)
 
         if not self._history:
             self._history.append({"role": "system", "content": SYSTEM_PROMPT})
@@ -543,25 +574,33 @@ class AIChatWidget(QWidget):
         if code:
             self._last_code = code.group(1).strip()
             self.insert_btn.setEnabled(True)
-            if self._auto_insert_flag:
-                self._insert_last_code()
         else:
-            # No fenced code block found — do NOT fall back to raw reply.
-            # Show an informational message so the user knows what happened.
-            self._last_code = ""
-            self.insert_btn.setEnabled(False)
-            self._append_chat(
-                "system",
-                "\u26a0\ufe0f  The response did not contain a fenced code block. "
-                "Ask the AI to provide the complete script again.",
+            # Try fallback for cut-off code blocks (missing closing backticks)
+            fallback_re = re.compile(
+                r"```(?:python|py)?\s*(.*)", re.DOTALL | re.IGNORECASE
             )
-        self._auto_insert_flag = False
+            fallback_code = fallback_re.search(reply)
+            if fallback_code and fallback_code.group(1).strip():
+                self._last_code = fallback_code.group(1).strip()
+                self.insert_btn.setEnabled(True)
+                self._append_chat(
+                    "system",
+                    "⚠️ Note: The AI response was cut off mid-generation (possibly due to Max Tokens limit). "
+                    "We extracted the partial code block, but you may want to increase 'Max Tokens' in Preferences.",
+                )
+            else:
+                self._last_code = ""
+                self.insert_btn.setEnabled(False)
+                self._append_chat(
+                    "system",
+                    "⚠️  The response did not contain a fenced code block. "
+                    "Ask the AI to provide the complete script again.",
+                )
 
     @pyqtSlot(str)
     def _on_error(self, message: str):
         self._set_busy(False)
         self._append_chat("error", message)
-        self._auto_insert_flag = False
 
     @pyqtSlot()
     def _insert_last_code(self):
@@ -599,7 +638,7 @@ class AIChatWidget(QWidget):
 
         if running:
             self._thread.quit()
-            self._thread.wait(3000)   # wait up to 3 s
+            self._thread.wait(3000)  # wait up to 3 s
         super().closeEvent(event)
 
     # ------------------------------------------------------------------
@@ -616,7 +655,7 @@ class AIChatWidget(QWidget):
         cursor.movePosition(cursor.End)
 
         fmt_label = QTextCharFormat()
-        fmt_text  = QTextCharFormat()
+        fmt_text = QTextCharFormat()
 
         if role == "user":
             fmt_label.setForeground(QColor("#1565C0"))

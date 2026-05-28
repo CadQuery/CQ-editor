@@ -22,6 +22,8 @@ def test_ai_chat_init(qtbot):
 
 def test_keyring_sanitation(mocker):
     """Test that keyring load/save successfully deletes and handles corrupted OrderedDict maps."""
+    pytest.importorskip("keyring")
+
     mock_keyring = mocker.patch("keyring.set_password")
     mocker.patch("keyring.delete_password")
 

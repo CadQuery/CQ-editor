@@ -233,7 +233,6 @@ class ObjectTree(QWidget, ComponentMixin):
     def addLines(self):
 
         origin = (0, 0, 0)
-        ais_list = []
 
         for name, color, direction in zip(
             ("X", "Y", "Z"),
@@ -244,11 +243,11 @@ class ObjectTree(QWidget, ComponentMixin):
             line = AIS_Line(line_placement)
             line.SetColor(to_occ_color(color))
 
-            self.Helpers.addChild(ObjectTreeItem(name, ais=line))
+            item = ObjectTreeItem(name, ais=line)
+            self.Helpers.addChild(item)
 
-            ais_list.append(line)
-
-        self.sigObjectsAdded.emit(ais_list)
+            # Hidden by default, toggle on from the Helpers tree
+            item.setCheckState(0, Qt.Unchecked)
 
     def _current_properties(self):
 

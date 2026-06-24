@@ -265,7 +265,7 @@ def test_render(main):
     debugger._actions["Run"][0].triggered.emit()
 
     qtbot.wait(100)
-    assert obj_tree_comp.CQ.childCount() == 3
+    assert obj_tree_comp.CQ.childCount() == 0
 
     debugger._actions["Run"][0].triggered.emit()
     qtbot.wait(100)

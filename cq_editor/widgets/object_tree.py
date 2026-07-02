@@ -11,9 +11,11 @@ from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
 from pyqtgraph.parametertree import Parameter, ParameterTree
 
 from OCP.AIS import AIS_Line
-from OCP.Geom import Geom_Line
-from OCP.gp import gp_Dir, gp_Pnt, gp_Ax1
+from OCP.Geom import Geom_CartesianPoint
+from OCP.gp import gp_Pnt
 from OCP.Graphic3d import Graphic3d_ZLayerId_Topmost
+from OCP.Bnd import Bnd_Box
+from OCP.BRepBndLib import BRepBndLib
 
 from ..mixins import ComponentMixin
 from ..icons import icon
@@ -28,6 +30,9 @@ from ..cq_utils import (
 from .viewer import DEFAULT_FACE_COLOR
 from ..utils import splitter, layout, get_save_filename
 
+
+# Default size of the axis helper lines half-length
+DEFAULT_AXIS_HALF_LEN = 100.0
 
 class TopTreeItem(QTreeWidgetItem):
 
@@ -136,6 +141,7 @@ class ObjectTree(QWidget, ComponentMixin):
     sigAISObjectsSelected = pyqtSignal(list)
     sigItemChanged = pyqtSignal(QTreeWidgetItem, int)
     sigObjectPropertiesChanged = pyqtSignal()
+    sigHelpersResized = pyqtSignal(list)
 
     def __init__(self, parent):
 
@@ -198,6 +204,37 @@ class ObjectTree(QWidget, ComponentMixin):
 
         self.prepareLayout()
 
+    def _axis_points(self, direction, halfLen):
+        """Calculates the points needed to draw the axis helper lines"""
+        p1 = Geom_CartesianPoint(gp_Pnt(*(-halfLen * d for d in direction)))
+        p2 = Geom_CartesianPoint(gp_Pnt(*(halfLen * d for d in direction)))
+
+        return p1, p2
+
+    def _rescale_helpers(self):
+        """Called to resize the axis helper lines to the model's bounding box."""
+
+        # Bounding box over all currently displayed CQ shapes
+        bbox = Bnd_Box()
+        for i in range(self.CQ.childCount()):
+            shape = self.CQ.child(i).shape
+            if shape is not None:
+                BRepBndLib.Add_s(shape.wrapped, bbox)
+
+        if bbox.IsVoid():
+            halfLen = DEFAULT_AXIS_HALF_LEN
+        else:
+            halfLen = 2.0 * bbox.CornerMin().Distance(bbox.CornerMax())
+
+        resized = []
+        for item, direction in self._helper_dirs:
+            p1, p2 = self._axis_points(direction, halfLen)
+            item.ais.SetPoints(p1, p2)  # update geometry in place
+            resized.append(item.ais)
+
+        if resized:
+            self.sigHelpersResized.emit(resized)
+
     def prepareMenu(self):
 
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -232,21 +269,22 @@ class ObjectTree(QWidget, ComponentMixin):
         return self._toolbar_actions
 
     def addLines(self):
-
-        origin = (0, 0, 0)
         ais_list = []
+        self._helper_dirs = []  # (item, direction) pairs, for later rescaling
 
         for name, color, direction in zip(
             ("X", "Y", "Z"),
             ("red", "lawngreen", "blue"),
             ((1, 0, 0), (0, 1, 0), (0, 0, 1)),
         ):
-            line_placement = Geom_Line(gp_Ax1(gp_Pnt(*origin), gp_Dir(*direction)))
-            line = AIS_Line(line_placement)
+            p1, p2 = self._axis_points(direction, DEFAULT_AXIS_HALF_LEN)
+            line = AIS_Line(p1, p2)
             line.SetColor(to_occ_color(color))
             line.SetZLayer(Graphic3d_ZLayerId_Topmost)
 
-            self.Helpers.addChild(ObjectTreeItem(name, ais=line))
+            item = ObjectTreeItem(name, ais=line)
+            self.Helpers.addChild(item)
+            self._helper_dirs.append((item, direction))
 
             ais_list.append(line)
 
@@ -310,6 +348,8 @@ class ObjectTree(QWidget, ComponentMixin):
             self.sigObjectsAdded[list, bool].emit(ais_list, True)
         else:
             self.sigObjectsAdded[list].emit(ais_list)
+
+        self._rescale_helpers()
 
     @pyqtSlot(object, str, object)
     def addObject(self, obj, name="", options=None):

@@ -10,7 +10,7 @@ from OCP.Graphic3d import (
     Graphic3d_MaterialAspect,
     Graphic3d_ZLayerId_Topmost,
 )
-from OCP.AIS import AIS_Shaded, AIS_WireFrame, AIS_ColoredShape, AIS_Axis
+from OCP.AIS import AIS_Shaded, AIS_WireFrame, AIS_ColoredShape, AIS_Axis, AIS_Line, AIS_ListOfInteractive
 from OCP.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular
 from OCP.Quantity import (
     Quantity_NOC_BLACK as BLACK,
@@ -19,6 +19,7 @@ from OCP.Quantity import (
 )
 from OCP.Geom import Geom_Axis1Placement
 from OCP.gp import gp_Ax3, gp_Dir, gp_Pnt, gp_Ax1
+from OCP.Bnd import Bnd_Box
 
 from ..utils import layout, get_save_filename
 from ..mixins import ComponentMixin
@@ -327,6 +328,13 @@ class OCCViewer(QWidget, ComponentMixin):
             ctx.Erase(item.ais, True)
 
     @pyqtSlot(list)
+    def redisplay(self, ais_list):
+        ctx = self._get_context()
+        for ais in ais_list:
+            if ctx.IsDisplayed(ais):
+                ctx.Redisplay(ais, True)
+
+    @pyqtSlot(list)
     def remove_items(self, ais_items):
 
         ctx = self._get_context()
@@ -339,8 +347,23 @@ class OCCViewer(QWidget, ComponentMixin):
         self._get_viewer().Redraw()
 
     def fit(self):
+        ctx = self._get_context()
+        view = self.canvas.view
 
-        self.canvas.view.FitAll()
+        displayed = AIS_ListOfInteractive()
+        ctx.DisplayedObjects(displayed)
+
+        # Accumulate the bounding box for displayed objects
+        bbox = Bnd_Box()
+        for ais in displayed:
+            if not isinstance(ais, AIS_Line):
+                bbox.Add(ais.BoundingBox())
+
+        # If nothing but the axis helpers are visible, fit to default
+        if bbox.IsVoid():
+            view.FitAll()
+        else:
+            view.FitAll(bbox, 0.01, True)
 
     def iso_view(self):
 

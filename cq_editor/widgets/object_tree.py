@@ -13,6 +13,7 @@ from pyqtgraph.parametertree import Parameter, ParameterTree
 from OCP.AIS import AIS_Line
 from OCP.Geom import Geom_Line
 from OCP.gp import gp_Dir, gp_Pnt, gp_Ax1
+from OCP.Graphic3d import Graphic3d_ZLayerId_Topmost
 
 from ..mixins import ComponentMixin
 from ..icons import icon
@@ -243,6 +244,7 @@ class ObjectTree(QWidget, ComponentMixin):
             line_placement = Geom_Line(gp_Ax1(gp_Pnt(*origin), gp_Dir(*direction)))
             line = AIS_Line(line_placement)
             line.SetColor(to_occ_color(color))
+            line.SetZLayer(Graphic3d_ZLayerId_Topmost)
 
             self.Helpers.addChild(ObjectTreeItem(name, ais=line))
 

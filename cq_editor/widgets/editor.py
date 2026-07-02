@@ -485,6 +485,10 @@ class Editor(CodeEditor, ComponentMixin):
         # neovim writes a file by removing it first so must re-add each time
         self._watch_paths()
 
+        # QFileSystemWater reports deletions as changes
+        if not Path(self._filename).exists():
+            return
+
         # Save the current cursor position and selection
         cursor = self.textCursor()
         cursor_position = cursor.position()

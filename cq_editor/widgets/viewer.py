@@ -10,7 +10,14 @@ from OCP.Graphic3d import (
     Graphic3d_MaterialAspect,
     Graphic3d_ZLayerId_Topmost,
 )
-from OCP.AIS import AIS_Shaded, AIS_WireFrame, AIS_ColoredShape, AIS_Axis, AIS_Line, AIS_ListOfInteractive
+from OCP.AIS import (
+    AIS_Shaded,
+    AIS_WireFrame,
+    AIS_ColoredShape,
+    AIS_Axis,
+    AIS_Line,
+    AIS_ListOfInteractive,
+)
 from OCP.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular
 from OCP.Quantity import (
     Quantity_NOC_BLACK as BLACK,

@@ -15,7 +15,6 @@ from OCP.Geom import Geom_CartesianPoint
 from OCP.gp import gp_Pnt
 from OCP.Graphic3d import Graphic3d_ZLayerId_Topmost
 from OCP.Bnd import Bnd_Box
-from OCP.BRepBndLib import BRepBndLib
 
 from ..mixins import ComponentMixin
 from ..icons import icon
@@ -30,9 +29,9 @@ from ..cq_utils import (
 from .viewer import DEFAULT_FACE_COLOR
 from ..utils import splitter, layout, get_save_filename
 
-
 # Default size of the axis helper lines half-length
 DEFAULT_AXIS_HALF_LEN = 100.0
+
 
 class TopTreeItem(QTreeWidgetItem):
 
@@ -217,9 +216,9 @@ class ObjectTree(QWidget, ComponentMixin):
         # Bounding box over all currently displayed CQ shapes
         bbox = Bnd_Box()
         for i in range(self.CQ.childCount()):
-            shape = self.CQ.child(i).shape
-            if shape is not None:
-                BRepBndLib.Add_s(shape.wrapped, bbox)
+            ais = self.CQ.child(i).ais
+            if ais is not None:
+                bbox.Add(ais.BoundingBox())
 
         if bbox.IsVoid():
             halfLen = DEFAULT_AXIS_HALF_LEN

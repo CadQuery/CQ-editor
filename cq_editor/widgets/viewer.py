@@ -8,7 +8,6 @@ from OCP.Graphic3d import (
     Graphic3d_StereoMode,
     Graphic3d_NOM_JADE,
     Graphic3d_MaterialAspect,
-    Graphic3d_ZLayerId_Topmost,
 )
 from OCP.AIS import (
     AIS_Shaded,
@@ -128,7 +127,6 @@ class OCCViewer(QWidget, ComponentMixin):
         )
 
         self.setup_default_drawer()
-        self.setup_helper_layer()
         self.updatePreferences()
 
     def setup_default_drawer(self):
@@ -144,16 +142,6 @@ class OCCViewer(QWidget, ComponentMixin):
         line_aspect = self.canvas.context.DefaultDrawer().FaceBoundaryAspect()
         line_aspect.SetWidth(DEFAULT_EDGE_WIDTH)
         line_aspect.SetColor(DEFAULT_EDGE_COLOR)
-
-    def setup_helper_layer(self):
-        """
-        Set up a render layer specifically for the axis helper lines.
-        """
-        viewer = self.canvas.context.CurrentViewer()
-        settings = viewer.ZLayerSettings(Graphic3d_ZLayerId_Topmost)
-        settings.SetEnableDepthTest(False)  # lines never depth-compare with the model
-        settings.SetEnableDepthWrite(False)  # lines never write into the depth buffer
-        viewer.SetZLayerSettings(Graphic3d_ZLayerId_Topmost, settings)
 
     def updatePreferences(self, *args):
 

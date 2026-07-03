@@ -59,10 +59,7 @@ def to_compound(
     elif isinstance(obj, list) and isinstance(obj[0], TopoDS_Shape):
         vals.extend(cq.Shape.cast(o) for o in obj)
     elif isinstance(obj, cq.Sketch):
-        if obj._faces:
-            vals.append(obj._faces)
-        else:
-            vals.extend(obj._edges)
+        vals.extend(obj)
     else:
         raise ValueError(f"Invalid type {type(obj)}")
 

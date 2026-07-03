@@ -278,6 +278,7 @@ class ObjectTree(QWidget, ComponentMixin):
             p1, p2 = self._axis_points(direction, DEFAULT_AXIS_HALF_LEN)
             line = AIS_Line(p1, p2)
             line.SetColor(to_occ_color(color))
+            line.SetZLayer(Graphic3d_ZLayerId_Topmost)
 
             item = ObjectTreeItem(name, ais=line)
             self.Helpers.addChild(item)

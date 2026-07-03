@@ -13,7 +13,6 @@ from pyqtgraph.parametertree import Parameter, ParameterTree
 from OCP.AIS import AIS_Line
 from OCP.Geom import Geom_CartesianPoint
 from OCP.gp import gp_Pnt
-from OCP.Graphic3d import Graphic3d_ZLayerId_Topmost
 from OCP.Bnd import Bnd_Box
 
 from ..mixins import ComponentMixin
@@ -279,7 +278,6 @@ class ObjectTree(QWidget, ComponentMixin):
             p1, p2 = self._axis_points(direction, DEFAULT_AXIS_HALF_LEN)
             line = AIS_Line(p1, p2)
             line.SetColor(to_occ_color(color))
-            line.SetZLayer(Graphic3d_ZLayerId_Topmost)
 
             item = ObjectTreeItem(name, ais=line)
             self.Helpers.addChild(item)

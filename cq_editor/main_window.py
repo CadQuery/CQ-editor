@@ -456,6 +456,9 @@ class MainWindow(QMainWindow, MainMixin):
         self.components["object_tree"].sigAISObjectsSelected.connect(
             self.components["viewer"].set_selected
         )
+        self.components["object_tree"].sigHelpersResized.connect(
+            self.components["viewer"].redisplay
+        )
 
         self.components["viewer"].sigObjectSelected.connect(
             self.components["object_tree"].handleGraphicalSelection

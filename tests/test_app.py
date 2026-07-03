@@ -211,7 +211,7 @@ def test_render(main):
     log = win.components["log"]
 
     # enable CQ reloading
-    debugger.preferences["Reload CQ"] = True
+    debugger.preferences["Reload CQ"] = False
 
     # check that object was rendered
     assert obj_tree_comp.CQ.childCount() == 1

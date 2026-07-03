@@ -84,13 +84,13 @@ stages:
             conda list
         displayName: 'Install mamba, boa; report config and info'
 
-      - bash: conda create --yes --quiet --name build_env -c conda-forge conda-build boa conda-verify libarchive python=3.12 anaconda-client
+      - bash: conda create --yes --quiet --name build_env -c conda-forge conda-build conda-verify libarchive python=3.12 anaconda-client
         displayName: Create Anaconda environment
 
       - bash: |
           cd ${{ parameters.location }} && \
-          conda run -n build_env conda mambabuild -c conda-forge -c cadquery --output-folder . . && \
-          full_path=$(conda run -n build_env conda build --output -c conda-forge -c cadquery --output-folder . . ) && \
+          conda run -n build_env conda-build -c conda-forge -c cadquery --output-folder . . && \
+          full_path=$(conda run -n build_env conda-build --output -c conda-forge -c cadquery --output-folder . . ) && \
           echo $full_path && \
           base_name=$(basename $full_path) && \
           split_name=($(IFS=-; tmp=($base_name); echo ${tmp[@]})) && \
@@ -112,7 +112,7 @@ stages:
 
       - bash: |
           cd ${{ parameters.location }} && \
-          conda run -n build_env conda mambabuild -c conda-forge -c cadquery . && \
+          conda run -n build_env conda-build -c conda-forge -c cadquery . && \
           cd ..
         displayName: 'Run conda build without upload'
         failOnStderr: false

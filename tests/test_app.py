@@ -126,6 +126,7 @@ def get_rgba(ais):
 def main(qtbot, mocker):
 
     mocker.patch.object(QMessageBox, "question", return_value=QMessageBox.Yes)
+    mocker.patch.object(QMessageBox, "warning", return_value=QMessageBox.Discard)
 
     win = MainWindow()
     win.show()
@@ -145,6 +146,7 @@ def main(qtbot, mocker):
 def main_clean(qtbot, mocker):
 
     mocker.patch.object(QMessageBox, "question", return_value=QMessageBox.Yes)
+    mocker.patch.object(QMessageBox, "warning", return_value=QMessageBox.Discard)
 
     win = MainWindow()
     win.show()
@@ -162,6 +164,7 @@ def main_clean(qtbot, mocker):
 def main_clean_do_not_close(qtbot, mocker):
 
     mocker.patch.object(QMessageBox, "question", return_value=QMessageBox.No)
+    mocker.patch.object(QMessageBox, "warning", return_value=QMessageBox.Cancel)
 
     win = MainWindow()
     win.show()
@@ -179,6 +182,7 @@ def main_clean_do_not_close(qtbot, mocker):
 def main_multi(qtbot, mocker):
 
     mocker.patch.object(QMessageBox, "question", return_value=QMessageBox.Yes)
+    mocker.patch.object(QMessageBox, "warning", return_value=QMessageBox.Discard)
     mocker.patch.object(QFileDialog, "getSaveFileName", return_value=("out.step", ""))
 
     win = MainWindow()

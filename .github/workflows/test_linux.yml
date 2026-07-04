@@ -43,4 +43,4 @@ jobs:
           QT_QPA_PLATFORM: "xcb"
         uses: coactions/setup-xvfb@v1.0.1
         with:
-          run: pytest -s
+          run: pytest

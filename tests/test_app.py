@@ -310,10 +310,8 @@ def test_many_shapes_render_and_erase_time(main_clean):
     erase_elapsed = perf_counter() - start
 
     assert object_tree.CQ.childCount() == 0
-    assert render_elapsed < 4, f"400-shape render took {render_elapsed:.3f}s"
-    assert erase_elapsed < 4, f"400-shape erase took {erase_elapsed:.3f}s"
-    print(f"400-shape render took {render_elapsed:.3f}s")
-    print(f"400-shape erase took {erase_elapsed:.3f}s")
+    assert render_elapsed < 2, f"400-shape render took {render_elapsed:.3f}s"
+    assert erase_elapsed < 2, f"400-shape erase took {erase_elapsed:.3f}s"
 
 
 def test_export(main, mocker):

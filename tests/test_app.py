@@ -1,5 +1,6 @@
 from path import Path
 import os, sys, asyncio
+from time import perf_counter
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
@@ -68,6 +69,19 @@ result2 = cq.Workplane("XY" ).box(3, 3, 0.5).translate((0,15,0))
 """
 
 code_nested_top = """import test_nested_bottom
+"""
+
+code_many_shapes = """from cadquery.func import *
+
+num = 20
+
+for i in range(1, num + 1, 1):
+    for j in range(1, num + 1, 1):
+        globals()[f"b_{i}_{j}"] = box(1, 1, 1).move(
+            x=1.1 * i,
+            y=1.1 * j,
+            z=0,
+        )
 """
 
 code_nested_bottom = """a=1
@@ -270,6 +284,34 @@ def test_render(main):
     debugger._actions["Run"][0].triggered.emit()
     qtbot.wait(100)
     assert obj_tree_comp.CQ.childCount() == 3
+
+
+def test_many_shapes_render_and_erase_time(main_clean):
+    qtbot, win = main_clean
+
+    editor = win.components["editor"]
+    debugger = win.components["debugger"]
+    object_tree = win.components["object_tree"]
+    viewer = win.components["viewer"]
+
+    debugger.preferences["Reload CQ"] = False
+    object_tree.preferences["Clear all before each run"] = True
+    viewer.preferences["Fit automatically"] = True
+    editor.set_text(code_many_shapes)
+
+    start = perf_counter()
+    debugger._actions["Run"][0].triggered.emit()
+    render_elapsed = perf_counter() - start
+
+    assert object_tree.CQ.childCount() == 20 * 20
+
+    start = perf_counter()
+    object_tree.removeObjects()
+    erase_elapsed = perf_counter() - start
+
+    assert object_tree.CQ.childCount() == 0
+    assert render_elapsed < 4, f"400-shape render took {render_elapsed:.3f}s"
+    assert erase_elapsed < 4, f"400-shape erase took {erase_elapsed:.3f}s"
 
 
 def test_export(main, mocker):

@@ -1,3 +1,4 @@
+from cadquery import Assembly
 from PyQt5.QtWidgets import (
     QTreeWidget,
     QTreeWidgetItem,
@@ -24,6 +25,8 @@ from ..cq_utils import (
     is_obj_empty,
     get_occ_color,
     set_color,
+    set_transparency,
+    flatten_assembly,
 )
 from .viewer import DEFAULT_FACE_COLOR
 from ..utils import splitter, layout, get_save_filename
@@ -129,6 +132,7 @@ class ObjectTree(QWidget, ComponentMixin):
         children=[
             {"name": "Preserve properties on reload", "type": "bool", "value": False},
             {"name": "Clear all before each run", "type": "bool", "value": True},
+            {"name": "Merge Assemblies", "type": "bool", "value": False},
             {"name": "STL precision", "type": "float", "value": 0.1},
         ],
     )
@@ -301,6 +305,42 @@ class ObjectTree(QWidget, ComponentMixin):
         for p in properties[obj.properties["Name"]]:
             obj.properties[p.name()] = p.value()
 
+    def _build_items(self, name, shape, options):
+        """
+        Build the ObjectTreeItem(s) for one shown object. Assemblies explode
+        into one item per part. Everything else is one item.
+        """
+        # Explode assemblies into per-part items
+        if isinstance(shape, Assembly) and not self.preferences["Merge Assemblies"]:
+            items = []
+            for pname, path, pshape, pcolor in flatten_assembly(shape):
+                ais, shape_display = make_AIS(pshape, options)
+                if pcolor is not None:
+                    r, g, b, a = pcolor.toTuple()
+                    set_color(ais, to_occ_color((r, g, b)))
+                    set_transparency(ais, a)
+                item = ObjectTreeItem(
+                    pname,
+                    shape=pshape,
+                    shape_display=shape_display,
+                    ais=ais,
+                    sig=self.sigObjectPropertiesChanged,
+                )
+                item.setToolTip(0, path)
+                items.append((item, ais))
+
+            return items
+
+        ais, shape_display = make_AIS(shape, options)
+        item = ObjectTreeItem(
+            name,
+            shape=shape,
+            shape_display=shape_display,
+            ais=ais,
+            sig=self.sigObjectPropertiesChanged,
+        )
+        return [(item, ais)]
+
     @pyqtSlot(dict, bool)
     @pyqtSlot(dict)
     def addObjects(self, objects, clean=False, root=None):
@@ -323,23 +363,12 @@ class ObjectTree(QWidget, ComponentMixin):
         objects_f = {k: v for k, v in objects.items() if not is_obj_empty(v.shape)}
 
         for name, obj in objects_f.items():
-            ais, shape_display = make_AIS(obj.shape, obj.options)
-
-            child = ObjectTreeItem(
-                name,
-                shape=obj.shape,
-                shape_display=shape_display,
-                ais=ais,
-                sig=self.sigObjectPropertiesChanged,
-            )
-
-            if preserve_props and name in current_props:
-                self._restore_properties(child, current_props)
-
-            if child.properties["Visible"]:
-                ais_list.append(ais)
-
-            root.addChild(child)
+            for child, ais in self._build_items(name, obj.shape, obj.options):
+                if preserve_props and name in current_props:
+                    self._restore_properties(child, current_props)
+                if child.properties["Visible"]:
+                    ais_list.append(ais)
+                root.addChild(child)
 
         if request_fit_view:
             self.sigObjectsAdded[list, bool].emit(ais_list, True)
@@ -356,19 +385,12 @@ class ObjectTree(QWidget, ComponentMixin):
 
         root = self.CQ
 
-        ais, shape_display = make_AIS(obj, options)
+        ais_list = []
+        for item, ais in self._build_items(name, obj, options):
+            root.addChild(item)
+            ais_list.append(ais)
+        self.sigObjectsAdded.emit(ais_list)
 
-        root.addChild(
-            ObjectTreeItem(
-                name,
-                shape=obj,
-                shape_display=shape_display,
-                ais=ais,
-                sig=self.sigObjectPropertiesChanged,
-            )
-        )
-
-        self.sigObjectsAdded.emit([ais])
 
     @pyqtSlot(list)
     @pyqtSlot()

@@ -391,7 +391,6 @@ class ObjectTree(QWidget, ComponentMixin):
             ais_list.append(ais)
         self.sigObjectsAdded.emit(ais_list)
 
-
     @pyqtSlot(list)
     @pyqtSlot()
     def removeObjects(self, objects=None):

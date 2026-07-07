@@ -1,6 +1,5 @@
 import cadquery as cq
 from cadquery.occ_impl.assembly import toCAF
-from cadquery.assembly import PATH_DELIM
 
 from typing import List, Union
 from importlib import reload
@@ -115,24 +114,6 @@ def make_AIS(
         set_edge_color(ais, to_occ_color(options["edgecolor"]))
 
     return ais, shape
-
-
-def flatten_assembly(assy):
-    """
-    Yields a name, path, located_shape and color for every part in an assembly.
-    """
-    flat = assy._flatten()
-    for path, node in flat.items():
-        if node.obj is None:
-            continue
-
-        loc = cq.Location()
-        prefix = ""
-        for nm in path.split(PATH_DELIM):
-            prefix = nm if not prefix else prefix + PATH_DELIM + nm
-            loc = loc * flat[prefix].loc
-        name = path.rsplit(PATH_DELIM, 1)[-1]
-        yield name, path, to_compound(node.obj).moved(loc), node.color
 
 
 def export(

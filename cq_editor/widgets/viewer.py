@@ -16,6 +16,7 @@ from OCP.AIS import (
     AIS_Axis,
     AIS_Line,
     AIS_ListOfInteractive,
+    AIS_ViewCube,
 )
 from OCP.Aspect import Aspect_GDM_Lines, Aspect_GT_Rectangular
 from OCP.Quantity import (
@@ -49,6 +50,7 @@ class OCCViewer(QWidget, ComponentMixin):
         name="Pref",
         children=[
             {"name": "Fit automatically", "type": "bool", "value": True},
+            {"name": "Show navigation cube", "type": "bool", "value": True},
             {"name": "Use gradient", "type": "bool", "value": False},
             {"name": "Background color", "type": "color", "value": (95, 95, 95)},
             {"name": "Background color (aux)", "type": "color", "value": (30, 30, 30)},
@@ -158,9 +160,16 @@ class OCCViewer(QWidget, ComponentMixin):
             orbit_method = "Trackball"
         self.canvas.set_orbit_method(orbit_method)
 
+        ctx = self.canvas.context
+        cube = self.canvas.view_cube
+        if self.preferences["Show navigation cube"]:
+            if not ctx.IsDisplayed(cube):
+                ctx.Display(cube, True)
+        elif ctx.IsDisplayed(cube):
+            ctx.Erase(cube, True)
+
         self.canvas.update()
 
-        ctx = self.canvas.context
         ctx.SetDeviationCoefficient(self.preferences["Deviation"])
         ctx.SetDeviationAngle(self.preferences["Angular deviation"])
 
@@ -355,7 +364,7 @@ class OCCViewer(QWidget, ComponentMixin):
         # Accumulate the bounding box for displayed objects
         bbox = Bnd_Box()
         for ais in displayed:
-            if not isinstance(ais, AIS_Line):
+            if not isinstance(ais, (AIS_Line, AIS_ViewCube)):
                 bbox.Add(ais.BoundingBox())
 
         # If nothing but the axis helpers are visible, fit to default

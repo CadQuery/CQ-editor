@@ -2,16 +2,18 @@ from sys import platform
 
 
 from PyQt5.QtWidgets import QWidget, QApplication
-from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QPoint
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, Qt, QPoint, QTimer
 
 import OCP
 
 from OCP.Aspect import Aspect_DisplayConnection, Aspect_TypeOfTriedronPosition
 from OCP.OpenGl import OpenGl_GraphicDriver
 from OCP.V3d import V3d_Viewer
-from OCP.gp import gp_Trsf, gp_Ax1, gp_Dir
-from OCP.AIS import AIS_InteractiveContext, AIS_DisplayMode
+from OCP.gp import gp_Trsf, gp_Ax1, gp_Dir, gp_Pnt
+from OCP.AIS import AIS_InteractiveContext, AIS_DisplayMode, AIS_ViewCubeOwner
 from OCP.Quantity import Quantity_Color
+
+from .navigation_cube import NavigationCube
 
 ZOOM_STEP = 0.9
 
@@ -39,6 +41,14 @@ class OCCTWidget(QWidget):
 
         # Orbit method settings
         self._orbit_method = "Turntable"
+
+        # Drives the view cube camera animation; runs only while animating
+        self._cube_timer = QTimer(self)
+        self._cube_timer.setInterval(16)
+        self._cube_timer.timeout.connect(self._animate_view_cube)
+
+        self._cube_hover = False
+        self.setMouseTracking(True)
 
         # OCCT secific things
         self.display_connection = Aspect_DisplayConnection()
@@ -72,6 +82,10 @@ class OCCTWidget(QWidget):
 
         ctx.SetDisplayMode(AIS_DisplayMode.AIS_Shaded, True)
         ctx.DefaultDrawer().SetFaceBoundaryDraw(True)
+
+        self.view_cube = NavigationCube()
+        self.view_cube.ViewAnimation().SetView(view)
+        ctx.Display(self.view_cube, False)
 
     def set_orbit_method(self, method):
         """
@@ -115,6 +129,25 @@ class OCCTWidget(QWidget):
 
         pos = event.pos()
         x, y = pos.x(), pos.y()
+
+        # Hover highlight is confined to the cube's corner region so the
+        # rest of the viewport keeps its existing no-hover behavior
+        if not event.buttons():
+            if self.view_cube.hit_region(self.width()).contains(pos):
+                self.context.MoveTo(x, y, self.view, True)
+                owner = (
+                    self.context.DetectedOwner()
+                    if self.context.HasDetected()
+                    else None
+                )
+                if not isinstance(owner, AIS_ViewCubeOwner):
+                    self.context.ClearDetected(True)
+                self._cube_hover = True
+            elif self._cube_hover:
+                self.context.ClearDetected(True)
+                self._cube_hover = False
+            self._previous_pos = pos
+            return
 
         # Check for mouse drag rotation
         if event.buttons() == Qt.LeftButton and event.modifiers() not in (
@@ -166,7 +199,16 @@ class OCCTWidget(QWidget):
             # Only make the selection if the user has not moved the mouse
             if self.pending_select:
                 self.context.MoveTo(x, y, self.view, True)
-                self._handle_selection()
+
+                owner = (
+                    self.context.DetectedOwner()
+                    if self.context.HasDetected()
+                    else None
+                )
+                if isinstance(owner, AIS_ViewCubeOwner):
+                    self._handle_cube_click(owner)
+                else:
+                    self._handle_selection()
 
     def _handle_selection(self):
 
@@ -178,6 +220,75 @@ class OCCTWidget(QWidget):
             selected.append(self.context.SelectedShape())
 
         self.sigObjectSelected.emit(selected)
+
+    def _settle_animations(self):
+        """Snap any running camera animation to its end state.
+
+        A click during a running animation must start from the settled end:
+        OCCT treats a repeated click on the current orientation specially
+        (snaps up to the canonical value), and that detection compares
+        against a partially-rotated camera otherwise.
+        """
+
+        self._cube_timer.stop()
+
+        cube_animation = self.view_cube.ViewAnimation()
+        if not cube_animation.IsStopped():
+            cube_animation.Stop()
+            self.view.Camera().Copy(cube_animation.CameraEnd())
+
+    def _handle_cube_click(self, owner):
+        """Start the animated camera reorientation for a picked cube part."""
+
+        self._settle_animations()
+
+        camera = self.view.Camera()
+        center, distance, scale = camera.Center(), camera.Distance(), camera.Scale()
+
+        self.view_cube.HandleClick(owner)
+
+        # HandleClick fits the scene into the animation's target camera;
+        # restore the current framing so the click is a pure rotation that
+        # preserves zoom, center and distance. The eye is placed explicitly
+        # together with the old center: SetCenter alone would tilt the
+        # target direction after a pan, and MoveEyeTo alone would keep the
+        # fitted distance and drag the center along the view axis (visible
+        # as a zoom in perspective projection).
+        animation = self.view_cube.ViewAnimation()
+        self._restore_framing(animation.CameraEnd(), center, distance, scale)
+
+        # with a zero duration the animation completes inside HandleClick,
+        # so the fitted end camera is already applied; restore the view
+        # camera directly in that case
+        if animation.IsStopped():
+            self._restore_framing(self.view.Camera(), center, distance, scale)
+            self.view.Redraw()
+
+        self._cube_timer.start()
+
+    @staticmethod
+    def _restore_framing(camera, center, distance, scale):
+        """Re-frame a camera on center/distance/scale, keeping its direction."""
+
+        direction = camera.Direction()
+        camera.SetEyeAndCenter(
+            gp_Pnt(
+                center.X() - direction.X() * distance,
+                center.Y() - direction.Y() * distance,
+                center.Z() - direction.Z() * distance,
+            ),
+            center,
+        )
+        camera.SetScale(scale)
+
+    def _animate_view_cube(self):
+
+        if not self.view_cube.UpdateAnimation(True):
+            self._cube_timer.stop()
+            # the finishing UpdateAnimation applies the end camera but only
+            # invalidates the view; without an explicit redraw the screen
+            # keeps the previous frame until an unrelated repaint
+            self.view.Redraw()
 
     def paintEngine(self):
 
@@ -199,6 +310,12 @@ class OCCTWidget(QWidget):
         super(OCCTWidget, self).resizeEvent(event)
 
         self.view.MustBeResized()
+
+    def leaveEvent(self, event):
+
+        if self._cube_hover:
+            self.context.ClearDetected(True)
+            self._cube_hover = False
 
     def _initialize(self):
 

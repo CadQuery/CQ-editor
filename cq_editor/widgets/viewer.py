@@ -33,6 +33,7 @@ from ..mixins import ComponentMixin
 from ..icons import icon
 from ..cq_utils import to_occ_color, make_AIS, DEFAULT_FACE_COLOR
 
+from .navigation_cube import RotationArrow
 from .occt_widget import OCCTWidget
 
 from pyqtgraph.parametertree import Parameter
@@ -164,9 +165,15 @@ class OCCViewer(QWidget, ComponentMixin):
         cube = self.canvas.view_cube
         if self.preferences["Show navigation cube"]:
             if not ctx.IsDisplayed(cube):
-                ctx.Display(cube, True)
+                ctx.Display(cube, False)
+                for arrow in self.canvas.rotate_arrows:
+                    ctx.Display(arrow, AIS_Shaded, 0, False)
+                ctx.UpdateCurrentViewer()
         elif ctx.IsDisplayed(cube):
-            ctx.Erase(cube, True)
+            ctx.Erase(cube, False)
+            for arrow in self.canvas.rotate_arrows:
+                ctx.Erase(arrow, False)
+            ctx.UpdateCurrentViewer()
 
         self.canvas.update()
 
@@ -364,7 +371,7 @@ class OCCViewer(QWidget, ComponentMixin):
         # Accumulate the bounding box for displayed objects
         bbox = Bnd_Box()
         for ais in displayed:
-            if not isinstance(ais, (AIS_Line, AIS_ViewCube)):
+            if not isinstance(ais, (AIS_Line, AIS_ViewCube, RotationArrow)):
                 bbox.Add(ais.BoundingBox())
 
         # If nothing but the axis helpers are visible, fit to default

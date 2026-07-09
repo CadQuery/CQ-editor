@@ -9,7 +9,11 @@ from OCP.BRepPrimAPI import BRepPrimAPI_MakeBox
 from OCP.V3d import V3d_TypeOfOrientation
 
 from cq_editor.utils import layout
-from cq_editor.widgets.navigation_cube import NavigationCube, CORNER_OFFSET
+from cq_editor.widgets.navigation_cube import (
+    NavigationCube,
+    RotationArrow,
+    CORNER_OFFSET,
+)
 from cq_editor.widgets.viewer import OCCViewer
 
 
@@ -203,6 +207,41 @@ def test_cube_hover_highlight(viewer):
     assert not canvas.context.HasDetected()
 
 
+def test_arrow_hover_fill(viewer):
+
+    from math import cos, radians, sin
+
+    from OCP.Quantity import Quantity_Color
+
+    from cq_editor.widgets.navigation_cube import (
+        ARROW_INNER_RADIUS,
+        ARROW_OUTER_RADIUS,
+        ARROW_TAIL_ANGLE,
+        ARROW_HEAD_ANGLE,
+    )
+
+    qtbot, v = viewer
+    canvas = v.canvas
+    ccw, cw = canvas.rotate_arrows
+
+    # middle of the right (cw) arrow's band
+    r = (ARROW_INNER_RADIUS + ARROW_OUTER_RADIUS) / 2
+    a = radians((ARROW_TAIL_ANGLE + ARROW_HEAD_ANGLE) / 2)
+    x = canvas.width() - 85 + r * cos(a)
+    y = 85 - r * sin(a)
+
+    _move(canvas, x, y)
+    assert canvas._hovered_arrow is cw
+    color = Quantity_Color()
+    cw.Color(color)
+    assert (color.Red(), color.Green(), color.Blue()) == pytest.approx((0, 1, 1))
+
+    _move(canvas, canvas.width() // 2, canvas.height() // 2)
+    assert canvas._hovered_arrow is None
+    cw.Color(color)
+    assert color.Blue() == pytest.approx(0.75, abs=0.01)
+
+
 def test_cube_highlight_cleared_on_leave(viewer):
 
     qtbot, v = viewer
@@ -220,12 +259,55 @@ def test_cube_visibility_preference(viewer):
     qtbot, v = viewer
     ctx = v.canvas.context
     cube = v.canvas.view_cube
+    overlays = (cube,) + v.canvas.rotate_arrows
 
     v.preferences["Show navigation cube"] = False
-    assert not ctx.IsDisplayed(cube)
+    assert not any(ctx.IsDisplayed(obj) for obj in overlays)
 
     v.preferences["Show navigation cube"] = True
-    assert ctx.IsDisplayed(cube)
+    assert all(ctx.IsDisplayed(obj) for obj in overlays)
+
+
+def test_rotate_arrows_displayed(viewer):
+
+    qtbot, v = viewer
+    ctx = v.canvas.context
+
+    ccw, cw = v.canvas.rotate_arrows
+    assert isinstance(ccw, RotationArrow) and isinstance(cw, RotationArrow)
+    assert ctx.IsDisplayed(ccw) and ctx.IsDisplayed(cw)
+    assert (ccw.sense, cw.sense) == (1, -1)
+
+
+def test_rotate_click_rolls_in_45_degree_steps(viewer):
+
+    qtbot, v = viewer
+    canvas = v.canvas
+
+    v.top_view()
+    proj_before = canvas.view.Proj()
+    scale_before = canvas.view.Scale()
+
+    # top view: direction is (0, 0, -1), up starts at (0, 1, 0);
+    # sense +1 rotates up by +45 deg around the view direction
+    canvas._handle_rotate_click(1)
+    qtbot.waitUntil(lambda: not canvas._cube_timer.isActive(), timeout=2000)
+    up = canvas.view.Camera().Up()
+    s = 2**-0.5
+    assert (up.X(), up.Y(), up.Z()) == pytest.approx((s, s, 0), abs=1e-6)
+
+    canvas._handle_rotate_click(1)
+    qtbot.waitUntil(lambda: not canvas._cube_timer.isActive(), timeout=2000)
+    up = canvas.view.Camera().Up()
+    assert (up.X(), up.Y(), up.Z()) == pytest.approx((1, 0, 0), abs=1e-6)
+
+    canvas._handle_rotate_click(-1)
+    qtbot.waitUntil(lambda: not canvas._cube_timer.isActive(), timeout=2000)
+    up = canvas.view.Camera().Up()
+    assert (up.X(), up.Y(), up.Z()) == pytest.approx((s, s, 0), abs=1e-6)
+
+    assert canvas.view.Proj() == pytest.approx(proj_before, abs=1e-6)
+    assert canvas.view.Scale() == pytest.approx(scale_before, rel=1e-6)
 
 
 def test_fit_ignores_cube(viewer):

@@ -2126,6 +2126,56 @@ def test_viewer_orbit_methods(main):
     assert True
 
 
+class _WheelEvent:
+    """Minimal stand-in for QWheelEvent; wheelEvent only reads these two."""
+
+    def __init__(self, pos, delta):
+        self._pos = pos
+        self._delta = delta
+
+    def pos(self):
+        return self._pos
+
+    def angleDelta(self):
+        return QPoint(0, self._delta)
+
+
+def test_viewer_zoom_to_mouse(main):
+    """
+    The 'Zoom to mouse position' preference switches wheel zooming between the
+    centered SetZoom behavior and zooming toward the cursor via ZoomAtPoint.
+    """
+
+    qtbot, win = main
+
+    viewer = win.components["viewer"]
+    debugger = win.components["debugger"]
+    canvas = viewer.canvas
+    view = canvas.view
+
+    # Render a shape so the view has something to zoom on
+    debugger._actions["Run"][0].triggered.emit()
+
+    # Preference off -> centered zoom, flag not set
+    viewer.preferences["Zoom to mouse position"] = False
+    assert canvas._zoom_to_cursor is False
+
+    scale0 = view.Scale()
+    canvas.wheelEvent(_WheelEvent(QPoint(10, 10), 120))
+    assert view.Scale() != pytest.approx(scale0)
+
+    # Preference on -> zoom toward the cursor, flag set through updatePreferences
+    viewer.preferences["Zoom to mouse position"] = True
+    assert canvas._zoom_to_cursor is True
+
+    scale1 = view.Scale()
+    canvas.wheelEvent(_WheelEvent(QPoint(10, 10), 120))
+    assert view.Scale() != pytest.approx(scale1)
+
+    # Both wheel directions are handled without error
+    canvas.wheelEvent(_WheelEvent(QPoint(30, 30), -120))
+
+
 # @pytest.mark.repeat(1)
 def test_editor_autoreload(editor):
 

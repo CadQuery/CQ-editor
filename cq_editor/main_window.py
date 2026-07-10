@@ -291,9 +291,11 @@ class MainWindow(QMainWindow, MainMixin):
         for d in self.docks.values():
             d.show()
 
-        PRINT_REDIRECTOR.sigStdoutWrite.connect(
-            lambda text: self.components["log"].append(text)
-        )
+        # Connect the bound method rather than a lambda: PRINT_REDIRECTOR is a
+        # module-level singleton, and PyQt drops a connection to a QObject's
+        # bound method when that QObject is destroyed. A lambda would outlive
+        # the LogViewer and call into a deleted C++ object.
+        PRINT_REDIRECTOR.sigStdoutWrite.connect(self.components["log"].append)
 
     def prepare_menubar(self):
 

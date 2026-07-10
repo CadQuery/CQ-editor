@@ -29,3 +29,6 @@ def effective_mode(item: DisplayMode, glob: GlobalMode) -> DisplayMode:
         return item
 
     return DisplayMode[glob.name]
+
+
+HIDDEN_COL, WIREFRAME_COL, TRANSPARENT_COL, SHADED_COL, NAME_COL = range(5)

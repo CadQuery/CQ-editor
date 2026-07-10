@@ -18,7 +18,7 @@ from PyQt5.QtGui import QMouseEvent
 from cq_editor.__main__ import MainWindow
 from cq_editor.widgets.editor import Editor
 from cq_editor.cq_utils import export, get_occ_color
-from cq_editor.display import DisplayMode, GlobalMode, effective_mode
+from cq_editor.display import DisplayMode, GlobalMode, effective_mode, NAME_COL
 
 code = """import cadquery as cq
 result = cq.Workplane("XY" )
@@ -269,7 +269,7 @@ def test_render(main):
     debugger._actions["Run"][0].triggered.emit()
 
     qtbot.wait(100)
-    assert obj_tree_comp.CQ.child(0).text(0) == "test"
+    assert obj_tree_comp.CQ.child(0).text(NAME_COL) == "test"
     assert "test" in log.toPlainText().splitlines()[-1]
 
     # cq reloading check
@@ -360,12 +360,17 @@ def test_inspect(main):
 
     qtbot, win = main
 
-    # set focus and make invisible
+    # select the rendered object - three steps down past the "All" global row
+    # and the CQ root
     obj_tree = win.components["object_tree"].tree
     qtbot.mouseClick(obj_tree, Qt.LeftButton)
     qtbot.keyClick(obj_tree, Qt.Key_Down)
     qtbot.keyClick(obj_tree, Qt.Key_Down)
-    qtbot.keyClick(obj_tree, Qt.Key_Space)
+    qtbot.keyClick(obj_tree, Qt.Key_Down)
+
+    # hide it via its display mode - the per-object visibility control that
+    # replaced the name-column checkbox
+    win.components["object_tree"].CQ.child(0).display_mode = DisplayMode.HIDDEN
 
     # enable object inspector
     insp = win.components["cq_object_inspector"]
@@ -1137,7 +1142,7 @@ def test_base_transparency_captured_from_script_alpha(main):
     debugger = win.components["debugger"]
 
     editor.set_text(
-        'import cadquery as cq\n'
+        "import cadquery as cq\n"
         'r = cq.Workplane("XY").box(1, 1, 1)\n'
         'show_object(r, options={"alpha": 0.3})\n'
     )
@@ -1236,7 +1241,9 @@ def test_selection(main_multi, mocker):
     assert len(object_tree.tree.selectedItems()) == 1
 
     # go through different handleSelection paths
+    # one extra Down vs. before: the "All" global-mode row now precedes "CQ models"
     qtbot.mouseClick(object_tree.tree, Qt.LeftButton)
+    qtbot.keyClick(object_tree.tree, Qt.Key_Down)
     qtbot.keyClick(object_tree.tree, Qt.Key_Down)
     qtbot.keyClick(object_tree.tree, Qt.Key_Down)
     qtbot.keyClick(object_tree.tree, Qt.Key_Down)
@@ -1924,10 +1931,10 @@ def test_show_without_name(main):
     assert object_tree.CQ.childCount() == 2
 
     # Check the name of the first object
-    assert object_tree.CQ.child(0).text(0) == "res"
+    assert object_tree.CQ.child(0).text(NAME_COL) == "res"
 
     # Check that the name of the seconf object is an int
-    int(object_tree.CQ.child(1).text(0))
+    int(object_tree.CQ.child(1).text(NAME_COL))
 
 
 def test_print_redirect(main):
@@ -2297,7 +2304,7 @@ def test_shaded_restores_script_alpha(main):
     debugger = win.components["debugger"]
 
     editor.set_text(
-        'import cadquery as cq\n'
+        "import cadquery as cq\n"
         'r = cq.Workplane("XY").box(1, 1, 1)\n'
         'show_object(r, options={"alpha": 0.3})\n'
     )
@@ -2369,3 +2376,429 @@ def test_setting_global_mode_syncs_the_toolbar(main):
 
     object_tree.setGlobalMode(GlobalMode.AS_SET)
     assert not any(a.isChecked() for a in viewer._global_mode_actions.values())
+
+
+def test_tree_has_five_columns_with_a_visible_header(main):
+    qtbot, win = main
+
+    tree = win.components["object_tree"].tree
+
+    assert tree.columnCount() == 5
+    assert not tree.isHeaderHidden()
+    assert tree.headerItem().text(4) == "Name"
+
+
+def test_clicking_a_radio_sets_the_object_mode(main):
+    from cq_editor.widgets.object_tree import WIREFRAME_COL
+
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    item = object_tree.CQ.child(0)
+
+    item.mode_group.button(WIREFRAME_COL).click()
+
+    assert item.display_mode is DisplayMode.WIREFRAME
+
+
+def test_clicking_a_radio_snaps_the_global_mode_back_to_as_set(main_multi):
+    from cq_editor.widgets.object_tree import TRANSPARENT_COL
+
+    qtbot, win = main_multi
+
+    object_tree = win.components["object_tree"]
+    viewer = win.components["viewer"]
+
+    object_tree.CQ.child(1).display_mode = DisplayMode.WIREFRAME
+    object_tree.setGlobalMode(GlobalMode.SHADED)
+    assert viewer._global_mode_actions[GlobalMode.SHADED].isChecked()
+
+    object_tree.CQ.child(0).mode_group.button(TRANSPARENT_COL).click()
+
+    assert object_tree.global_mode is GlobalMode.AS_SET
+    assert object_tree.CQ.child(0).display_mode is DisplayMode.TRANSPARENT
+    # child 1 is released from the override and returns to its own stored mode
+    assert object_tree.CQ.child(1).ais.DisplayMode() == 0  # AIS_WireFrame
+    assert not any(a.isChecked() for a in viewer._global_mode_actions.values())
+
+
+def test_global_row_radios_drive_the_global_mode(main):
+    from cq_editor.widgets.object_tree import HIDDEN_COL, SHADED_COL
+
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+
+    object_tree.GlobalItem.mode_group.button(SHADED_COL).click()
+    assert object_tree.global_mode is GlobalMode.SHADED
+
+    object_tree.GlobalItem.mode_group.button(HIDDEN_COL).click()
+    assert object_tree.global_mode is GlobalMode.AS_SET
+
+
+def test_setting_the_mode_programmatically_updates_the_radios(main):
+    from cq_editor.widgets.object_tree import WIREFRAME_COL, SHADED_COL
+
+    qtbot, win = main
+
+    item = win.components["object_tree"].CQ.child(0)
+
+    assert item.mode_group.button(SHADED_COL).isChecked()
+
+    item.display_mode = DisplayMode.WIREFRAME
+
+    assert item.mode_group.button(WIREFRAME_COL).isChecked()
+    assert not item.mode_group.button(SHADED_COL).isChecked()
+
+
+def test_helpers_keep_a_checkbox_in_the_name_column(main):
+    from cq_editor.widgets.object_tree import NAME_COL
+
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    viewer = win.components["viewer"]
+    ctx = viewer._get_context()
+
+    helper = object_tree.Helpers.child(0)
+    assert helper.checkState(NAME_COL) == Qt.Checked
+    assert ctx.IsDisplayed(helper.ais)
+
+    helper.setCheckState(NAME_COL, Qt.Unchecked)
+    assert not ctx.IsDisplayed(helper.ais)
+
+
+def test_global_override_does_not_touch_helpers(main):
+    from cq_editor.widgets.object_tree import NAME_COL
+
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    viewer = win.components["viewer"]
+    ctx = viewer._get_context()
+
+    helper = object_tree.Helpers.child(0)
+    object_tree.setGlobalMode(GlobalMode.WIREFRAME)
+
+    assert helper.checkState(NAME_COL) == Qt.Checked
+    assert ctx.IsDisplayed(helper.ais)
+
+
+def test_rerunning_the_script_does_not_leak_mode_radios(main):
+    from PyQt5.QtWidgets import QButtonGroup, QRadioButton
+
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    debugger = win.components["debugger"]
+
+    # run once more so "before" already reflects steady-state churn
+    debugger._actions["Run"][0].triggered.emit()
+    groups_before = len(object_tree.tree.findChildren(QButtonGroup))
+    radios_before = len(object_tree.tree.findChildren(QRadioButton))
+
+    debugger._actions["Run"][0].triggered.emit()
+    debugger._actions["Run"][0].triggered.emit()
+    debugger._actions["Run"][0].triggered.emit()
+
+    assert object_tree.CQ.childCount() == 1
+    assert len(object_tree.tree.findChildren(QButtonGroup)) == groups_before
+    assert len(object_tree.tree.findChildren(QRadioButton)) == radios_before
+
+
+def test_stash_unstash_reinstalls_the_mode_radios(main):
+    from PyQt5.QtWidgets import QRadioButton
+
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    item = object_tree.CQ.child(0)
+    item.display_mode = DisplayMode.WIREFRAME
+
+    object_tree.stashObjects(True)
+    object_tree.stashObjects(False)
+
+    child = object_tree.CQ.child(0)
+    container = object_tree.tree.itemWidget(child, 0)
+    radio = container.layout().itemAt(0).widget()
+
+    assert isinstance(radio, QRadioButton)
+    assert child.mode_group.button(child.modes.index(child.display_mode)).isChecked()
+
+
+def test_radio_click_after_unstash_still_drives_display_mode(main):
+    from cq_editor.widgets.object_tree import TRANSPARENT_COL
+
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+
+    object_tree.stashObjects(True)
+    object_tree.stashObjects(False)
+
+    item = object_tree.CQ.child(0)
+    # go through the tree's own item widget, not item.mode_group directly -
+    # this is what proves the radios installed post-unstash are both visible
+    # and wired up, not merely a dangling reference to the pre-stash group
+    container = object_tree.tree.itemWidget(item, TRANSPARENT_COL)
+    radio = container.layout().itemAt(0).widget()
+    radio.click()
+
+    assert item.display_mode is DisplayMode.TRANSPARENT
+
+
+def test_handle_checked_preserves_a_non_hidden_mode_when_still_checked(main):
+    """
+    handleChecked fires on every itemChanged for a helper's NAME_COL, not
+    only genuine checkbox clicks (e.g. propertiesChanged's setData call on
+    the same column re-triggers it). It must not stomp an already non-HIDDEN
+    mode back to SHADED just because the box is (still) checked.
+    """
+    from cq_editor.widgets.object_tree import NAME_COL
+
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    helper = object_tree.Helpers.child(0)
+    assert helper.checkState(NAME_COL) == Qt.Checked
+
+    helper.display_mode = DisplayMode.WIREFRAME
+    object_tree.handleChecked(helper, NAME_COL)
+
+    assert helper.display_mode is DisplayMode.WIREFRAME
+
+
+def test_toolbar_click_updates_the_all_row_radios(main):
+    from cq_editor.widgets.object_tree import (
+        HIDDEN_COL,
+        WIREFRAME_COL,
+        TRANSPARENT_COL,
+        SHADED_COL,
+    )
+
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    viewer = win.components["viewer"]
+    group = object_tree.GlobalItem.mode_group
+
+    # HIDDEN_COL is the "as set below" slot on the All row.
+    assert group.checkedId() == HIDDEN_COL
+
+    viewer._global_mode_actions[GlobalMode.WIREFRAME].trigger()
+    assert group.checkedId() == WIREFRAME_COL
+
+    viewer._global_mode_actions[GlobalMode.TRANSPARENT].trigger()
+    assert group.checkedId() == TRANSPARENT_COL
+
+    viewer._global_mode_actions[GlobalMode.SHADED].trigger()
+    assert group.checkedId() == SHADED_COL
+
+    # Clicking the checked action returns to AS_SET, and the row follows.
+    viewer._global_mode_actions[GlobalMode.SHADED].trigger()
+    assert group.checkedId() == HIDDEN_COL
+
+
+def test_object_radio_click_resets_the_all_row_radios(main_multi):
+    from cq_editor.widgets.object_tree import HIDDEN_COL, WIREFRAME_COL
+
+    qtbot, win = main_multi
+
+    object_tree = win.components["object_tree"]
+    group = object_tree.GlobalItem.mode_group
+
+    object_tree.setGlobalMode(GlobalMode.SHADED)
+    assert group.checkedId() != HIDDEN_COL
+
+    # Snapping back to "as set below" must move the All row, not just the state.
+    object_tree.CQ.child(0).mode_group.button(WIREFRAME_COL).click()
+
+    assert object_tree.global_mode is GlobalMode.AS_SET
+    assert group.checkedId() == HIDDEN_COL
+
+
+def test_mode_radios_are_centered_in_their_columns(main):
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    tree = object_tree.tree
+    header = tree.header()
+
+    # The branch indent insets the tree-position column's cell only. Drawn in
+    # column 0 it would shift that column's radio right and shrink it while
+    # columns 1-3 keep the full section width, so it belongs on the name column.
+    assert tree.treePosition() == NAME_COL
+
+    for item in (object_tree.GlobalItem, object_tree.CQ.child(0)):
+        for col in range(4):
+            container = tree.itemWidget(item, col)
+            assert container is not None
+
+            # Every cell must span exactly its header section, or the radio is
+            # centred inside the wrong rect.
+            assert container.geometry().x() == header.sectionPosition(col)
+            assert container.geometry().width() == header.sectionSize(col)
+
+            radio = container.layout().itemAt(0).widget()
+            assert container.layout().itemAt(0).alignment() & Qt.AlignHCenter
+
+
+code_show_assy_parts = """import cadquery as cq
+box = cq.Workplane("XY").box(1, 1, 1)
+cyl = cq.Workplane("XY").circle(0.3).extrude(1)
+
+assy = cq.Assembly(name="assy")
+assy.add(box, name="box")
+assy.add(cyl, name="cyl", loc=cq.Location(cq.Vector(2, 0, 0)))
+
+show_object(assy)
+"""
+
+
+def _show_assembly(qtbot, win):
+    """Run code_show_assy_parts and hand back the (root, box, cyl) items."""
+
+    win.components["editor"].set_text(code_show_assy_parts)
+    win.components["debugger"]._actions["Run"][0].triggered.emit()
+    qtbot.wait(500)
+
+    object_tree = win.components["object_tree"]
+
+    assert object_tree.CQ.childCount() == 1
+    root = object_tree.CQ.child(0)
+    assert root.childCount() == 2
+
+    return root, root.child(0), root.child(1)
+
+
+def test_assembly_parts_get_their_own_mode_radios(main):
+    from PyQt5.QtWidgets import QRadioButton
+
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    header = object_tree.tree.header()
+    root, box, cyl = _show_assembly(qtbot, win)
+
+    # The root of an assembly carries no shape of its own, but it still gets a
+    # row of radios so the whole subtree can be driven from it.
+    for item in (root, box, cyl):
+        assert item.mode_group is not None
+        container = object_tree.tree.itemWidget(item, 0)
+        assert isinstance(container.layout().itemAt(0).widget(), QRadioButton)
+
+    # The parts are indented, but the indent is drawn in the name column, so
+    # their radio cells still line up with the header sections.
+    for col in range(4):
+        container = object_tree.tree.itemWidget(box, col)
+        assert container.geometry().x() == header.sectionPosition(col)
+        assert container.geometry().width() == header.sectionSize(col)
+
+
+def test_assembly_parts_hold_independent_modes(main):
+    from OCP.AIS import AIS_WireFrame
+
+    qtbot, win = main
+
+    ctx = win.components["viewer"]._get_context()
+    root, box, cyl = _show_assembly(qtbot, win)
+
+    box.display_mode = DisplayMode.HIDDEN
+    cyl.display_mode = DisplayMode.WIREFRAME
+
+    assert not ctx.IsDisplayed(box.ais)
+    assert ctx.IsDisplayed(cyl.ais)
+    assert cyl.ais.DisplayMode() == AIS_WireFrame
+
+
+def test_assembly_mode_from_the_properties_editor_cascades(main):
+    from cq_editor.widgets.object_tree import HIDDEN_COL
+
+    qtbot, win = main
+
+    ctx = win.components["viewer"]._get_context()
+    root, box, cyl = _show_assembly(qtbot, win)
+
+    # The properties editor writes the Parameter itself - it never goes
+    # through the display_mode setter, so it has to cascade all the same.
+    root.properties["Display mode"] = DisplayMode.HIDDEN.value
+
+    assert box.display_mode is DisplayMode.HIDDEN
+    assert cyl.display_mode is DisplayMode.HIDDEN
+    assert box.mode_group.checkedId() == HIDDEN_COL
+    assert not ctx.IsDisplayed(box.ais)
+    assert not ctx.IsDisplayed(cyl.ais)
+
+
+def test_clicking_an_assembly_root_radio_cascades_to_its_parts(main):
+    from cq_editor.widgets.object_tree import HIDDEN_COL
+
+    qtbot, win = main
+
+    ctx = win.components["viewer"]._get_context()
+    root, box, cyl = _show_assembly(qtbot, win)
+
+    root.mode_group.button(HIDDEN_COL).click()
+
+    assert root.display_mode is DisplayMode.HIDDEN
+    assert box.display_mode is DisplayMode.HIDDEN
+    assert cyl.display_mode is DisplayMode.HIDDEN
+    assert not ctx.IsDisplayed(box.ais)
+    assert not ctx.IsDisplayed(cyl.ais)
+
+
+def test_a_hidden_assembly_part_stays_hidden_across_a_rerun(main):
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    ctx = win.components["viewer"]._get_context()
+
+    object_tree.preferences["Preserve properties on reload"] = True
+    try:
+        root, box, cyl = _show_assembly(qtbot, win)
+        box.display_mode = DisplayMode.HIDDEN
+
+        win.components["debugger"]._actions["Run"][0].triggered.emit()
+        qtbot.wait(500)
+
+        root = object_tree.CQ.child(0)
+        box, cyl = root.child(0), root.child(1)
+
+        assert box.display_mode is DisplayMode.HIDDEN
+        assert not ctx.IsDisplayed(box.ais)
+        assert ctx.IsDisplayed(cyl.ais)
+    finally:
+        object_tree.preferences["Preserve properties on reload"] = False
+
+
+def test_rerunning_an_assembly_script_does_not_leak_mode_radios(main):
+    from PyQt5.QtWidgets import QButtonGroup, QRadioButton
+
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    debugger = win.components["debugger"]
+
+    _show_assembly(qtbot, win)
+    groups_before = len(object_tree.tree.findChildren(QButtonGroup))
+    radios_before = len(object_tree.tree.findChildren(QRadioButton))
+
+    for _ in range(3):
+        debugger._actions["Run"][0].triggered.emit()
+        qtbot.wait(500)
+
+    assert object_tree.CQ.childCount() == 1
+    assert len(object_tree.tree.findChildren(QButtonGroup)) == groups_before
+    assert len(object_tree.tree.findChildren(QRadioButton)) == radios_before
+
+
+def test_header_icons_are_centered_in_their_columns(main):
+    qtbot, win = main
+
+    header = win.components["object_tree"].tree.header()
+
+    # The icons live on the header, not the header item: QHeaderView paints a
+    # section icon with AlignVCenter only, so it would otherwise sit hard left.
+    assert win.components["object_tree"].tree.headerItem().icon(0).isNull()
+    for col in range(4):
+        assert not header._icons[col].isNull()

@@ -2260,3 +2260,112 @@ def test_editor_autoreload(editor):
 #     with qtbot.waitSignal(editor.triggerRerender, timeout=TIMEOUT):
 #         # modify file - NB: separate process is needed to avoid Windows quirks
 #         modify_file(code_nested_bottom, "test_nested_bottom.py")
+
+
+def test_apply_display_modes_erases_hidden_and_sets_modes(main_multi):
+    from OCP.AIS import AIS_Shaded, AIS_WireFrame
+
+    qtbot, win = main_multi
+
+    object_tree = win.components["object_tree"]
+    viewer = win.components["viewer"]
+    ctx = viewer._get_context()
+
+    ais0 = object_tree.CQ.child(0).ais
+    ais1 = object_tree.CQ.child(1).ais
+
+    object_tree.CQ.child(0).display_mode = DisplayMode.HIDDEN
+    object_tree.CQ.child(1).display_mode = DisplayMode.WIREFRAME
+
+    assert not ctx.IsDisplayed(ais0)
+    assert ctx.IsDisplayed(ais1)
+    assert ais1.DisplayMode() == AIS_WireFrame
+
+    # A global override must not unhide child 0.
+    object_tree.setGlobalMode(GlobalMode.SHADED)
+
+    assert not ctx.IsDisplayed(ais0)
+    assert ais1.DisplayMode() == AIS_Shaded
+
+
+def test_shaded_restores_script_alpha(main):
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    viewer = win.components["viewer"]
+    editor = win.components["editor"]
+    debugger = win.components["debugger"]
+
+    editor.set_text(
+        'import cadquery as cq\n'
+        'r = cq.Workplane("XY").box(1, 1, 1)\n'
+        'show_object(r, options={"alpha": 0.3})\n'
+    )
+    debugger._actions["Run"][0].triggered.emit()
+
+    object_tree.preferences["Transparency level"] = 0.9
+    item = object_tree.CQ.child(0)
+
+    item.display_mode = DisplayMode.TRANSPARENT
+    assert item.ais.Transparency() == pytest.approx(0.9, abs=1e-6)
+
+    # Back to shaded: the script asked for alpha=0.3, i.e. transparency 0.7.
+    # It must come back, not be forced opaque.
+    item.display_mode = DisplayMode.SHADED
+    assert item.ais.Transparency() == pytest.approx(0.7, abs=1e-6)
+
+
+def test_shaded_unsets_transparency_when_base_is_opaque(main):
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    item = object_tree.CQ.child(0)
+
+    item.display_mode = DisplayMode.TRANSPARENT
+    assert item.ais.Transparency() > 0
+
+    item.display_mode = DisplayMode.SHADED
+    assert item.ais.Transparency() == pytest.approx(0.0)
+
+
+def test_toolbar_actions_drive_and_track_the_global_mode(main):
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    viewer = win.components["viewer"]
+
+    wireframe = viewer._global_mode_actions[GlobalMode.WIREFRAME]
+    transparent = viewer._global_mode_actions[GlobalMode.TRANSPARENT]
+    shaded = viewer._global_mode_actions[GlobalMode.SHADED]
+
+    # Nothing is checked while the global mode is AS_SET.
+    assert not any(a.isChecked() for a in viewer._global_mode_actions.values())
+
+    wireframe.trigger()
+    assert object_tree.global_mode is GlobalMode.WIREFRAME
+    assert wireframe.isChecked()
+    assert not transparent.isChecked()
+    assert not shaded.isChecked()
+
+    transparent.trigger()
+    assert object_tree.global_mode is GlobalMode.TRANSPARENT
+    assert not wireframe.isChecked()
+    assert transparent.isChecked()
+
+    # Clicking the already-checked action returns to AS_SET.
+    transparent.trigger()
+    assert object_tree.global_mode is GlobalMode.AS_SET
+    assert not any(a.isChecked() for a in viewer._global_mode_actions.values())
+
+
+def test_setting_global_mode_syncs_the_toolbar(main):
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    viewer = win.components["viewer"]
+
+    object_tree.setGlobalMode(GlobalMode.SHADED)
+    assert viewer._global_mode_actions[GlobalMode.SHADED].isChecked()
+
+    object_tree.setGlobalMode(GlobalMode.AS_SET)
+    assert not any(a.isChecked() for a in viewer._global_mode_actions.values())

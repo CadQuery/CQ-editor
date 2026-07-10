@@ -461,6 +461,15 @@ class MainWindow(QMainWindow, MainMixin):
         self.components["object_tree"].sigHelpersResized.connect(
             self.components["viewer"].redisplay
         )
+        self.components["object_tree"].sigDisplayModesChanged.connect(
+            self.components["viewer"].apply_display_modes
+        )
+        self.components["object_tree"].sigGlobalModeChanged.connect(
+            self.components["viewer"].sync_global_actions
+        )
+        self.components["viewer"].sigGlobalModeChanged.connect(
+            self.components["object_tree"].setGlobalMode
+        )
 
         self.components["viewer"].sigObjectSelected.connect(
             self.components["object_tree"].handleGraphicalSelection

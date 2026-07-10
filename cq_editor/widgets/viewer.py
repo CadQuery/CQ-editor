@@ -31,6 +31,7 @@ from ..utils import layout, get_save_filename
 from ..mixins import ComponentMixin
 from ..icons import icon
 from ..cq_utils import to_occ_color, make_AIS, DEFAULT_FACE_COLOR
+from ..display import DisplayMode, GlobalMode
 
 from .occt_widget import OCCTWidget
 
@@ -106,6 +107,7 @@ class OCCViewer(QWidget, ComponentMixin):
     IMAGE_EXTENSIONS = "png"
 
     sigObjectSelected = pyqtSignal(list)
+    sigGlobalModeChanged = pyqtSignal(object)
 
     def __init__(self, parent=None):
 
@@ -115,6 +117,7 @@ class OCCViewer(QWidget, ComponentMixin):
         self.canvas = OCCTWidget()
         self.canvas.sigObjectSelected.connect(self.handle_selection)
 
+        self._global_mode = GlobalMode.AS_SET
         self.create_actions(self)
 
         self.layout_ = layout(
@@ -186,6 +189,39 @@ class OCCViewer(QWidget, ComponentMixin):
 
     def create_actions(self, parent):
 
+        self._wireframe_action = QAction(
+            qta.icon("fa5.stop-circle"),
+            "Wireframe (Shift+F9)",
+            parent,
+            shortcut="shift+F9",
+            checkable=True,
+            triggered=lambda checked: self.wireframe_view(),
+        )
+
+        self._shaded_action = QAction(
+            qta.icon("fa5.square"),
+            "Shaded (Shift+F10)",
+            parent,
+            shortcut="shift+F10",
+            checkable=True,
+            triggered=lambda checked: self.shaded_view(),
+        )
+
+        self._transparent_action = QAction(
+            qta.icon("fa5s.adjust"),
+            "Transparent (Shift+F12)",
+            parent,
+            shortcut="shift+F12",
+            checkable=True,
+            triggered=lambda checked: self.transparent_view(),
+        )
+
+        self._global_mode_actions = {
+            GlobalMode.WIREFRAME: self._wireframe_action,
+            GlobalMode.TRANSPARENT: self._transparent_action,
+            GlobalMode.SHADED: self._shaded_action,
+        }
+
         self._actions = {
             "View": [
                 QAction(
@@ -244,20 +280,9 @@ class OCCViewer(QWidget, ComponentMixin):
                     shortcut="shift+F8",
                     triggered=self.right_view,
                 ),
-                QAction(
-                    qta.icon("fa5.stop-circle"),
-                    "Wireframe (Shift+F9)",
-                    parent,
-                    shortcut="shift+F9",
-                    triggered=self.wireframe_view,
-                ),
-                QAction(
-                    qta.icon("fa5.square"),
-                    "Shaded (Shift+F10)",
-                    parent,
-                    shortcut="shift+F10",
-                    triggered=self.shaded_view,
-                ),
+                self._wireframe_action,
+                self._transparent_action,
+                self._shaded_action,
             ],
             "Tools": [
                 QAction(
@@ -409,15 +434,63 @@ class OCCViewer(QWidget, ComponentMixin):
         v.SetProj(1, 0, 0)
         v.SetTwist(0)
 
+    def _toggle_global_mode(self, mode: GlobalMode):
+        """Clicking the mode that is already active returns to AS_SET."""
+
+        new = GlobalMode.AS_SET if self._global_mode is mode else mode
+        self.sigGlobalModeChanged.emit(new)
+
     def shaded_view(self):
 
-        c = self._get_context()
-        c.SetDisplayMode(AIS_Shaded, True)
+        self._toggle_global_mode(GlobalMode.SHADED)
 
     def wireframe_view(self):
 
-        c = self._get_context()
-        c.SetDisplayMode(AIS_WireFrame, True)
+        self._toggle_global_mode(GlobalMode.WIREFRAME)
+
+    def transparent_view(self):
+
+        self._toggle_global_mode(GlobalMode.TRANSPARENT)
+
+    @pyqtSlot(object)
+    def sync_global_actions(self, mode: GlobalMode):
+
+        self._global_mode = mode
+
+        for m, action in self._global_mode_actions.items():
+            action.blockSignals(True)
+            action.setChecked(m is mode)
+            action.blockSignals(False)
+
+    @pyqtSlot(list)
+    def apply_display_modes(self, entries):
+        """
+        entries: [(ais, DisplayMode, transparency), ...] - already resolved by
+        ObjectTree. Only the 3-arg SetDisplayMode is used; the context-wide
+        overload skips objects that carry a per-object override.
+        """
+
+        ctx = self._get_context()
+
+        for ais, mode, transparency in entries:
+            if mode is DisplayMode.HIDDEN:
+                ctx.Erase(ais, False)
+                continue
+
+            ctx.Display(ais, False)
+
+            if mode is DisplayMode.WIREFRAME:
+                ctx.SetDisplayMode(ais, AIS_WireFrame, False)
+            else:
+                ctx.SetDisplayMode(ais, AIS_Shaded, False)
+                if transparency > 0:
+                    ctx.SetTransparency(ais, transparency, False)
+                else:
+                    ctx.UnsetTransparency(ais, False)
+
+        if entries:
+            ctx.UpdateCurrentViewer()
+            self.canvas.apply_selection_mode()
 
     def show_grid(
         self, step=1.0, size=10.0 + 1e-6, color1=(0.7, 0.7, 0.7), color2=(0, 0, 0)

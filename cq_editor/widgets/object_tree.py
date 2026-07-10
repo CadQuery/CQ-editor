@@ -18,6 +18,7 @@ from OCP.Bnd import Bnd_Box
 
 from ..mixins import ComponentMixin
 from ..icons import icon
+from ..display import DisplayMode, GlobalMode, effective_mode
 from ..cq_utils import (
     make_AIS,
     export,
@@ -48,7 +49,12 @@ class ObjectTreeItem(QTreeWidgetItem):
         {"name": "Name", "type": "str", "value": "", "readonly": True},
         # {"name": "Color", "type": "color", "value": "#f4a824"},
         # {"name": "Alpha", "type": "float", "value": 0, "limits": (0, 1), "step": 1e-1},
-        {"name": "Visible", "type": "bool", "value": True},
+        {
+            "name": "Display mode",
+            "type": "list",
+            "value": DisplayMode.SHADED.value,
+            "values": [m.value for m in DisplayMode],
+        },
     ]
 
     def __init__(
@@ -71,6 +77,7 @@ class ObjectTreeItem(QTreeWidgetItem):
         self.shape = shape
         self.shape_display = shape_display
         self.sig = sig
+        self.base_transparency = ais.Transparency() if ais is not None else 0.0
 
         self.properties = Parameter.create(name="Properties", children=self.props)
 
@@ -84,6 +91,16 @@ class ObjectTreeItem(QTreeWidgetItem):
         #     else get_occ_color(DEFAULT_FACE_COLOR)
         # )
         self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
+
+    @property
+    def display_mode(self) -> DisplayMode:
+
+        return DisplayMode(self.properties["Display mode"])
+
+    @display_mode.setter
+    def display_mode(self, mode: DisplayMode):
+
+        self.properties["Display mode"] = mode.value
 
     def propertiesChanged(self, properties, changed):
 
@@ -99,10 +116,8 @@ class ObjectTreeItem(QTreeWidgetItem):
 
         # self.ais.Redisplay()
 
-        if self.properties["Visible"]:
-            self.setCheckState(0, Qt.Checked)
-        else:
-            self.setCheckState(0, Qt.Unchecked)
+        hidden = self.display_mode is DisplayMode.HIDDEN
+        self.setCheckState(0, Qt.Unchecked if hidden else Qt.Checked)
 
         if self.sig:
             self.sig.emit()
@@ -134,6 +149,13 @@ class ObjectTree(QWidget, ComponentMixin):
             {"name": "Clear all before each run", "type": "bool", "value": True},
             {"name": "Merge Assemblies", "type": "bool", "value": False},
             {"name": "STL precision", "type": "float", "value": 0.1},
+            {
+                "name": "Transparency level",
+                "type": "float",
+                "value": 0.7,
+                "limits": (0, 1),
+                "step": 0.05,
+            },
         ],
     )
 
@@ -144,10 +166,19 @@ class ObjectTree(QWidget, ComponentMixin):
     sigItemChanged = pyqtSignal(QTreeWidgetItem, int)
     sigObjectPropertiesChanged = pyqtSignal()
     sigHelpersResized = pyqtSignal(list)
+    sigDisplayModesChanged = pyqtSignal(list)
+    sigGlobalModeChanged = pyqtSignal(object)
 
     def __init__(self, parent):
 
         super(ObjectTree, self).__init__(parent)
+
+        self._global_mode = GlobalMode.AS_SET
+
+        # ObjectTree never calls ComponentMixin.__init__ (super() resolves to
+        # QWidget.__init__, which does not cascade), so this connection - which
+        # ComponentMixin would normally make - has to be made by hand.
+        self.preferences.sigTreeStateChanged.connect(self.updatePreferences)
 
         self.tree = tree = QTreeWidget(
             self, selectionMode=QAbstractItemView.ExtendedSelection
@@ -205,6 +236,8 @@ class ObjectTree(QWidget, ComponentMixin):
         tree.customContextMenuRequested.connect(self.showMenu)
 
         self.prepareLayout()
+
+        self.sigObjectPropertiesChanged.connect(self._apply_modes)
 
     def _axis_points(self, direction, halfLen):
         """Calculates the points needed to draw the axis helper lines"""
@@ -407,6 +440,62 @@ class ObjectTree(QWidget, ComponentMixin):
             if it.ais is not None
         ]
 
+    def _visible_ais(self, tops):
+        """_subtree_ais, minus the items that start out hidden."""
+        return [
+            it.ais
+            for top in tops
+            for it in self._iter_subtree(top)
+            if it.ais is not None and it.display_mode is not DisplayMode.HIDDEN
+        ]
+
+    @property
+    def global_mode(self) -> GlobalMode:
+
+        return self._global_mode
+
+    @pyqtSlot(object)
+    def setGlobalMode(self, mode: GlobalMode):
+
+        if mode is self._global_mode:
+            return
+
+        self._global_mode = mode
+        self.sigGlobalModeChanged.emit(mode)
+        self._apply_modes()
+
+    @pyqtSlot()
+    def _apply_modes(self):
+        """
+        Resolve every CQ object's effective mode and transparency and hand the
+        result to the viewer. Assembly parts are nested items and carry their
+        own mode, so the whole subtree is walked. Helpers are excluded - they
+        keep their checkbox and are not affected by the global override.
+        """
+
+        transparency = self.preferences["Transparency level"]
+
+        payload = []
+        for i in range(self.CQ.childCount()):
+            for item in self._iter_subtree(self.CQ.child(i)):
+                if item.ais is None:
+                    continue
+                mode = effective_mode(item.display_mode, self._global_mode)
+                t = (
+                    transparency
+                    if mode is DisplayMode.TRANSPARENT
+                    else item.base_transparency
+                )
+                payload.append((item.ais, mode, t))
+
+        if payload:
+            self.sigDisplayModesChanged.emit(payload)
+
+    @pyqtSlot(object, object)
+    def updatePreferences(self, *args):
+
+        self._apply_modes()
+
     @pyqtSlot(dict, bool)
     @pyqtSlot(dict)
     def addObjects(self, objects, clean=False, root=None):
@@ -429,20 +518,21 @@ class ObjectTree(QWidget, ComponentMixin):
         objects_f = {k: v for k, v in objects.items() if not is_obj_empty(v.shape)}
 
         for name, obj in objects_f.items():
-            top_items, obj_ais = self._build_items(name, obj.shape, obj.options)
+            top_items, _ = self._build_items(name, obj.shape, obj.options)
             for item in top_items:
                 if preserve_props and name in current_props:
                     self._restore_properties(item, current_props)
                 self.CQ.addChild(item)
                 self.tree.expandItem(item)
 
-            ais_list.extend(obj_ais)
+            ais_list.extend(self._visible_ais(top_items))
 
         if request_fit_view:
             self.sigObjectsAdded[list, bool].emit(ais_list, True)
         else:
             self.sigObjectsAdded[list].emit(ais_list)
 
+        self._apply_modes()
         self._rescale_helpers()
 
     @pyqtSlot(object, str, object)
@@ -457,6 +547,7 @@ class ObjectTree(QWidget, ComponentMixin):
         for item in top_items:
             self.CQ.addChild(item)
         self.sigObjectsAdded.emit(ais_list)
+        self._apply_modes()
 
     @pyqtSlot(list)
     @pyqtSlot()
@@ -489,6 +580,7 @@ class ObjectTree(QWidget, ComponentMixin):
             self.CQ.addChildren(self._stash)
             ais_list = self._subtree_ais(self._stash)
             self.sigObjectsAdded.emit(ais_list)
+            self._apply_modes()
 
     @pyqtSlot()
     def removeSelected(self):
@@ -576,8 +668,11 @@ class ObjectTree(QWidget, ComponentMixin):
     @pyqtSlot(QTreeWidgetItem, int)
     def handleChecked(self, item, col):
 
-        if type(item) is ObjectTreeItem:
-            if item.checkState(0):
-                item.properties["Visible"] = True
-            else:
-                item.properties["Visible"] = False
+        if type(item) is not ObjectTreeItem:
+            return
+
+        if item.checkState(0):
+            if item.display_mode is DisplayMode.HIDDEN:
+                item.display_mode = DisplayMode.SHADED
+        else:
+            item.display_mode = DisplayMode.HIDDEN

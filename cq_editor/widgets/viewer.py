@@ -32,7 +32,7 @@ from ..utils import layout, get_save_filename
 from ..mixins import ComponentMixin
 from ..icons import icon
 from ..cq_utils import to_occ_color, make_AIS, DEFAULT_FACE_COLOR
-from ..display import DisplayMode, GlobalMode
+from ..display import DisplayMode, GlobalMode, NAME_COL
 
 from .navigation_cube import RotationArrow
 from .occt_widget import OCCTWidget
@@ -363,7 +363,7 @@ class OCCViewer(QWidget, ComponentMixin):
             return
 
         ctx = self._get_context()
-        if item.checkState(0):
+        if item.checkState(NAME_COL):
             ctx.Display(item.ais, True)
         else:
             ctx.Erase(item.ais, True)
@@ -506,7 +506,6 @@ class OCCViewer(QWidget, ComponentMixin):
 
         if entries:
             ctx.UpdateCurrentViewer()
-            self.canvas.apply_selection_mode()
 
     def show_grid(
         self, step=1.0, size=10.0 + 1e-6, color1=(0.7, 0.7, 0.7), color2=(0, 0, 0)

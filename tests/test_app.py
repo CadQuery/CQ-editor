@@ -18,6 +18,7 @@ from PyQt5.QtGui import QMouseEvent
 from cq_editor.__main__ import MainWindow
 from cq_editor.widgets.editor import Editor
 from cq_editor.cq_utils import export, get_occ_color
+from cq_editor.display import DisplayMode, GlobalMode, effective_mode
 
 code = """import cadquery as cq
 result = cq.Workplane("XY" )
@@ -1109,17 +1110,74 @@ def test_preserve_properties(main):
 
     assert object_tree.CQ.childCount() == 1
     props = object_tree.CQ.child(0).properties
-    props["Visible"] = False
-    # props["Color"] = "#caffee"
-    # props["Alpha"] = 0.5
+    props["Display mode"] = "Wireframe"
 
     debugger._actions["Run"][0].triggered.emit()
 
     assert object_tree.CQ.childCount() == 1
     props = object_tree.CQ.child(0).properties
-    assert props["Visible"] == False
-    # assert props["Color"].name() == "#caffee"
-    # assert props["Alpha"] == 0.5
+    assert props["Display mode"] == "Wireframe"
+    assert object_tree.CQ.child(0).display_mode is DisplayMode.WIREFRAME
+
+
+def test_display_mode_defaults_to_shaded(main):
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+
+    assert object_tree.CQ.child(0).display_mode is DisplayMode.SHADED
+    assert object_tree.global_mode is GlobalMode.AS_SET
+
+
+def test_base_transparency_captured_from_script_alpha(main):
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    editor = win.components["editor"]
+    debugger = win.components["debugger"]
+
+    editor.set_text(
+        'import cadquery as cq\n'
+        'r = cq.Workplane("XY").box(1, 1, 1)\n'
+        'show_object(r, options={"alpha": 0.3})\n'
+    )
+    debugger._actions["Run"][0].triggered.emit()
+
+    # make_AIS inverts alpha: alpha=0.3 -> OCCT transparency 0.7
+    assert object_tree.CQ.child(0).base_transparency == pytest.approx(0.7, abs=1e-6)
+
+
+def test_display_modes_payload_resolves_global_override(main_multi):
+    qtbot, win = main_multi
+
+    object_tree = win.components["object_tree"]
+    object_tree.CQ.child(0).display_mode = DisplayMode.HIDDEN
+    object_tree.CQ.child(1).display_mode = DisplayMode.WIREFRAME
+
+    with qtbot.waitSignal(object_tree.sigDisplayModesChanged) as blocker:
+        object_tree.setGlobalMode(GlobalMode.SHADED)
+
+    payload = blocker.args[0]
+    modes = [mode for _, mode, _ in payload]
+
+    # The override never unhides child 0, and it does replace child 1's wireframe.
+    assert modes == [DisplayMode.HIDDEN, DisplayMode.SHADED]
+
+
+def test_transparent_uses_the_preference_and_shaded_restores_base(main):
+    qtbot, win = main
+
+    object_tree = win.components["object_tree"]
+    object_tree.preferences["Transparency level"] = 0.42
+    item = object_tree.CQ.child(0)
+
+    with qtbot.waitSignal(object_tree.sigDisplayModesChanged) as blocker:
+        item.display_mode = DisplayMode.TRANSPARENT
+    assert blocker.args[0][0][2] == pytest.approx(0.42)
+
+    with qtbot.waitSignal(object_tree.sigDisplayModesChanged) as blocker:
+        item.display_mode = DisplayMode.SHADED
+    assert blocker.args[0][0][2] == pytest.approx(item.base_transparency)
 
 
 def test_selection(main_multi, mocker):

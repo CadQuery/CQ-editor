@@ -318,6 +318,9 @@ class OCCViewer(QWidget, ComponentMixin):
     @pyqtSlot(QTreeWidgetItem, int)
     def update_item(self, item, col):
 
+        if getattr(item, "ais", None) is None:
+            return
+
         ctx = self._get_context()
         if item.checkState(0):
             ctx.Display(item.ais, True)

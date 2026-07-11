@@ -352,7 +352,10 @@ def number_visible_items(viewer):
     viewer_ctx = viewer._get_context()
     viewer_ctx.DisplayedObjects(l)
 
-    return l.Extent()
+    # exclude the navigation cube and its rotation arrows - they are always
+    # displayed furniture, not rendered CQ objects
+    furniture = [viewer.canvas.view_cube, *viewer.canvas.rotate_arrows]
+    return sum(1 for o in l if all(o != f for f in furniture))
 
 
 def test_inspect(main):

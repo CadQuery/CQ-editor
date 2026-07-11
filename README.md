@@ -16,6 +16,9 @@ Additional screenshots are available in [the wiki](https://github.com/CadQuery/C
 
 * Automatic code reloading - you can use your favourite editor
 * OCCT based
+* Navigation cube with rotation arrows
+  * Always shows the current camera orientation
+  * Click faces, edges or corners for one-click animated reorientation
 * Graphical debugger for CadQuery scripts
   * Step through script and watch how your model changes
 * CadQuery object stack inspector

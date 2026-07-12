@@ -89,7 +89,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
+cqvnv
 # Spyder project settings
 .spyderproject
 .spyproject

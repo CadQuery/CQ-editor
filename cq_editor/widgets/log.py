@@ -2,7 +2,7 @@ import logbook as logging
 import re
 
 from PyQt5 import QtGui
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QPlainTextEdit, QAction
 
 from ..mixins import ComponentMixin
@@ -90,6 +90,7 @@ class LogViewer(QPlainTextEdit, ComponentMixin):
         # Ensure handler is closed when widget is destroyed
         self.destroyed.connect(lambda *_: self.handler.close())
 
+    @pyqtSlot(str)
     def append(self, msg):
         """Append text to the panel with ANSI escape sequences stipped."""
         self.moveCursor(QtGui.QTextCursor.End)

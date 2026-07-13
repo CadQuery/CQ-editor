@@ -970,6 +970,35 @@ def test_search(editor):
     qtbot.keyClick(editor, Qt.Key_F3, modifier=Qt.AltModifier)
 
 
+def test_search_return_does_not_edit_document(editor):
+    """
+    Pressing Return in the search box should only advance to the next match,
+    never change the code.
+    """
+    qtbot, editor = editor
+
+    editor.set_text(base_editor_text)
+
+    # Open the search box and search for a term with more than one match
+    qtbot.keyClick(editor, Qt.Key_F, modifier=Qt.ControlModifier)
+    qtbot.keyClicks(editor.search_widget.search_input, "cq")
+    assert editor.search_widget.match_label.text() == "1 of 2"
+
+    # The current match is selected in the editor, so a Return that reaches it
+    # would replace the matched text with a newline
+    qtbot.keyClick(editor.search_widget.search_input, Qt.Key_Return)
+    assert editor.search_widget.match_label.text() == "2 of 2"
+    assert editor.get_text_with_eol() == base_editor_text
+
+    qtbot.keyClick(editor.search_widget.search_input, Qt.Key_Return)
+    assert editor.search_widget.match_label.text() == "1 of 2"
+    assert editor.get_text_with_eol() == base_editor_text
+
+    # Escape still closes the search box from within the search input
+    qtbot.keyClick(editor.search_widget.search_input, Qt.Key_Escape)
+    assert not editor.search_widget.isVisible()
+
+
 def test_line_number_area(editor):
     """
     Tests to make sure the line number area on the left of the editor is working correctly.

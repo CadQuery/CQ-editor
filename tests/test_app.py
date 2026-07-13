@@ -12,11 +12,12 @@ import pytestqt
 import cadquery as cq
 
 from PyQt5.QtCore import Qt, QSettings, QPoint, QEvent, QSize
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QApplication, QFileDialog, QMessageBox
 from PyQt5.QtGui import QMouseEvent
 
 from cq_editor.__main__ import MainWindow
 from cq_editor.widgets.editor import Editor
+from cq_editor.widgets.traceback_viewer import TracebackPane
 from cq_editor.cq_utils import export, get_occ_color
 
 code = """import cadquery as cq
@@ -968,6 +969,37 @@ def test_search(editor):
     assert editor.search_widget.isVisible()
     qtbot.keyClick(editor, Qt.Key_F3)
     qtbot.keyClick(editor, Qt.Key_F3, modifier=Qt.AltModifier)
+
+
+def test_traceback_copy(qtbot):
+    """
+    The traceback should be copyable, so that it can be pasted elsewhere.
+    """
+
+    pane = TracebackPane(None)
+    qtbot.addWidget(pane)
+
+    try:
+        exec(compile(code_err2, "<string>", "exec"), {})
+    except Exception:
+        exc_info = sys.exc_info()
+
+    pane.addTraceback(exc_info, code_err2)
+
+    pane.copy_action.triggered.emit()
+
+    text = QApplication.clipboard().text()
+
+    assert text.startswith("Traceback (most recent call last):")
+    assert 'File "<string>", line 3' in text
+    assert text.endswith("NameError: name 'f' is not defined")
+
+    # the message is shown elided, so it has to be selectable as well
+    assert pane.current_exception.textInteractionFlags() & Qt.TextSelectableByMouse
+
+    # nothing to copy when there is no traceback
+    pane.addTraceback(None, "")
+    assert pane.tracebackText() == ""
 
 
 def test_line_number_area(editor):

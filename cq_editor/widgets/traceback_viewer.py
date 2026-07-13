@@ -1,9 +1,16 @@
 from traceback import extract_tb, format_exception_only
 from itertools import dropwhile
 
-from PyQt5.QtWidgets import QWidget, QTreeWidget, QTreeWidgetItem, QAction, QLabel
+from PyQt5.QtWidgets import (
+    QWidget,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QAction,
+    QLabel,
+    QApplication,
+)
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
-from PyQt5.QtGui import QFontMetrics
+from PyQt5.QtGui import QFontMetrics, QKeySequence
 
 from ..mixins import ComponentMixin
 from ..utils import layout
@@ -38,6 +45,20 @@ class TracebackPane(QWidget, ComponentMixin):
         self.tree = TracebackTree(self)
         self.current_exception = QLabel(self)
         self.current_exception.setStyleSheet("QLabel {color : red; }")
+
+        # the message is shown elided, so let it at least be selected
+        self.current_exception.setTextInteractionFlags(
+            Qt.TextSelectableByMouse | Qt.TextSelectableByKeyboard
+        )
+
+        # the full exception text, unescaped and not elided
+        self._exception_text = ""
+
+        self.copy_action = QAction("Copy traceback", self)
+        self.copy_action.setShortcut(QKeySequence.Copy)
+        self.copy_action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        self.copy_action.triggered.connect(self.copyTraceback)
+        self.tree.addAction(self.copy_action)
 
         layout(self, (self.current_exception, self.tree), self)
 
@@ -78,6 +99,9 @@ class TracebackPane(QWidget, ComponentMixin):
 
             exc_name = t.__name__
             exc_msg = str(exc)
+
+            self._exception_text = "{}: {}".format(exc_name, exc_msg)
+
             exc_msg = exc_msg.replace("<", "&lt;").replace(">", "&gt;")  # replace <>
 
             truncated_msg = self.truncate_text(exc_msg)
@@ -98,8 +122,46 @@ class TracebackPane(QWidget, ComponentMixin):
                     )
                 )
         else:
+            self._exception_text = ""
             self.current_exception.setText("")
             self.current_exception.setToolTip("")
+
+    def tracebackText(self):
+        """
+        The traceback as it is shown in the pane, in the usual Python format.
+        """
+
+        if not self._exception_text:
+            return ""
+
+        lines = ["Traceback (most recent call last):"]
+
+        root = self.tree.root
+
+        for i in range(root.childCount()):
+            item = root.child(i)
+            filename, lineno, code = (item.data(col, 0) for col in range(3))
+
+            lines.append('  File "{}", line {}'.format(filename, lineno))
+
+            if code:
+                lines.append("    {}".format(code))
+
+        lines.append(self._exception_text)
+
+        return "\n".join(lines)
+
+    @pyqtSlot()
+    def copyTraceback(self):
+        """
+        Puts the traceback on the clipboard, so that it can be pasted into a
+        bug report or a search box.
+        """
+
+        text = self.tracebackText()
+
+        if text:
+            QApplication.clipboard().setText(text)
 
     @pyqtSlot(QTreeWidgetItem, QTreeWidgetItem)
     def handleSelection(self, item, *args):

@@ -57,6 +57,21 @@ class SearchWidget(QtWidgets.QWidget):
         layout.addWidget(self.close_button)
         self.setLayout(layout)
 
+    def keyPressEvent(self, event):
+        """
+        Keeps Return from reaching the editor.
+
+        QLineEdit ignores Return after emitting returnPressed, and this widget
+        is a child of the editor, so the key would otherwise propagate up and
+        be inserted into the document. The current match is selected there,
+        which means the newline replaces the matched text.
+        """
+        if event.key() in (QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter):
+            event.accept()
+            return
+
+        super(SearchWidget, self).keyPressEvent(event)
+
     def on_search_text_changed(self, text):
         """
         Called as the user types text into the search field.

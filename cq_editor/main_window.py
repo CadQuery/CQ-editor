@@ -100,9 +100,7 @@ class MainWindow(QMainWindow, MainMixin):
         self.viewer = OCCViewer(self)
         self.setCentralWidget(self.viewer.canvas)
 
-        # Widen the dock separators so they are easy to grab. The default handle
-        # is only a couple of pixels wide, which is very hard to hit on macOS /
-        # high-DPI displays (#277).
+        # Make sure the dock separators are wide enough to grab on high-DPI displays
         self.setStyleSheet("QMainWindow::separator { width: 6px; height: 6px; }")
 
         self.prepare_panes()

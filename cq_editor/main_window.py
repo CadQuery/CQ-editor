@@ -12,6 +12,8 @@ from PyQt5.QtWidgets import (
     QAction,
     QApplication,
     QMenu,
+    QProxyStyle,
+    QStyle,
 )
 from logbook import Logger
 import cadquery as cq
@@ -63,6 +65,23 @@ class _PrintRedirectorSingleton(QObject):
 PRINT_REDIRECTOR = _PrintRedirectorSingleton()
 
 
+class DockSeparatorStyle(QProxyStyle):
+    """Widens the dock separators so that they are easier to grab (#277).
+
+    A style proxy is used instead of a stylesheet because setting a stylesheet
+    on the main window moves its whole widget subtree to QStyleSheetStyle,
+    which discards palette based theming (e.g. editor syntax highlighting).
+    """
+
+    def pixelMetric(self, metric, option=None, widget=None):
+
+        extent = super().pixelMetric(metric, option, widget)
+        if metric == QStyle.PM_DockWidgetSeparatorExtent:
+            return max(extent, 6)
+
+        return extent
+
+
 class MainWindow(QMainWindow, MainMixin):
 
     name = "CQ-Editor"
@@ -99,6 +118,11 @@ class MainWindow(QMainWindow, MainMixin):
 
         self.viewer = OCCViewer(self)
         self.setCentralWidget(self.viewer.canvas)
+
+        # Make sure the dock separators are wide enough to grab on high-DPI displays.
+        # setStyle does not take ownership, so keep a reference on self.
+        self._separator_style = DockSeparatorStyle()
+        self.setStyle(self._separator_style)
 
         self.prepare_panes()
         self.registerComponent("viewer", self.viewer)

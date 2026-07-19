@@ -12,10 +12,11 @@ import pytestqt
 import cadquery as cq
 
 from PyQt5.QtCore import Qt, QSettings, QPoint, QEvent, QSize
-from PyQt5.QtWidgets import QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QApplication, QFileDialog, QMessageBox, QStyle, QStyleFactory
 from PyQt5.QtGui import QMouseEvent
 
 from cq_editor.__main__ import MainWindow
+from cq_editor.main_window import DockSeparatorStyle
 from cq_editor.widgets.editor import Editor
 from cq_editor.cq_utils import export, get_occ_color
 
@@ -1706,6 +1707,31 @@ def test_launch_syntax_error(tmp_path):
 
     win.show()
     assert win.isVisible()
+
+
+def test_dock_separator_width(qtbot):
+
+    win = MainWindow()
+    qtbot.addWidget(win)
+
+    # separators are widened through a style proxy, not a stylesheet: a
+    # stylesheet on the main window would break palette based theming (#595)
+    assert win.styleSheet() == ""
+    assert win.style().pixelMetric(QStyle.PM_DockWidgetSeparatorExtent, None, win) >= 6
+
+    # child widgets keep the application style
+    editor = win.components["editor"]
+    assert editor.style().objectName() == QApplication.instance().style().objectName()
+
+
+def test_dock_separator_style_widens_small_extents(qtbot):
+
+    base = QStyleFactory.create("Windows")
+    assert base.pixelMetric(QStyle.PM_DockWidgetSeparatorExtent) < 6
+
+    style = DockSeparatorStyle(base)
+
+    assert style.pixelMetric(QStyle.PM_DockWidgetSeparatorExtent) == 6
 
 
 code_import_module_makebox = """

@@ -14,6 +14,9 @@ from OCP.AIS import AIS_InteractiveContext, AIS_DisplayMode
 from OCP.Quantity import Quantity_Color
 
 ZOOM_STEP = 0.9
+# Pixel delta fed to ZoomAtPoint so a wheel notch matches SetZoom(1 / ZOOM_STEP).
+# OCCT derives its coefficient as |delta| / 100 + 1.
+ZOOM_AT_POINT_STEP = round((1 / ZOOM_STEP - 1) * 100)
 
 
 class OCCTWidget(QWidget):
@@ -39,6 +42,9 @@ class OCCTWidget(QWidget):
 
         # Orbit method settings
         self._orbit_method = "Turntable"
+
+        # Zoom towards the cursor instead of the view center
+        self._zoom_to_cursor = False
 
         # OCCT secific things
         self.display_connection = Aspect_DisplayConnection()
@@ -87,12 +93,24 @@ class OCCTWidget(QWidget):
         else:
             raise ValueError(f"Unknown orbit method: {method}")
 
+    def set_zoom_to_cursor(self, enabled):
+
+        self._zoom_to_cursor = enabled
+
     def wheelEvent(self, event):
 
         delta = event.angleDelta().y()
-        factor = ZOOM_STEP if delta < 0 else 1 / ZOOM_STEP
 
-        self.view.SetZoom(factor)
+        if self._zoom_to_cursor:
+            pos = event.pos()
+            self.view.StartZoomAtPoint(pos.x(), pos.y())
+            if delta < 0:
+                self.view.ZoomAtPoint(ZOOM_AT_POINT_STEP, 0, 0, 0)
+            else:
+                self.view.ZoomAtPoint(0, 0, ZOOM_AT_POINT_STEP, 0)
+        else:
+            factor = ZOOM_STEP if delta < 0 else 1 / ZOOM_STEP
+            self.view.SetZoom(factor)
 
     def mousePressEvent(self, event):
 

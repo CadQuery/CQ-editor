@@ -49,6 +49,7 @@ class OCCViewer(QWidget, ComponentMixin):
         name="Pref",
         children=[
             {"name": "Fit automatically", "type": "bool", "value": True},
+            {"name": "Zoom to mouse position", "type": "bool", "value": False},
             {"name": "Use gradient", "type": "bool", "value": False},
             {"name": "Background color", "type": "color", "value": (95, 95, 95)},
             {"name": "Background color (aux)", "type": "color", "value": (30, 30, 30)},
@@ -157,6 +158,8 @@ class OCCViewer(QWidget, ComponentMixin):
         if not orbit_method:
             orbit_method = "Trackball"
         self.canvas.set_orbit_method(orbit_method)
+
+        self.canvas.set_zoom_to_cursor(self.preferences["Zoom to mouse position"])
 
         self.canvas.update()
 

@@ -772,16 +772,24 @@ class ObjectTree(QWidget, ComponentMixin):
         # remove empty objects
         objects_f = {k: v for k, v in objects.items() if not is_obj_empty(v.shape)}
 
-        for name, obj in objects_f.items():
-            top_items, _ = self._build_items(name, obj.shape, obj.options)
-            for item in top_items:
-                if preserve_props and name in current_props:
-                    self._restore_properties(item, current_props)
-                self.CQ.addChild(item)
-                self.tree.expandItem(item)
-                self._attach_mode_radios(item)
+        # Radios are attached only once every item is on the tree: each item
+        # widget makes every later insert/expand walk the view's editor table,
+        # so attaching per item is quadratic in the object count.
+        added = []
+        try:
+            for name, obj in objects_f.items():
+                top_items, _ = self._build_items(name, obj.shape, obj.options)
+                for item in top_items:
+                    if preserve_props and name in current_props:
+                        self._restore_properties(item, current_props)
+                    self.CQ.addChild(item)
+                    self.tree.expandItem(item)
+                    added.append(item)
 
-            ais_list.extend(self._visible_ais(top_items))
+                ais_list.extend(self._visible_ais(top_items))
+        finally:
+            for item in added:
+                self._attach_mode_radios(item)
 
         if request_fit_view:
             self.sigObjectsAdded[list, bool].emit(ais_list, True)

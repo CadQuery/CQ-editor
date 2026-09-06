@@ -220,6 +220,7 @@ class OCCTWidget(QWidget):
 
     def _get_window_linux(self, wid):
 
+        # X11 only as OCCT currently doesn't have wayland support
         from OCP.Xw import Xw_Window
 
         return Xw_Window(self.display_connection, int(wid))

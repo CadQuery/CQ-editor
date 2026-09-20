@@ -5,6 +5,9 @@ from PyQt5.QtWidgets import QApplication
 
 NAME = "CQ-editor"
 
+from cq_editor.qt_platform import prefer_non_wayland_platform
+prefer_non_wayland_platform()
+
 # need to initialize QApp here, otherewise svg icons do not work on windows
 app = QApplication(sys.argv, applicationName=NAME)
 

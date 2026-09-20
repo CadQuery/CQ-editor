@@ -1,3 +1,4 @@
+import os
 import sys
 import argparse
 
@@ -5,10 +6,17 @@ from PyQt5.QtWidgets import QApplication
 
 NAME = "CQ-editor"
 
-from cq_editor.qt_platform import prefer_non_wayland_platform
-prefer_non_wayland_platform()
+# Reorder QT_QPA_PLATFORM so Qt reaches a Wayland plugin only after everything
+# else has failed to load, defaulting to xcb. OCCT does not yet support Wayland.
+if sys.platform == "linux":
+    # Desktops such as COSMIC export QT_QPA_PLATFORM="wayland;xcb" session-wide,
+    # we want to respect this config as far as possible, without using wayland.
+    plugins = (os.environ.get("QT_QPA_PLATFORM") or "xcb").split(";")
+    os.environ["QT_QPA_PLATFORM"] = ";".join(
+        sorted(plugins, key=lambda plugin: plugin.startswith("wayland"))
+    )
 
-# need to initialize QApp here, otherewise svg icons do not work on windows
+# need to initialize QApp here, otherwise svg icons do not work on windows
 app = QApplication(sys.argv, applicationName=NAME)
 
 from .main_window import MainWindow

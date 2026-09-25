@@ -49,6 +49,8 @@ def to_compound(
         vals.extend(obj.vals())
     elif isinstance(obj, cq.Shape):
         vals.append(obj)
+    elif isinstance(obj, list) and not obj:
+        pass  # an empty list produces an empty compound (see #600)
     elif isinstance(obj, list) and isinstance(obj[0], cq.Workplane):
         for o in obj:
             vals.extend(o.vals())

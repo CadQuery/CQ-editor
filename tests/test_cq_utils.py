@@ -11,3 +11,12 @@ def test_to_compound_applies_sketch_placement():
 
     assert f.Area() == pytest.approx(1)
     assert f.normalAt().toTuple() == pytest.approx((0, -1, 0))
+
+
+def test_to_compound_empty_list():
+    # #600: to_compound([]) used to raise IndexError while type-checking obj[0].
+    result = to_compound([])
+
+    assert isinstance(result, cq.Compound)
+    assert result.Solids() == []
+    assert result.Faces() == []

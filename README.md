@@ -21,6 +21,10 @@ Additional screenshots are available in [the wiki](https://github.com/CadQuery/C
 * CadQuery object stack inspector
   * Visual inspection of current workplane and selected items
   * Insight into evolution of the model
+* Per-object display modes
+  * Show each object as shaded, transparent or wireframe, or hide it
+  * Assembly parts have their own mode; setting one on the assembly applies it to all of them
+  * A global override applies one mode to every object at once
 * Export to various formats
   * STL
   * STEP

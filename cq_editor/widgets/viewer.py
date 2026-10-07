@@ -499,10 +499,11 @@ class OCCViewer(QWidget, ComponentMixin):
                 ctx.SetDisplayMode(ais, AIS_WireFrame, False)
             else:
                 ctx.SetDisplayMode(ais, AIS_Shaded, False)
-                if transparency > 0:
-                    ctx.SetTransparency(ais, transparency, False)
-                else:
-                    ctx.UnsetTransparency(ais, False)
+                # The color lives on the object's own shading aspect
+                # (cq_utils.set_color), which UnsetTransparency drops. The
+                # context's SetTransparency calls it for a value of 0, so
+                # set the transparency on the object directly.
+                ais.SetTransparency(transparency)
 
         if entries:
             ctx.UpdateCurrentViewer()

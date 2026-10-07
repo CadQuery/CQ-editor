@@ -2826,6 +2826,42 @@ def test_rerunning_an_assembly_script_does_not_leak_mode_radios(main):
     assert len(object_tree.tree.findChildren(QRadioButton)) == radios_before
 
 
+code_show_colored_assy = """import cadquery as cq
+box = cq.Workplane("XY").box(1, 1, 1)
+
+assy = cq.Assembly(name="assy")
+assy.add(box, name="opaque", color=cq.Color(1, 0, 0, 1))
+assy.add(box, name="translucent", color=cq.Color(0, 0, 1, 0.5), loc=cq.Location((2, 0, 0)))
+
+show_object(assy)
+"""
+
+
+def test_assembly_part_colors_survive_display_modes(main):
+    qtbot, win = main
+
+    win.components["editor"].set_text(code_show_colored_assy)
+    win.components["debugger"]._actions["Run"][0].triggered.emit()
+    qtbot.wait(500)
+
+    root = win.components["object_tree"].CQ.child(0)
+    opaque, translucent = root.child(0), root.child(1)
+
+    def check_colors():
+        assert get_rgba(opaque.ais) == pytest.approx((1, 0, 0, 0), abs=1e-3)
+        assert get_rgba(translucent.ais) == pytest.approx((0, 0, 1, 0.5), abs=1e-3)
+
+    # A fully opaque part must keep its color too: clearing its transparency
+    # must not drop the shading aspect that carries the color
+    check_colors()
+
+    for item in (opaque, translucent):
+        item.display_mode = DisplayMode.TRANSPARENT
+        item.display_mode = DisplayMode.SHADED
+
+    check_colors()
+
+
 def test_header_icons_are_centered_in_their_columns(main):
     qtbot, win = main
 

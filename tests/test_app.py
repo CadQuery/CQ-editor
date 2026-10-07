@@ -11,7 +11,7 @@ import pytest
 import pytestqt
 import cadquery as cq
 
-from PyQt5.QtCore import Qt, QSettings, QPoint, QEvent, QSize
+from PyQt5.QtCore import Qt, QSettings, QPoint, QEvent, QSize, QRect
 from PyQt5.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
     QStyle,
     QStyleFactory,
 )
-from PyQt5.QtGui import QMouseEvent
+from PyQt5.QtGui import QMouseEvent, QPalette
 
 from cq_editor.__main__ import MainWindow
 from cq_editor.main_window import DockSeparatorStyle
@@ -2835,4 +2835,42 @@ def test_header_icons_are_centered_in_their_columns(main):
     # section icon with AlignVCenter only, so it would otherwise sit hard left.
     assert win.components["object_tree"].tree.headerItem().icon(0).isNull()
     for col in range(4):
-        assert not header._icons[col].isNull()
+        assert header._icon_names[col]
+
+
+def test_mode_controls_follow_dark_theme(main):
+    qtbot, win = main
+
+    tree = win.components["object_tree"].tree
+    header = tree.header()
+
+    def brightest_in_icon_column():
+        image = header.grab().toImage()
+        rect = QRect(
+            header.sectionViewportPosition(0), 0, header.sectionSize(0), header.height()
+        )
+        return max(
+            image.pixelColor(x, y).lightness()
+            for x in range(rect.left(), rect.right())
+            for y in range(rect.top(), rect.bottom())
+        )
+
+    win.preferences["Light/Dark Theme"] = "Dark"
+    win.preferencesChanged(None, None)
+
+    # Header icons are drawn in the header's text color, not qtawesome's
+    # default near-black, which is invisible on the dark header
+    assert brightest_in_icon_column() > 200
+
+    # Fusion outlines the radios in a darkened Window color, so it has to
+    # stand clear of the dark Base the radios are drawn on
+    palette = tree.palette()
+    outline = palette.color(QPalette.Window).darker(140).lightness()
+    assert outline - palette.color(QPalette.Base).lightness() > 50
+
+    win.preferences["Light/Dark Theme"] = "Light"
+    win.preferencesChanged(None, None)
+
+    assert tree.palette().color(QPalette.Window) == QApplication.palette().color(
+        QPalette.Window
+    )

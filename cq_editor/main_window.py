@@ -235,6 +235,16 @@ class MainWindow(QMainWindow, MainMixin):
 
         self.toolbar.setPalette(p)
 
+        # Fusion outlines radios and checkboxes in a darkened Window color,
+        # which vanishes against the dark Base, so lighten it for the tree
+        tree = self.components["object_tree"].tree
+        if self.preferences["Light/Dark Theme"] == "Dark":
+            tree_palette = tree.palette()
+            tree_palette.setColor(QPalette.Window, QColor(150, 150, 150))
+            tree.setPalette(tree_palette)
+        else:
+            tree.setPalette(QPalette())
+
     def closeEvent(self, event):
 
         self.saveWindow()

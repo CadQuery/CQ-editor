@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
     QStyle,
 )
 from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal, QRect
+from PyQt5.QtGui import QPalette
 from PyQt5 import sip
 
 from pyqtgraph.parametertree import Parameter, ParameterTree
@@ -84,17 +85,18 @@ class CenteredIconHeader(QHeaderView):
     so its horizontal alignment falls back to AlignLeft. setTextAlignment does
     not help - it aligns the label text, and the mode columns have none. The
     icons are therefore held here rather than on the header item, and painted
-    centred over whatever the style drew.
+    centred over whatever the style drew. They are rendered at paint time in
+    the header's text color, so they follow the light/dark theme.
     """
 
     def __init__(self, orientation, parent=None):
 
         super(CenteredIconHeader, self).__init__(orientation, parent)
-        self._icons = {}
+        self._icon_names = {}
 
-    def set_column_icon(self, col, icon):
+    def set_column_icon(self, col, icon_name):
 
-        self._icons[col] = icon
+        self._icon_names[col] = icon_name
 
     def paintSection(self, painter, rect, logicalIndex):
 
@@ -102,14 +104,15 @@ class CenteredIconHeader(QHeaderView):
         super(CenteredIconHeader, self).paintSection(painter, rect, logicalIndex)
         painter.restore()
 
-        icon = self._icons.get(logicalIndex)
-        if icon is None:
+        icon_name = self._icon_names.get(logicalIndex)
+        if icon_name is None:
             return
 
         size = self.style().pixelMetric(QStyle.PM_SmallIconSize, None, self)
         target = QRect(0, 0, size, size)
         target.moveCenter(rect.center())
-        icon.paint(painter, target)
+        color = self.palette().color(QPalette.ButtonText)
+        qta.icon(icon_name, color=color).paint(painter, target)
 
 
 class ModeRadioMixin(object):
@@ -376,7 +379,7 @@ class ObjectTree(QWidget, ComponentMixin):
 
         header_item = tree.headerItem()
         for col, (icon_name, mode) in enumerate(zip(MODE_COLUMN_ICONS, OBJECT_MODES)):
-            header.set_column_icon(col, qta.icon(icon_name))
+            header.set_column_icon(col, icon_name)
             header_item.setToolTip(col, mode.value)
             header.setSectionResizeMode(col, QHeaderView.Fixed)
             tree.setColumnWidth(col, MODE_COLUMN_WIDTH)

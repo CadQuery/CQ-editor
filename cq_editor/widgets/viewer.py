@@ -52,6 +52,7 @@ class OCCViewer(QWidget, ComponentMixin):
         children=[
             {"name": "Fit automatically", "type": "bool", "value": True},
             {"name": "Show navigation cube", "type": "bool", "value": True},
+            {"name": "Zoom to mouse position", "type": "bool", "value": False},
             {"name": "Use gradient", "type": "bool", "value": False},
             {"name": "Background color", "type": "color", "value": (95, 95, 95)},
             {"name": "Background color (aux)", "type": "color", "value": (30, 30, 30)},
@@ -174,6 +175,8 @@ class OCCViewer(QWidget, ComponentMixin):
             for arrow in self.canvas.rotate_arrows:
                 ctx.Erase(arrow, False)
             ctx.UpdateCurrentViewer()
+
+        self.canvas.set_zoom_to_cursor(self.preferences["Zoom to mouse position"])
 
         self.canvas.update()
 

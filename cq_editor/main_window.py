@@ -235,6 +235,16 @@ class MainWindow(QMainWindow, MainMixin):
 
         self.toolbar.setPalette(p)
 
+        # Fusion outlines radios and checkboxes in a darkened Window color,
+        # which vanishes against the dark Base, so lighten it for the tree
+        tree = self.components["object_tree"].tree
+        if self.preferences["Light/Dark Theme"] == "Dark":
+            tree_palette = tree.palette()
+            tree_palette.setColor(QPalette.Window, QColor(150, 150, 150))
+            tree.setPalette(tree_palette)
+        else:
+            tree.setPalette(QPalette())
+
     def closeEvent(self, event):
 
         self.saveWindow()
@@ -484,6 +494,15 @@ class MainWindow(QMainWindow, MainMixin):
         )
         self.components["object_tree"].sigHelpersResized.connect(
             self.components["viewer"].redisplay
+        )
+        self.components["object_tree"].sigDisplayModesChanged.connect(
+            self.components["viewer"].apply_display_modes
+        )
+        self.components["object_tree"].sigGlobalModeChanged.connect(
+            self.components["viewer"].sync_global_actions
+        )
+        self.components["viewer"].sigGlobalModeChanged.connect(
+            self.components["object_tree"].setGlobalMode
         )
 
         self.components["viewer"].sigObjectSelected.connect(

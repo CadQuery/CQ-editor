@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cq-editor-worker"
+version = "0.9.0"
+description = "CadQuery execution backend for the CQ-editor GUI"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.11,<3.15"
+dependencies = [
+    "cadquery>=2.7,<2.9",
+    # The worker imports OCP directly. Released CadQuery 2.7/2.8 use
+    # OCCT 7.8/7.9; the 2.9/OCP 8 development lane is tested separately.
+    "cadquery-ocp>=7.8.1,<8.0",
+    "numpy",
+]
+
+[tool.mypy]
+python_version = "3.11"
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = ["OCP", "OCP.*", "jedi", "jedi.*"]
+ignore_missing_imports = true
+
+[project.optional-dependencies]
+# Code completion in the editor and the console.
+completion = ["jedi"]
+test = ["pytest", "black", "coverage", "ruff"]
+
+[tool.setuptools.packages.find]
+include = ["cq_worker*"]
+
+[tool.pytest.ini_options]
+testpaths = ["../tests/worker"]

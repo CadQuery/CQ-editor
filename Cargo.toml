@@ -1,0 +1,79 @@
+[package]
+name = "cq-editor"
+version = "0.9.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Cross-platform CadQuery 3D viewer and script editor"
+license = "Apache-2.0"
+repository = "https://github.com/igors93/CQ-editor"
+keywords = ["cadquery", "cad", "engineering", "design"]
+# Python example scripts live in `examples/`; they are not Cargo examples.
+autoexamples = false
+
+[dependencies]
+# The defaults without "links": its `webbrowser` dependency needs shlwapi,
+# which the self-contained Windows GNU toolchain lacks. Links are opened
+# with `open` instead (see `app::open_url`).
+eframe = { version = "0.36", default-features = false, features = [
+    "accesskit",
+    "default_fonts",
+    "persistence",
+    "wayland",
+    "web_screen_reader",
+    "wgpu",
+    "x11",
+] }
+# eframe's "winit/default", which a dependency list cannot name.
+winit = "0.30"
+egui = "0.36"
+egui_dock = { version = "0.21", features = ["serde"] }
+egui_extras = { version = "0.36" }
+egui-phosphor = "0.14"
+glam = { version = "0.34", features = ["bytemuck", "serde"] }
+bytemuck = { version = "1", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.23"
+rfd = "0.17"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "ico"] }
+# Animated PNG for turntable exports (already a dependency of `image`).
+png = "0.18"
+log = { version = "0.4", features = ["std"] }
+open = "5"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+tempfile = "3.27"
+# Whether two paths name one file: a rename that only changes the case.
+same-file = "1"
+
+[target.'cfg(windows)'.build-dependencies]
+# Icon and version information of the .exe (see build.rs).
+winresource = "0.1"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = [
+    "Win32_Storage_FileSystem",
+    "Win32_System_Console",
+] }
+
+[dev-dependencies]
+# wgpu's own WGSL front end: the tests validate the shaders without a GPU.
+naga = { version = "30.0.1", features = ["wgsl-in"] }
+
+[profile.dev]
+# Line tables keep panic backtraces useful at a fraction of full debug info's size.
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+# Dependencies (wgpu, egui, image) are much faster optimized, even in debug
+# builds, and their debug info would take gigabytes of disk.
+opt-level = 2
+debug = false
+
+[profile.release]
+# Whole-program optimization: with one codegen unit and fat LTO the optimizer
+# sees wgpu, naga, egui and the editor at once, inlines across crates and drops
+# code no path reaches. The binary is smaller and no slower (opt-level stays
+# 3); only release builds take longer.
+lto = "fat"
+codegen-units = 1
+strip = true

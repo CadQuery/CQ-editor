@@ -1,0 +1,66 @@
+{
+  "$schema": "https://schemas.conda.org/menuinst-1-1-1.schema.json",
+  "menu_name": "CQ-editor",
+  "menu_items": [
+    {
+      "name": "CQ-editor",
+      "description": "Edit and render parametric CadQuery models",
+      "activate": false,
+      "terminal": false,
+      "command": [
+        "{{ PREFIX }}/bin/cq-editor"
+      ],
+      "platforms": {
+        "linux": {
+          "command": [
+            "{{ PREFIX }}/bin/cq-editor",
+            "%F"
+          ],
+          "icon": "{{ PREFIX }}/share/icons/cq-editor.svg",
+          "Categories": [
+            "Development",
+            "Graphics",
+            "Engineering"
+          ],
+          "GenericName": "CadQuery editor",
+          "Keywords": [
+            "CAD",
+            "CadQuery",
+            "Python",
+            "3D"
+          ],
+          "MimeType": [
+            "text/x-python"
+          ],
+          "StartupNotify": true,
+          "StartupWMClass": "cq-editor",
+          "TryExec": "{{ PREFIX }}/bin/cq-editor"
+        },
+        "osx": {
+          "command": [
+            "{{ PREFIX }}/bin/cq-editor"
+          ],
+          "icon": "{{ PREFIX }}/share/icons/cq-editor.icns",
+          "CFBundleDisplayName": "CQ-editor",
+          "CFBundleIdentifier": "io.github.igors93.cq-editor",
+          "CFBundleName": "CQ-editor",
+          "CFBundleVersion": "0.9.0",
+          "LSApplicationCategoryType": "public.app-category.developer-tools",
+          "LSMinimumSystemVersion": "12.0",
+          "NSSupportsAutomaticGraphicsSwitching": true
+        },
+        "win": {
+          "command": [
+            "{{ PREFIX }}/cq-editor.exe"
+          ],
+          "icon": "{{ PREFIX }}/share/icons/cq-editor.ico",
+          "desktop": false,
+          "file_extensions": [
+            ".py"
+          ],
+          "app_user_model_id": "CQEditor.CQEditor"
+        }
+      }
+    }
+  ]
+}

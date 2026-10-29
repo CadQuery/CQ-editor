@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  packaging:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Validate release packaging
+        run: python -m unittest discover -s tests/packaging -p "test_*.py"
+
+  rust:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libgtk-3-dev
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Lint
+        run: cargo clippy --locked --all-targets --all-features -- -D warnings
+
+      - name: Test
+        run: cargo test --locked
+        env:
+          # The rendering tests draw on WARP, the software adapter every
+          # Windows has; elsewhere they skip when no adapter is found.
+          CQ_EDITOR_REQUIRE_GPU: ${{ runner.os == 'Windows' && '1' || '' }}
+
+  worker:
+    name: Worker (${{ matrix.name }})
+    continue-on-error: ${{ matrix.experimental }}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Python 3.11 / CadQuery 2.7 / OCP 7.8
+            python: "3.11"
+            cadquery: "cadquery==2.7.0"
+            ocp: "cadquery-ocp==7.8.1.1.post1"
+            expected_cadquery: "2.7.0"
+            expected_ocp: "7.8.1.1"
+            experimental: false
+          - name: Python 3.11 / CadQuery 2.8 / OCP 7.9
+            python: "3.11"
+            cadquery: "cadquery==2.8.0"
+            ocp: "cadquery-ocp==7.9.3.1.1"
+            expected_cadquery: "2.8.0"
+            expected_ocp: "7.9.3.1.1"
+            experimental: false
+          - name: Python 3.12 / CadQuery 2.8 / OCP 7.9
+            python: "3.12"
+            cadquery: "cadquery==2.8.0"
+            ocp: "cadquery-ocp==7.9.3.1.1"
+            expected_cadquery: "2.8.0"
+            expected_ocp: "7.9.3.1.1"
+            experimental: false
+          - name: Python 3.13 / CadQuery 2.8 / OCP 7.9
+            python: "3.13"
+            cadquery: "cadquery==2.8.0"
+            ocp: "cadquery-ocp==7.9.3.1.1"
+            expected_cadquery: "2.8.0"
+            expected_ocp: "7.9.3.1.1"
+            experimental: false
+          - name: Python 3.14 / CadQuery 2.8 / OCP 7.9
+            python: "3.14"
+            cadquery: "cadquery==2.8.0"
+            ocp: "cadquery-ocp==7.9.3.1.1"
+            expected_cadquery: "2.8.0"
+            expected_ocp: "7.9.3.1.1"
+            experimental: false
+          - name: Python 3.12 / CadQuery master / OCP 8.0
+            python: "3.12"
+            cadquery: "cadquery @ git+https://github.com/CadQuery/cadquery.git@master"
+            ocp: "cadquery-ocp==8.0.1.1.0"
+            expected_cadquery: "2.9.0.dev"
+            expected_ocp: "8.0.1.1"
+            experimental: true
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: worker/pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install "${{ matrix.cadquery }}" "${{ matrix.ocp }}" jedi pytest black coverage ruff mypy==2.4.0
+          python -m pip install --no-deps --editable worker
+
+      - name: Check supported dependencies
+        if: ${{ !matrix.experimental }}
+        run: python -m pip check
+
+      - name: Report environment
+        run: python -c "from cq_worker.environment import summary; print(summary())"
+
+      - name: Format
+        run: black --check worker tests/worker tests/packaging packaging/constructor/prepare_macos_icon.py
+
+      - name: Lint
+        run: ruff check --isolated --select E4,E7,E9,F worker tests/worker tests/packaging packaging/constructor/prepare_macos_icon.py
+
+      - name: Type check worker
+        run: mypy --config-file worker/pyproject.toml worker/cq_worker
+
+      - name: Test
+        run: |
+          python -m coverage run --branch --source worker/cq_worker -m pytest tests/worker
+          python -m coverage report --show-missing --fail-under=85
+        env:
+          PYTHONPATH: worker
+          CQ_EDITOR_EXPECT_CADQUERY: ${{ matrix.expected_cadquery }}
+          CQ_EDITOR_EXPECT_OCP: ${{ matrix.expected_ocp }}

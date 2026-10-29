@@ -1,0 +1,260 @@
+name: Build release installers
+
+on:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release-contract:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Validate release metadata and packaging
+        run: python -m unittest discover -s tests/packaging -p "test_*.py"
+
+      - name: Require the tag to match the project version
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          version=$(python -c "import tomllib; print(tomllib.load(open('Cargo.toml', 'rb'))['package']['version'])")
+          test "$GITHUB_REF_NAME" = "$version" || {
+            echo "Tag $GITHUB_REF_NAME does not match Cargo version $version" >&2
+            exit 1
+          }
+
+  build-installer:
+    needs: release-contract
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            platform: linux-x86_64
+          - os: windows-latest
+            platform: windows-x86_64
+          - os: macos-15
+            platform: macos-arm64
+          - os: macos-15-intel
+            platform: macos-x86_64
+
+    name: Installer (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libxkbcommon-dev libgtk-3-dev
+
+      - name: Build native editor
+        run: cargo build --locked --release
+        env:
+          CQ_EDITOR_REQUIRE_RESOURCES: "1"
+
+      # 0.9.0 follows the unsigned 0.8.0 release while certificates are obtained.
+      # Later tags still require signing and notarization before publication.
+      - name: Sign native editor (Windows)
+        if: runner.os == 'Windows' && github.ref_name != '0.9.0'
+        shell: pwsh
+        env:
+          CQ_WINDOWS_PFX_BASE64: ${{ secrets.WINDOWS_SIGNING_PFX_BASE64 }}
+          CQ_WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PFX_PASSWORD }}
+        run: ./packaging/sign_windows.ps1 target/release/cq-editor.exe
+
+      - name: Prepare Developer ID identities (macOS)
+        if: runner.os == 'macOS' && github.ref_name != '0.9.0'
+        shell: bash
+        env:
+          CQ_MAC_APP_CERT_BASE64: ${{ secrets.MACOS_APPLICATION_P12_BASE64 }}
+          CQ_MAC_APP_CERT_PASSWORD: ${{ secrets.MACOS_APPLICATION_P12_PASSWORD }}
+          CQ_MAC_INSTALLER_CERT_BASE64: ${{ secrets.MACOS_INSTALLER_P12_BASE64 }}
+          CQ_MAC_INSTALLER_CERT_PASSWORD: ${{ secrets.MACOS_INSTALLER_P12_PASSWORD }}
+          CQ_MAC_APPLICATION_IDENTITY: ${{ secrets.MACOS_APPLICATION_IDENTITY }}
+          CQ_MAC_INSTALLER_IDENTITY: ${{ secrets.MACOS_INSTALLER_IDENTITY }}
+        run: bash packaging/prepare_macos_signing.sh
+
+      - name: Sign native editor (macOS)
+        if: runner.os == 'macOS' && github.ref_name != '0.9.0'
+        shell: bash
+        env:
+          CQ_MAC_APPLICATION_IDENTITY: ${{ secrets.MACOS_APPLICATION_IDENTITY }}
+        run: |
+          codesign --force --options runtime --timestamp --sign "$CQ_MAC_APPLICATION_IDENTITY" target/release/cq-editor
+          codesign --verify --strict --verbose=2 target/release/cq-editor
+
+      - name: Set up installer toolchain
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: constructor-build
+          python-version: "3.12"
+          channels: conda-forge
+          channel-priority: strict
+
+      - name: Install pinned constructor
+        shell: bash -el {0}
+        run: conda install --yes constructor=3.17.3 conda-libmamba-solver pillow
+
+      - name: Prepare macOS application icon
+        if: runner.os == 'macOS'
+        shell: bash -el {0}
+        run: |
+          iconset=packaging/constructor/generated/cq-editor.iconset
+          python packaging/constructor/prepare_macos_icon.py assets/icons/cadquery_logo_dark.ico "$iconset"
+          iconutil -c icns "$iconset" -o packaging/constructor/generated/cq-editor.icns
+
+      - name: Build installer
+        shell: bash -el {0}
+        env:
+          CQ_MAC_APPLICATION_IDENTITY: ${{ runner.os == 'macOS' && github.ref_name != '0.9.0' && secrets.MACOS_APPLICATION_IDENTITY || '' }}
+          CQ_MAC_INSTALLER_IDENTITY: ${{ runner.os == 'macOS' && github.ref_name != '0.9.0' && secrets.MACOS_INSTALLER_IDENTITY || '' }}
+        run: |
+          mkdir dist
+          cd dist
+          constructor ../packaging/constructor
+
+      - name: Name build manifests for the platform
+        shell: bash
+        run: |
+          mv dist/info.json "dist/cq-editor-${{ matrix.platform }}-info.json"
+          mv dist/lockfile.base.txt "dist/cq-editor-${{ matrix.platform }}-lockfile.txt"
+          mv dist/licenses.json "dist/cq-editor-${{ matrix.platform }}-licenses.json"
+          mv dist/pkg-list.base.txt "dist/cq-editor-${{ matrix.platform }}-packages.txt"
+
+      - name: Sign installer (Windows)
+        if: runner.os == 'Windows' && github.ref_name != '0.9.0'
+        shell: pwsh
+        env:
+          CQ_WINDOWS_PFX_BASE64: ${{ secrets.WINDOWS_SIGNING_PFX_BASE64 }}
+          CQ_WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_SIGNING_PFX_PASSWORD }}
+        run: |
+          $installers = @(Get-ChildItem -LiteralPath dist -Filter *.exe -File)
+          if ($installers.Count -ne 1) { throw 'Expected exactly one Windows installer.' }
+          ./packaging/sign_windows.ps1 $installers[0].FullName
+
+      - name: Notarize and staple installer (macOS)
+        if: runner.os == 'macOS' && github.ref_name != '0.9.0'
+        shell: bash
+        env:
+          CQ_MAC_NOTARY_KEY_BASE64: ${{ secrets.MACOS_NOTARY_KEY_P8_BASE64 }}
+          CQ_MAC_NOTARY_KEY_ID: ${{ secrets.MACOS_NOTARY_KEY_ID }}
+          CQ_MAC_NOTARY_ISSUER_ID: ${{ secrets.MACOS_NOTARY_ISSUER_ID }}
+        run: bash packaging/notarize_macos.sh
+
+      - name: Smoke test installed runtime (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          installer=$(find dist -maxdepth 1 -name '*.sh' -print -quit)
+          test -n "$installer"
+          prefix="$RUNNER_TEMP/cq-editor-smoke"
+          bash "$installer" -b -p "$prefix"
+          "$prefix/bin/python3" -c "import sys, cadquery, OCP, jedi; assert sys.version_info[:3] == (3, 12, 15); assert cadquery.__version__ == '2.8.0'; assert OCP.__version__.startswith('7.9.3.1'); assert jedi.__version__ == '0.19.2'"
+          "$prefix/bin/cq-editor" --help
+
+      - name: Smoke test installed runtime (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $installer = (Get-ChildItem dist -Filter *.exe | Select-Object -First 1).FullName
+          if (-not $installer) { throw "Windows installer was not created" }
+          $prefix = Join-Path $env:RUNNER_TEMP "cq-editor-smoke"
+          $installLog = Join-Path $env:RUNNER_TEMP "cq-editor-install.log"
+          $installError = Join-Path $env:RUNNER_TEMP "cq-editor-install-error.log"
+          $install = Start-Process -FilePath $installer -ArgumentList @("/S", "/InstallationType=JustMe", "/D=$prefix") -NoNewWindow -RedirectStandardOutput $installLog -RedirectStandardError $installError -Wait -PassThru
+          Get-Content $installLog
+          Get-Content $installError
+          if ($install.ExitCode -ne 0) { throw "Installer exited with $($install.ExitCode)" }
+          & "$prefix\python.exe" -c "import sys, cadquery, OCP, jedi; assert sys.version_info[:3] == (3, 12, 15); assert cadquery.__version__ == '2.8.0'; assert OCP.__version__.startswith('7.9.3.1'); assert jedi.__version__ == '0.19.2'"
+          if ($LASTEXITCODE -ne 0) { throw "Bundled Python runtime failed" }
+          $help = Start-Process -FilePath "$prefix\cq-editor.exe" -ArgumentList "--help" -RedirectStandardOutput "$env:RUNNER_TEMP\cq-editor-help.txt" -Wait -PassThru
+          if ($help.ExitCode -ne 0) { throw "Installed editor exited with $($help.ExitCode)" }
+          $shortcut = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\CQ-editor\CQ-editor.lnk"
+          if (-not (Test-Path $shortcut)) { throw "Start menu shortcut was not created" }
+          $association = reg.exe query "HKCU\Software\Classes\.py\OpenWithProgids"
+          if (($association -join "`n") -notmatch "cq-editor.AssocFile.py") { throw "Open With registration was not created" }
+          $uninstall = Start-Process -FilePath "$prefix\Uninstall-CQ-editor.exe" -ArgumentList @("/S", "/Q") -NoNewWindow -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) { throw "Uninstaller exited with $($uninstall.ExitCode)" }
+          if (Test-Path $prefix) { throw "Uninstaller left the installation behind" }
+          if (Test-Path $shortcut) { throw "Uninstaller left the Start menu shortcut behind" }
+          $remainingAssociation = reg.exe query "HKCU\Software\Classes\.py\OpenWithProgids"
+          if (($remainingAssociation -join "`n") -match "cq-editor.AssocFile.py") { throw "Uninstaller left the Open With registration behind" }
+
+      - name: Smoke test installed runtime (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          package=$(find dist -maxdepth 1 -name '*.pkg' -print -quit)
+          test -n "$package"
+          installer -pkg "$package" -target CurrentUserHomeDirectory
+          prefix="$HOME/Library/CQ-editor"
+          "$prefix/bin/python3" -c "import sys, cadquery, OCP, jedi; assert sys.version_info[:3] == (3, 12, 15); assert cadquery.__version__ == '2.8.0'; assert OCP.__version__.startswith('7.9.3.1'); assert jedi.__version__ == '0.19.2'"
+          "$prefix/bin/cq-editor" --help
+          test -d "$HOME/Applications/CQ-editor.app"
+
+      - name: Upload installer and build manifest
+        uses: actions/upload-artifact@v6
+        with:
+          name: cq-editor-${{ matrix.platform }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Remove temporary macOS signing keychain
+        if: always() && runner.os == 'macOS'
+        shell: bash
+        run: |
+          keychain="$RUNNER_TEMP/cq-editor-signing.keychain-db"
+          if test -f "$keychain"; then security delete-keychain "$keychain"; fi
+
+  publish-release:
+    if: github.event_name == 'push'
+    needs: build-installer
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download verified installers
+        uses: actions/download-artifact@v6
+        with:
+          pattern: cq-editor-*
+          path: release-assets
+
+      - name: Create checksums
+        shell: bash
+        run: |
+          : > release-assets/SHA256SUMS.txt
+          while IFS= read -r file; do
+            checksum=$(sha256sum "$file" | cut -d ' ' -f 1)
+            printf '%s  %s\n' "$checksum" "$(basename "$file")" >> release-assets/SHA256SUMS.txt
+          done < <(find release-assets -type f \( -name '*.exe' -o -name '*.pkg' -o -name '*.sh' \) | sort)
+          test "$(wc -l < release-assets/SHA256SUMS.txt)" -eq 4
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: CQ-editor ${{ github.ref_name }}
+          body: ${{ github.ref_name == '0.9.0' && 'Windows and macOS installers for 0.9.0 are unsigned, as in 0.8.0. Verify downloaded files with SHA256SUMS.txt before installing.' || '' }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release-assets/**/*.exe
+            release-assets/**/*.pkg
+            release-assets/**/*.sh
+            release-assets/**/*lockfile*
+            release-assets/**/*info.json
+            release-assets/SHA256SUMS.txt

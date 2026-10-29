@@ -1,0 +1,93 @@
+{
+  "valid": [
+    {
+      "name": "ready",
+      "message": {
+        "type": "ready",
+        "protocol": 13,
+        "python": "3.12.15",
+        "cadquery": "2.8.0",
+        "ocp": "7.9.3.1",
+        "executable": "python",
+        "completion": true
+      }
+    },
+    {
+      "name": "binary_part",
+      "message": {
+        "type": "run_part",
+        "id": 7,
+        "name": "triangle",
+        "part": {
+          "mesh": {
+            "id": "triangle-geometry",
+            "positions": "AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA",
+            "normals": "AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/AAAAAAAAAAAAAIA/",
+            "indices": "AAAAAAEAAAACAAAA",
+            "bbox": [[0, 0, 0], [1, 1, 0]]
+          },
+          "color": null,
+          "alpha": null,
+          "material": null
+        }
+      }
+    },
+    {
+      "name": "referenced_part",
+      "message": {
+        "type": "run_part",
+        "id": 7,
+        "name": "triangle again",
+        "part": {
+          "mesh": {"id": "triangle-geometry"},
+          "color": null,
+          "alpha": null,
+          "material": null
+        }
+      }
+    },
+    {
+      "name": "finished_scene",
+      "message": {
+        "type": "run_finished",
+        "id": 7,
+        "ok": true,
+        "debug": false,
+        "stopped": false,
+        "objects": [
+          {
+            "key": "n1",
+            "name": "triangle",
+            "kind": "Workplane",
+            "inspectable": true,
+            "color": null,
+            "alpha": null,
+            "edge_color": null,
+            "parts": [
+              {
+                "mesh": {"id": "triangle-geometry"},
+                "color": null,
+                "alpha": null,
+                "material": null
+              }
+            ],
+            "children": []
+          }
+        ],
+        "variables": [],
+        "error": null,
+        "duration": 0.01
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "nonfinite_alpha",
+      "wire": "{\"type\":\"run_part\",\"id\":7,\"name\":\"bad\",\"part\":{\"mesh\":{\"id\":\"bad\"},\"color\":null,\"alpha\":NaN,\"material\":null}}"
+    }
+  ],
+  "oversized_control": {
+    "type": "output",
+    "repeat": 2097153
+  }
+}

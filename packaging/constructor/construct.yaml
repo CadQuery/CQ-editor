@@ -1,0 +1,93 @@
+name: CQ-editor
+company: CQ-editor contributors
+version: 0.9.0
+
+# Constructor produces the native installer for the host platform.
+installer_type: sh  # [linux]
+installer_type: exe  # [win]
+installer_type: pkg  # [osx]
+
+# Constructor signs the package and its embedded conda bootstrap when CI has
+# installed both Developer ID identities. Local builds can omit the identities.
+{% if environ.get("CQ_MAC_INSTALLER_IDENTITY") and environ.get("CQ_MAC_APPLICATION_IDENTITY") %}
+signing_identity_name: {{ environ["CQ_MAC_INSTALLER_IDENTITY"] | tojson }}  # [osx]
+notarization_identity_name: {{ environ["CQ_MAC_APPLICATION_IDENTITY"] | tojson }}  # [osx]
+{% endif %}
+
+icon_image: ../../assets/icons/cadquery_logo_dark.ico
+license_file: ../../LICENSE
+register_python: false
+initialize_conda: false
+keep_pkgs: false
+write_condarc: false
+menu_packages: []
+
+# A private, relocatable runtime: no pre-existing Python, conda or CadQuery is
+# required on the user's computer. The generated lockfile records every
+# resolved transitive package for each released installer.
+channels:
+  - https://conda.anaconda.org/conda-forge
+
+specs:
+  - python=3.12.15
+  - cadquery=2.8.0
+  - ocp=7.9.3.1
+  - jedi=0.19.2
+  - menuinst=2.5.2
+  - pip
+  - nomkl
+
+# OCP and OCCT require the `vtk` metapackage, which also brings what compiling
+# C++ against VTK needs: Boost, Eigen and TBB headers, CMake files and import
+# libraries. Nothing installed links Boost's DLLs and the rest is not code that
+# runs, yet Boost's headers alone are about 16,000 files and 195 MB. The
+# runtime libraries (tbb, liblzma, libexpat) stay. Constructor stops when a
+# name is missing from the solved environment, so a changed solution fails the
+# build instead of shipping something else.
+exclude:
+  - libboost-devel
+  - libboost-headers
+  - libboost
+  - eigen
+  - tbb-devel
+  - liblzma-devel
+
+default_prefix: ${HOME}/.local/share/CQ-editor  # [linux]
+default_prefix: '%LOCALAPPDATA%\Programs\CQ-editor'  # [win]
+default_prefix_domain_user: '%LOCALAPPDATA%\Programs\CQ-editor'  # [win]
+default_prefix_all_users: '%PROGRAMFILES%\CQ-editor'  # [win]
+# Constructor's PKG bootstrap cannot relocate its embedded conda packages when
+# the installation prefix contains spaces. Keep the private runtime in the
+# user's Library while the application launcher remains in ~/Applications.
+default_location_pkg: Library  # [osx]
+pkg_name: CQ-editor  # [osx]
+progress_notifications: true  # [osx]
+welcome_image: ""  # [osx]
+
+welcome_text: >-
+  CQ-editor is a CadQuery code editor and 3D viewer. This installer includes
+  its own tested Python and CadQuery runtime, so no separate setup is needed.
+conclusion_text: |-
+  CQ-editor 0.9.0 is ready
+  Launch CQ-editor from the application menu. Python files can also be opened
+  with CQ-editor on Windows and Linux.
+
+post_install: post_install.sh  # [unix]
+post_install: post_install.bat  # [win]
+pre_uninstall: pre_uninstall.bat  # [win]
+uninstall_name: CQ-editor 0.9.0  # [win]
+uninstall_with_conda_exe: true  # [win]
+
+extra_files:
+  - ../../target/release/cq-editor: bin/cq-editor  # [unix]
+  - ../../target/release/cq-editor.exe: cq-editor.exe  # [win]
+  - menu/cq-editor_menu.json: Menu/cq-editor_menu.json
+  - ../../assets/icons/cadquery_logo_dark.svg: share/icons/cq-editor.svg  # [linux]
+  - ../../assets/icons/cadquery_logo_dark.ico: share/icons/cq-editor.ico  # [win]
+  - generated/cq-editor.icns: share/icons/cq-editor.icns  # [osx]
+
+build_outputs:
+  - info.json
+  - licenses
+  - lockfile
+  - pkgs_list

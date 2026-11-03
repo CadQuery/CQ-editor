@@ -6,10 +6,20 @@ from PyQt5.QtWidgets import (
     QMenu,
     QWidget,
     QAbstractItemView,
+    QButtonGroup,
+    QRadioButton,
+    QCheckBox,
+    QHeaderView,
+    QHBoxLayout,
+    QStyle,
 )
-from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSlot, pyqtSignal, QRect
+from PyQt5.QtGui import QPalette
+from PyQt5 import sip
 
 from pyqtgraph.parametertree import Parameter, ParameterTree
+
+import qtawesome as qta
 
 from OCP.AIS import AIS_Line
 from OCP.Geom import Geom_CartesianPoint
@@ -18,6 +28,16 @@ from OCP.Bnd import Bnd_Box
 
 from ..mixins import ComponentMixin
 from ..icons import icon
+from ..display import (
+    DisplayMode,
+    GlobalMode,
+    effective_mode,
+    HIDDEN_COL,
+    WIREFRAME_COL,
+    TRANSPARENT_COL,
+    SHADED_COL,
+    NAME_COL,
+)
 from ..cq_utils import (
     make_AIS,
     export,
@@ -34,6 +54,156 @@ from ..utils import splitter, layout, get_save_filename
 # Default size of the axis helper lines half-length
 DEFAULT_AXIS_HALF_LEN = 100.0
 
+OBJECT_MODES = [
+    DisplayMode.HIDDEN,
+    DisplayMode.WIREFRAME,
+    DisplayMode.TRANSPARENT,
+    DisplayMode.SHADED,
+]
+
+GLOBAL_MODES = [
+    GlobalMode.AS_SET,
+    GlobalMode.WIREFRAME,
+    GlobalMode.TRANSPARENT,
+    GlobalMode.SHADED,
+]
+
+MODE_COLUMN_ICONS = (
+    "fa5s.eye-slash",
+    "mdi.vector-square",
+    "fa5s.adjust",
+    "fa5s.square",
+)
+
+MODE_COLUMN_WIDTH = 26
+
+
+def centered(widget):
+    """
+    setItemWidget stretches its widget across the whole cell, which would pin
+    a radio's or checkbox's indicator to the cell's left edge. Wrapping it in
+    a container centres it, lining it up with the header above.
+    """
+
+    container = QWidget()
+    container.setToolTip(widget.toolTip())
+    box = QHBoxLayout(container)
+    box.setContentsMargins(0, 0, 0, 0)
+    box.addWidget(widget, 0, Qt.AlignCenter)
+
+    return container
+
+
+class CenteredIconHeader(QHeaderView):
+    """
+    A header that centres a column's icon.
+
+    QHeaderView::paintSection only ever sets AlignVCenter on the section icon,
+    so its horizontal alignment falls back to AlignLeft. setTextAlignment does
+    not help - it aligns the label text, and the mode columns have none. The
+    icons are therefore held here rather than on the header item, and painted
+    centred over whatever the style drew. They are rendered at paint time in
+    the header's text color, so they follow the light/dark theme.
+    """
+
+    def __init__(self, orientation, parent=None):
+
+        super(CenteredIconHeader, self).__init__(orientation, parent)
+        self._icon_names = {}
+
+    def set_column_icon(self, col, icon_name):
+
+        self._icon_names[col] = icon_name
+
+    def paintSection(self, painter, rect, logicalIndex):
+
+        painter.save()
+        super(CenteredIconHeader, self).paintSection(painter, rect, logicalIndex)
+        painter.restore()
+
+        icon_name = self._icon_names.get(logicalIndex)
+        if icon_name is None:
+            return
+
+        size = self.style().pixelMetric(QStyle.PM_SmallIconSize, None, self)
+        target = QRect(0, 0, size, size)
+        target.moveCenter(rect.center())
+        color = self.palette().color(QPalette.ButtonText)
+        qta.icon(icon_name, color=color).paint(painter, target)
+
+
+class ModeRadioMixin(object):
+    """
+    A row of mutually exclusive radios, one per mode column. Auto-exclusivity
+    cannot be used: setItemWidget reparents each radio into a different
+    per-column widget, so they are not siblings. A QButtonGroup joins them.
+
+    The class attributes stand in for __init__: QTreeWidgetItem's constructor
+    is C++ and does not cascade into a Python mixin's __init__.
+    """
+
+    mode_group = None
+    modes = ()
+    mode_widgets = ()
+
+    def build_mode_radios(self, tree, modes, tooltips):
+
+        self.mode_group = QButtonGroup(tree)
+        self.mode_widgets = []
+
+        for col, tooltip in enumerate(tooltips):
+            radio = QRadioButton()
+            radio.setToolTip(tooltip)
+            self.mode_group.addButton(radio, col)
+
+            container = centered(radio)
+            tree.setItemWidget(self, col, container)
+            self.mode_widgets.append(container)
+
+        self.modes = list(modes)
+
+    def set_mode_checked(self, mode):
+
+        if self.mode_group is None:
+            return
+
+        button = self.mode_group.button(self.modes.index(mode))
+        self.mode_group.blockSignals(True)
+        button.setChecked(True)
+        self.mode_group.blockSignals(False)
+
+    def detach_mode_radios(self, tree):
+        """
+        Destroy the per-column item widgets and the QButtonGroup that joins
+        them. Without this, the QButtonGroup - C++-parented to the
+        long-lived tree - and its idClicked connections keep the item (and
+        everything it references) alive after it is taken off the tree.
+
+        Call this while the item is still on the tree. removeItemWidget()
+        resolves a QModelIndex for the item, so on an item that has already
+        been taken it silently no-ops - and the view is then left to release
+        the widgets itself, which the sip.delete() below would race.
+
+        removeItemWidget() only unsets the widget, it does not delete it, so
+        the containers and the group are destroyed explicitly. Each radio dies
+        with its container.
+        """
+
+        if self.mode_group is None:
+            return
+
+        for col in range(len(self.modes)):
+            tree.removeItemWidget(self, col)
+
+        for container in self.mode_widgets:
+            if not sip.isdeleted(container):
+                sip.delete(container)
+        self.mode_widgets = []
+
+        if not sip.isdeleted(self.mode_group):
+            sip.delete(self.mode_group)
+        self.mode_group = None
+
 
 class TopTreeItem(QTreeWidgetItem):
 
@@ -42,13 +212,18 @@ class TopTreeItem(QTreeWidgetItem):
         super(TopTreeItem, self).__init__(*args, **kwargs)
 
 
-class ObjectTreeItem(QTreeWidgetItem):
+class ObjectTreeItem(ModeRadioMixin, QTreeWidgetItem):
 
     props = [
         {"name": "Name", "type": "str", "value": "", "readonly": True},
         # {"name": "Color", "type": "color", "value": "#f4a824"},
         # {"name": "Alpha", "type": "float", "value": 0, "limits": (0, 1), "step": 1e-1},
-        {"name": "Visible", "type": "bool", "value": True},
+        {
+            "name": "Display mode",
+            "type": "list",
+            "value": DisplayMode.SHADED.value,
+            "values": [m.value for m in DisplayMode],
+        },
     ]
 
     def __init__(
@@ -63,14 +238,13 @@ class ObjectTreeItem(QTreeWidgetItem):
         **kwargs,
     ):
 
-        super(ObjectTreeItem, self).__init__([name], **kwargs)
-        self.setFlags(self.flags() | Qt.ItemIsUserCheckable)
-        self.setCheckState(0, Qt.Checked)
+        super(ObjectTreeItem, self).__init__(["", "", "", "", name], **kwargs)
 
         self.ais = ais
         self.shape = shape
         self.shape_display = shape_display
         self.sig = sig
+        self.base_transparency = ais.Transparency() if ais is not None else 0.0
 
         self.properties = Parameter.create(name="Properties", children=self.props)
 
@@ -85,11 +259,21 @@ class ObjectTreeItem(QTreeWidgetItem):
         # )
         self.properties.sigTreeStateChanged.connect(self.propertiesChanged)
 
+    @property
+    def display_mode(self) -> DisplayMode:
+
+        return DisplayMode(self.properties["Display mode"])
+
+    @display_mode.setter
+    def display_mode(self, mode: DisplayMode):
+
+        self.properties["Display mode"] = mode.value
+
     def propertiesChanged(self, properties, changed):
 
         changed_prop = changed[0][0]
 
-        self.setData(0, 0, self.properties["Name"])
+        self.setData(NAME_COL, 0, self.properties["Name"])
 
         # if changed_prop.name() == "Alpha":
         #     self.ais.SetTransparency(self.properties["Alpha"])
@@ -99,10 +283,17 @@ class ObjectTreeItem(QTreeWidgetItem):
 
         # self.ais.Redisplay()
 
-        if self.properties["Visible"]:
-            self.setCheckState(0, Qt.Checked)
-        else:
-            self.setCheckState(0, Qt.Unchecked)
+        if changed_prop.name() == "Display mode":
+            mode = self.display_mode
+            self.set_mode_checked(mode)
+
+            # An item stands for its whole subtree - an assembly row often has
+            # no shape of its own, so alone it would have nothing to show - so
+            # the mode cascades to its parts. This is where the radios and the
+            # properties editor's dropdown meet: the dropdown writes the
+            # Parameter itself and never goes through the display_mode setter.
+            for i in range(self.childCount()):
+                self.child(i).display_mode = mode
 
         if self.sig:
             self.sig.emit()
@@ -115,11 +306,17 @@ class CQRootItem(TopTreeItem):
         super(CQRootItem, self).__init__(["CQ models"], *args, **kwargs)
 
 
-class HelpersRootItem(TopTreeItem):
+class GlobalModeItem(ModeRadioMixin, TopTreeItem):
 
     def __init__(self, *args, **kwargs):
 
-        super(HelpersRootItem, self).__init__(["Helpers"], *args, **kwargs)
+        super(GlobalModeItem, self).__init__(*args, **kwargs)
+        self.setFlags(Qt.ItemIsEnabled)  # not selectable, no hover highlight
+
+    def set_mode_checked(self, mode):
+
+        super(GlobalModeItem, self).set_mode_checked(mode)
+        self.setText(NAME_COL, f"Global: {mode.value}")
 
 
 class ObjectTree(QWidget, ComponentMixin):
@@ -134,6 +331,13 @@ class ObjectTree(QWidget, ComponentMixin):
             {"name": "Clear all before each run", "type": "bool", "value": True},
             {"name": "Merge Assemblies", "type": "bool", "value": False},
             {"name": "STL precision", "type": "float", "value": 0.1},
+            {
+                "name": "Transparency level",
+                "type": "float",
+                "value": 0.7,
+                "limits": (0, 1),
+                "step": 0.05,
+            },
         ],
     )
 
@@ -141,35 +345,90 @@ class ObjectTree(QWidget, ComponentMixin):
     sigObjectsRemoved = pyqtSignal(list)
     sigCQObjectSelected = pyqtSignal(object)
     sigAISObjectsSelected = pyqtSignal(list)
-    sigItemChanged = pyqtSignal(QTreeWidgetItem, int)
+    sigHelperToggled = pyqtSignal(object, bool)
     sigObjectPropertiesChanged = pyqtSignal()
     sigHelpersResized = pyqtSignal(list)
+    sigDisplayModesChanged = pyqtSignal(list)
+    sigGlobalModeChanged = pyqtSignal(object)
 
     def __init__(self, parent):
 
         super(ObjectTree, self).__init__(parent)
+
+        self._global_mode = GlobalMode.AS_SET
+
+        # ObjectTree never calls ComponentMixin.__init__ (super() resolves to
+        # QWidget.__init__, which does not cascade), so this connection - which
+        # ComponentMixin would normally make - has to be made by hand.
+        self.preferences.sigTreeStateChanged.connect(self.updatePreferences)
 
         self.tree = tree = QTreeWidget(
             self, selectionMode=QAbstractItemView.ExtendedSelection
         )
         self.properties_editor = ParameterTree(self)
 
-        tree.setHeaderHidden(True)
+        # Helpers get their own tree: a single row with a checkbox per axis,
+        # centred under an X / Y / Z header like the mode radios above.
+        self.helpers_tree = helpers_tree = QTreeWidget(
+            self, selectionMode=QAbstractItemView.NoSelection
+        )
+        helpers_tree.setHeaderLabels(["X", "Y", "Z", "Helpers"])
+        helpers_tree.setRootIsDecorated(False)
+        # In a narrow panel a scrollbar would cover the single row.
+        helpers_tree.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        helpers_tree.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # The style's minimum section size (38px under Fusion) would otherwise
+        # silently override MODE_COLUMN_WIDTH.
+        helpers_tree.header().setMinimumSectionSize(MODE_COLUMN_WIDTH)
+        helpers_header_item = helpers_tree.headerItem()
+        for col in range(3):
+            helpers_header_item.setTextAlignment(col, Qt.AlignCenter)
+            helpers_tree.header().setSectionResizeMode(col, QHeaderView.Fixed)
+            helpers_tree.setColumnWidth(col, MODE_COLUMN_WIDTH)
+        helpers_header_item.setTextAlignment(3, Qt.AlignLeft | Qt.AlignVCenter)
+        self.Helpers = QTreeWidgetItem(helpers_tree)
+        self.Helpers.setFlags(Qt.ItemIsEnabled)
+
+        header = CenteredIconHeader(Qt.Horizontal, tree)
+        tree.setHeader(header)
+
+        tree.setColumnCount(5)
+        tree.setHeaderItem(QTreeWidgetItem(["", "", "", "", "Name"]))
+        tree.setHeaderHidden(False)
         tree.setItemsExpandable(True)
         tree.setRootIsDecorated(False)
         tree.setContextMenuPolicy(Qt.ActionsContextMenu)
 
-        # forward itemChanged singal
-        tree.itemChanged.connect(lambda item, col: self.sigItemChanged.emit(item, col))
-        # handle visibility changes form tree
-        tree.itemChanged.connect(self.handleChecked)
+        # Assembly parts nest, so the branch indent has to be drawn in the name
+        # column. Left in column 0 it would inset that column's cell, shifting
+        # its radio right and shrinking it while columns 1-3 keep the full
+        # section width.
+        tree.setTreePosition(NAME_COL)
 
+        header.setMinimumSectionSize(MODE_COLUMN_WIDTH)  # see helpers_tree
+        header_item = tree.headerItem()
+        for col, (icon_name, mode) in enumerate(zip(MODE_COLUMN_ICONS, OBJECT_MODES)):
+            header.set_column_icon(col, icon_name)
+            header_item.setToolTip(col, mode.value)
+            header.setSectionResizeMode(col, QHeaderView.Fixed)
+            tree.setColumnWidth(col, MODE_COLUMN_WIDTH)
+        header_item.setTextAlignment(NAME_COL, Qt.AlignLeft | Qt.AlignVCenter)
+        header.setSectionResizeMode(NAME_COL, QHeaderView.Stretch)
+
+        self.GlobalItem = GlobalModeItem()
         self.CQ = CQRootItem()
-        self.Helpers = HelpersRootItem()
 
         root = tree.invisibleRootItem()
+        root.addChild(self.GlobalItem)
         root.addChild(self.CQ)
-        root.addChild(self.Helpers)
+
+        self.CQ.setFirstColumnSpanned(True)
+
+        self.GlobalItem.build_mode_radios(
+            tree, GLOBAL_MODES, [m.value for m in GLOBAL_MODES]
+        )
+        self.GlobalItem.set_mode_checked(GlobalMode.AS_SET)
+        self.GlobalItem.mode_group.idClicked.connect(self._handleGlobalRadio)
 
         tree.expandToDepth(1)
 
@@ -206,6 +465,8 @@ class ObjectTree(QWidget, ComponentMixin):
 
         self.prepareLayout()
 
+        self.sigObjectPropertiesChanged.connect(self._apply_modes)
+
     def _axis_points(self, direction, halfLen):
         """Calculates the points needed to draw the axis helper lines"""
         p1 = Geom_CartesianPoint(gp_Pnt(*(-halfLen * d for d in direction)))
@@ -229,10 +490,10 @@ class ObjectTree(QWidget, ComponentMixin):
             halfLen = 2.0 * bbox.CornerMin().Distance(bbox.CornerMax())
 
         resized = []
-        for item, direction in self._helper_dirs:
+        for line, direction in self._helper_dirs:
             p1, p2 = self._axis_points(direction, halfLen)
-            item.ais.SetPoints(p1, p2)  # update geometry in place
-            resized.append(item.ais)
+            line.SetPoints(p1, p2)  # update geometry in place
+            resized.append(line)
 
         if resized:
             self.sigHelpersResized.emit(resized)
@@ -249,8 +510,13 @@ class ObjectTree(QWidget, ComponentMixin):
 
     def prepareLayout(self):
 
+        # Helpers sit under the objects with no splitter handle between them:
+        # the helpers tree has a fixed height, and a splitter would leave the
+        # rest of its share as an empty gap.
+        trees = layout(self, (self.tree, self.helpers_tree), margin=0, spacing=4)
+
         self._splitter = splitter(
-            (self.tree, self.properties_editor),
+            (trees, self.properties_editor),
             stretch_factors=(2, 1),
             orientation=Qt.Vertical,
         )
@@ -272,22 +538,36 @@ class ObjectTree(QWidget, ComponentMixin):
 
     def addLines(self):
         ais_list = []
-        self._helper_dirs = []  # (item, direction) pairs, for later rescaling
+        self._helper_dirs = []  # (line, direction) pairs, for later rescaling
 
-        for name, color, direction in zip(
-            ("X", "Y", "Z"),
-            ("red", "lawngreen", "blue"),
-            ((1, 0, 0), (0, 1, 0), (0, 0, 1)),
+        for col, (name, color, direction) in enumerate(
+            zip(
+                ("X", "Y", "Z"),
+                ("red", "lawngreen", "blue"),
+                ((1, 0, 0), (0, 1, 0), (0, 0, 1)),
+            )
         ):
             p1, p2 = self._axis_points(direction, DEFAULT_AXIS_HALF_LEN)
             line = AIS_Line(p1, p2)
             line.SetColor(to_occ_color(color))
 
-            item = ObjectTreeItem(name, ais=line)
-            self.Helpers.addChild(item)
-            self._helper_dirs.append((item, direction))
+            checkbox = QCheckBox(toolTip=f"{name} axis", checked=True)
+            checkbox.toggled.connect(
+                lambda checked, line=line: self.sigHelperToggled.emit(line, checked)
+            )
+            self.helpers_tree.setItemWidget(self.Helpers, col, centered(checkbox))
+            self._helper_dirs.append((line, direction))
 
             ais_list.append(line)
+
+        # Exactly as tall as its row: the space goes to the objects tree, and a
+        # cramped panel cannot squeeze the checkboxes out of sight.
+        tree = self.helpers_tree
+        tree.setFixedHeight(
+            tree.header().sizeHint().height()
+            + tree.sizeHintForRow(0)
+            + 2 * tree.frameWidth()
+        )
 
         self.sigObjectsAdded.emit(ais_list)
 
@@ -299,6 +579,29 @@ class ObjectTree(QWidget, ComponentMixin):
             parts.append(node.properties["Name"])
             node = node.parent()
         return "/".join(reversed(parts))
+
+    def _attach_mode_radios(self, top):
+        """
+        Give every item in the subtree its own row of radios. Assembly parts
+        are items in their own right, so they get their own modes too.
+
+        setItemWidget needs the item to be on the tree already, so this runs
+        after the subtree has been parented.
+        """
+
+        for item in self._iter_subtree(top):
+            item.build_mode_radios(
+                self.tree, OBJECT_MODES, [m.value for m in OBJECT_MODES]
+            )
+            item.set_mode_checked(item.display_mode)
+            item.mode_group.idClicked.connect(
+                lambda col, item=item: self._handleObjectRadio(item, col)
+            )
+
+    def _detach_mode_radios(self, top):
+
+        for item in self._iter_subtree(top):
+            item.detach_mode_radios(self.tree)
 
     def _current_properties(self):
         """
@@ -356,9 +659,6 @@ class ObjectTree(QWidget, ComponentMixin):
                 )
             )
 
-        if node.children:
-            item.setFlags(item.flags() | Qt.ItemIsAutoTristate)
-
         return item
 
     def _build_items(self, name, shape, options):
@@ -407,6 +707,85 @@ class ObjectTree(QWidget, ComponentMixin):
             if it.ais is not None
         ]
 
+    def _visible_ais(self, tops):
+        """_subtree_ais, minus the items that start out hidden."""
+        return [
+            it.ais
+            for top in tops
+            for it in self._iter_subtree(top)
+            if it.ais is not None and it.display_mode is not DisplayMode.HIDDEN
+        ]
+
+    @property
+    def global_mode(self) -> GlobalMode:
+
+        return self._global_mode
+
+    @pyqtSlot(object)
+    def setGlobalMode(self, mode: GlobalMode):
+
+        if mode is self._global_mode:
+            return
+
+        self._global_mode = mode
+
+        # Every route into the global mode lands here - the toolbar actions,
+        # the global row's own radios, and _handleObjectRadio's snap back to
+        # AS_SET - so this is the one place that can keep the row in sync.
+        self.GlobalItem.set_mode_checked(mode)
+
+        self.sigGlobalModeChanged.emit(mode)
+        self._apply_modes()
+
+    @pyqtSlot(int)
+    def _handleGlobalRadio(self, col):
+
+        self.setGlobalMode(GLOBAL_MODES[col])
+
+    def _handleObjectRadio(self, item, col):
+        """
+        Clicking a per-object radio releases the global override, so the click
+        takes visible effect immediately. Clearing the override first means
+        _apply_modes runs off the display_mode change that follows.
+
+        The change cascades to the item's parts - see ObjectTreeItem.
+        """
+
+        self.setGlobalMode(GlobalMode.AS_SET)
+        item.display_mode = OBJECT_MODES[col]
+
+    @pyqtSlot()
+    def _apply_modes(self):
+        """
+        Resolve every CQ object's effective mode and transparency and hand the
+        result to the viewer. Assembly parts are nested items and carry their
+        own mode, so the whole subtree is walked. Helpers are excluded - they
+        keep their checkbox and are not affected by the global override.
+        """
+
+        transparency = self.preferences["Transparency level"]
+
+        payload = []
+        for i in range(self.CQ.childCount()):
+            for item in self._iter_subtree(self.CQ.child(i)):
+                if item.ais is None:
+                    continue
+                mode = effective_mode(item.display_mode, self._global_mode)
+                t = (
+                    transparency
+                    if mode is DisplayMode.TRANSPARENT
+                    else item.base_transparency
+                )
+                payload.append((item.ais, mode, t))
+
+        if payload:
+            self.sigDisplayModesChanged.emit(payload)
+
+    @pyqtSlot(object, object)
+    def updatePreferences(self, *args):
+
+        self._apply_modes()
+
     @pyqtSlot(dict, bool)
     @pyqtSlot(dict)
     def addObjects(self, objects, clean=False, root=None):
@@ -428,21 +807,31 @@ class ObjectTree(QWidget, ComponentMixin):
         # remove empty objects
         objects_f = {k: v for k, v in objects.items() if not is_obj_empty(v.shape)}
 
-        for name, obj in objects_f.items():
-            top_items, obj_ais = self._build_items(name, obj.shape, obj.options)
-            for item in top_items:
-                if preserve_props and name in current_props:
-                    self._restore_properties(item, current_props)
-                self.CQ.addChild(item)
-                self.tree.expandItem(item)
+        # Radios are attached only once every item is on the tree: each item
+        # widget makes every later insert/expand walk the view's editor table,
+        # so attaching per item is quadratic in the object count.
+        added = []
+        try:
+            for name, obj in objects_f.items():
+                top_items, _ = self._build_items(name, obj.shape, obj.options)
+                for item in top_items:
+                    if preserve_props and name in current_props:
+                        self._restore_properties(item, current_props)
+                    self.CQ.addChild(item)
+                    self.tree.expandItem(item)
+                    added.append(item)
 
-            ais_list.extend(obj_ais)
+                ais_list.extend(self._visible_ais(top_items))
+        finally:
+            for item in added:
+                self._attach_mode_radios(item)
 
         if request_fit_view:
             self.sigObjectsAdded[list, bool].emit(ais_list, True)
         else:
             self.sigObjectsAdded[list].emit(ais_list)
 
+        self._apply_modes()
         self._rescale_helpers()
 
     @pyqtSlot(object, str, object)
@@ -456,23 +845,29 @@ class ObjectTree(QWidget, ComponentMixin):
         top_items, ais_list = self._build_items(name, obj, options)
         for item in top_items:
             self.CQ.addChild(item)
+            self._attach_mode_radios(item)
         self.sigObjectsAdded.emit(ais_list)
+        self._apply_modes()
 
     @pyqtSlot(list)
     @pyqtSlot()
     def removeObjects(self, objects=None):
+
+        tops = (
+            [self.CQ.child(i) for i in objects]
+            if objects
+            else [self.CQ.child(i) for i in range(self.CQ.childCount())]
+        )
+        for item in tops:
+            self._detach_mode_radios(item)
 
         taken = (
             [self.CQ.takeChild(i) for i in objects]
             if objects
             else self.CQ.takeChildren()
         )
-        removed_items_ais = [
-            it.ais
-            for top in taken
-            for it in self._iter_subtree(top)
-            if it.ais is not None
-        ]
+
+        removed_items_ais = self._subtree_ais(taken)
 
         self.sigObjectsRemoved.emit(removed_items_ais)
 
@@ -480,21 +875,26 @@ class ObjectTree(QWidget, ComponentMixin):
     def stashObjects(self, action: bool):
 
         if action:
+            for i in range(self.CQ.childCount()):
+                self._detach_mode_radios(self.CQ.child(i))
             self._stash = self.CQ.takeChildren()
-            # removed_items_ais = [ch.ais for ch in self._stash]
             removed_items_ais = self._subtree_ais(self._stash)
             self.sigObjectsRemoved.emit(removed_items_ais)
         else:
             self.removeObjects()
             self.CQ.addChildren(self._stash)
+            for item in self._stash:
+                self._attach_mode_radios(item)
             ais_list = self._subtree_ais(self._stash)
             self.sigObjectsAdded.emit(ais_list)
+            self._apply_modes()
 
     @pyqtSlot()
     def removeSelected(self):
         tops = [it for it in self.tree.selectedItems() if it.parent() is self.CQ]
         removed_items_ais = self._subtree_ais(tops)
         for it in tops:
+            self._detach_mode_radios(it)
             self.CQ.removeChild(it)
         self.sigObjectsRemoved.emit(removed_items_ais)
 
@@ -572,12 +972,3 @@ class ObjectTree(QWidget, ComponentMixin):
                 continue
             if any(ais.Shape().IsEqual(shape) for shape in shapes):
                 item.setSelected(True)
-
-    @pyqtSlot(QTreeWidgetItem, int)
-    def handleChecked(self, item, col):
-
-        if type(item) is ObjectTreeItem:
-            if item.checkState(0):
-                item.properties["Visible"] = True
-            else:
-                item.properties["Visible"] = False
